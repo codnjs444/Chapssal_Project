@@ -35,7 +35,6 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
-
     
     public User createSocialUser(String userId, String userName) {
         User user = new User();
@@ -101,5 +100,8 @@ public class UserService {
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
     }
-
+    
+//    public Optional<User> findByNum(Integer userNum) {
+//        return userRepository.findById(userNum);
+//    }
 }

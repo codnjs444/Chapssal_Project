@@ -1,14 +1,11 @@
 package com.chapssal.video;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import java.time.LocalDateTime;
+import com.chapssal.user.User;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "video")
@@ -21,8 +18,9 @@ public class Video {
     @Column(name = "videoNum")
     private int videoNum;
 
-    @Column(name = "user")
-    private Integer user;
+    @ManyToOne
+    @JoinColumn(name = "user", referencedColumnName = "userNum")
+    private User user;
 
     @Column(name = "title")
     private String title;

@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+//AWS S3 클라우드 스토리지와 연동하기 위한 클래스
+
 @Service
 public class S3Service {
 
