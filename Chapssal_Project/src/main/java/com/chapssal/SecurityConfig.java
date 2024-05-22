@@ -29,7 +29,9 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
+                        .requestMatchers("/topic/**").authenticated() // /topic/** 경로는 인증 필요
+                        .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
+                )
                 .csrf(csrf -> csrf.disable())  // CSRF 보호 비활성화
                 .headers(headers -> headers
                         .addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
