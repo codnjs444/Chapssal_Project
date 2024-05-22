@@ -2,15 +2,16 @@ package com.chapssal.video;
 
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,12 +21,14 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 public class VideoController {
 
+    private static final Logger logger = LoggerFactory.getLogger(VideoController.class);
     private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
-
     private final VideoService videoService;
     private final S3Service s3Service;
     private final UserService userService;
@@ -80,7 +83,7 @@ public class VideoController {
 
             // Video 객체 생성 및 저장
             Video video = new Video();
-            video.setUser(user.getUserNum());
+            video.setUser(user);
             video.setTitle(title);
             video.setTopic(topic);
             video.setUploadDate(LocalDateTime.now());
@@ -103,5 +106,15 @@ public class VideoController {
         }
 
         return "redirect:/";
+    }
+
+    @GetMapping("/home/{videoNum}")
+    public String viewVideo(@PathVariable("videoNum") int videoNum, Model model) {
+        Video video = videoService.findById(videoNum).orElseThrow(() -> new RuntimeException("Video not found"));
+        User user = video.getUser();
+
+        model.addAttribute("video", video);    
+        model.addAttribute("uploader", user);
+        return "home";
     }
 }
