@@ -1,73 +1,8 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layout}">
-	<head>
-	    <style>
-			body, html {
-			    height: 100%;
-			    margin: 0;
-			    overflow: hidden;
-			}
-			.scroll-container {
-			    height: 100%;
-			    overflow-y: auto;
-			    padding: 20px;
-			    display: flex;
-			    flex-wrap: wrap; /* 화면을 벗어나면 다음 줄로 이동 */
-			    gap: 10px; /* 간격을 추가하여 카드 간격을 줍니다 */
-			}
-			.video-section {
-			    overflow: hidden; /* 내용물이 넘칠 경우 숨김 */
-			    display: flex;
-			    flex-direction: column;
-			    align-items: center;
-			    padding: 10px; /* 카드 내부 패딩 */
-			    box-sizing: border-box;
-			}
-			.video-container {
-			    width: 100%;
-			    padding-top: 56.25%; /* 9:16 비율을 유지하기 위한 패딩 */
-			    background-color: #000; /* 비디오가 로드되지 않은 경우 배경색 */
-			    position: relative;
-			}
-			video {
-			    position: absolute;
-			    top: 0;
-			    left: 0;
-			    width: 100%;
-			    height: 100%;
-			}
-			.video-content {
-			    width: 100%;
-			    text-align: left; /* 텍스트를 왼쪽 정렬 */
-			    font-size: 10px; /* 폰트 크기를 10px로 설정 */
-			    margin-top: 5px; /* 비디오와 텍스트 사이에 약간의 간격 추가 */
-			}
-	    </style>
-	</head>
-	<body>
-		<div layout:fragment="content" class="container">
-		    <div class="scroll-container">
-		        <div th:if="${videos != null}">
-		            <div th:each="video : ${videos}" class="video-section">
-		                <!-- 영상 -->
-		                <div class="video-container">
-		                    <video controls>
-		                        <source th:src="${video.videoUrl}" type="video/mp4">
-		                        Your browser does not support the video tag.
-		                    </video>
-		                </div>
-
-		                <!-- 영상 콘텐츠 -->
-		                <div class="video-content">
-		                    <h5 th:text="${video.title}" style="margin: 0;"></h5>
-		                    <p th:text="${video.user.userName}" style="margin: 0;"></p>
-		                </div>
-		            </div>
-		        </div>
-		        <div th:if="${videos == null}">
-		            <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-		        </div>
-		    </div>
-		</div>
-	</body>
+<div layout:fragment="content" class="container">
+    <h5 class="my-3 border-bottom pb-2">답변 수정 (테스트 수정111111111)</h5>
+    <h5 class="my-3 border-bottom pb-2">답변 수정 (테스트 수정111111111)</h5>
+    <h5 class="my-3 border-bottom pb-2">답변 수정 (테스트 수정111111111)</h5>
+</div>
 </html>
