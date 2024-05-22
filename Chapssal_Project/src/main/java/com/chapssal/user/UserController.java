@@ -152,9 +152,11 @@ public class UserController {
 
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);
+        model.addAttribute("currentUserNum", userNum); // 현재 로그인한 사용자의 userNum 추가
 
         return "profile";
     }
+
 
 
     
@@ -205,6 +207,7 @@ public class UserController {
 
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);
+        model.addAttribute("currentUserNum", userNum); // 현재 로그인한 사용자의 userNum 추가
         return "user_profile";
     }
 }
