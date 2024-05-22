@@ -13,21 +13,21 @@ public class HomeController {
 
     @GetMapping("/message")
     public String message() {
-        return "message";
+        return "message/message";
     }
 
     @GetMapping("/message2")
     public String message2() {
-        return "message2";
+        return "message/message2";
     }
 
     @GetMapping("/message3")
     public String message3() {
-        return "message3";
+        return "message/message3";
     }
 
     @GetMapping("/home")
     public String home2() {
-        return "home";
+        return "message/home";
     }
 }
