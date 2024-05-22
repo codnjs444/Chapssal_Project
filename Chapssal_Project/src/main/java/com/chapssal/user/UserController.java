@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,15 +59,15 @@ public class UserController {
         // 학교 코드가 존재하는지 확인
         School school = schoolRepository.findBySchoolCode(userCreateForm.getSchoolCode()).orElse(null);
         if(school == null) {
-            bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
-            return "signup_form";
+                bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
+                return "signup_form";
         }
 
         try {
             userService.create(
                     userCreateForm.getUserId(),
                     userCreateForm.getPassword1(),
-                    school,  // 유저 엔티티에 학교 객체 저장
+                    school,  // 유저 엔티티에 학교 번호 저장
                     LocalDateTime.now(),
                     LocalDateTime.now(),
                     LocalDateTime.now()
@@ -89,12 +87,11 @@ public class UserController {
         redirectAttributes.addFlashAttribute("successMessage", "회원가입이 성공하셨습니다.");
         return "redirect:/";
     }
-
+	
     @GetMapping("/login")
     public String login() {
         return "login_form";
     }
-
     
  // 이 부분부터 소셜로그인 학교 코드 입력에 대한 부분
 
@@ -126,7 +123,7 @@ public class UserController {
         redirectAttributes.addFlashAttribute("successMessage", "학교 코드가 성공적으로 등록되었습니다.");
         return "redirect:/";
     }
-
+    
     @GetMapping("/profile")
     public String getUserProfile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -210,7 +207,4 @@ public class UserController {
         model.addAttribute("followerUsers", followerUsers);
         return "user_profile";
     }
-
-
-
 }
