@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head th:replace="~{fragments/header}">
+    <meta charset="UTF-8">
+    <title>ChapSsenger</title>
+</head>
+
+<body>
+    <nav th:replace="~{navbar :: navbarFragment}"></nav>
+    <nav th:replace="~{fragments/sidebars :: sidebarsFragment}"></nav>
+
+    <div layout:fragment="content" class="content" style="weight:100%; height:100%;">
+        <!-- 메인 콘텐츠가 들어갈 부분 -->
+    </div>
+
+    <script>
+        var stompClient = null;
+        var userA = 'a';
+        var userB = 'b';
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/messages', function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+            }, function (error) {
+                console.log('STOMP error: ' + error);
+            });
+        }
+
+        function sendMessage(user) {
+            if (!stompClient) {
+                console.error('WebSocket connection not established.');
+                return;
+            }
+
+            var content, sender, receiver;
+            if (user === 'a') {
+                content = document.getElementById('message_a').value;
+                sender = userA;
+                receiver = userB;
+                if (content.trim() !== "") {
+                    stompClient.send("/app/chat", {}, JSON.stringify({
+                        'sender': sender,
+                        'receiver': receiver,
+                        'content': content
+                    }));
+                    document.getElementById('message_a').value = '';
+                }
+            } else {
+                content = document.getElementById('message_b').value;
+                sender = userB;
+                receiver = userA;
+                if (content.trim() !== "") {
+                    stompClient.send("/app/chat", {}, JSON.stringify({
+                        'sender': sender,
+                        'receiver': receiver,
+                        'content': content
+                    }));
+                    document.getElementById('message_b').value = '';
+                }
+            }
+        }
+
+        function showMessage(message) {
+            var msgViewA = document.getElementById('msg_view_a');
+            var msgViewB = document.getElementById('msg_view_b');
+            var messageDivA = document.createElement('div');
+            var messageDivB = document.createElement('div');
+
+            if (message.sender === userA) {
+                messageDivA.className = 'message sender';
+                messageDivA.innerHTML = '<strong>나:</strong> ' + message.content;
+                messageDivB.className = 'message receiver';
+                messageDivB.innerHTML = '<strong>A:</strong> ' + message.content;
+            } else {
+                messageDivA.className = 'message receiver';
+                messageDivA.innerHTML = '<strong>B:</strong> ' + message.content;
+                messageDivB.className = 'message sender';
+                messageDivB.innerHTML = '<strong>나:</strong> ' + message.content;
+            }
+
+            msgViewA.appendChild(messageDivA);
+            msgViewB.appendChild(messageDivB);
+
+            msgViewA.scrollTop = msgViewA.scrollHeight;
+            msgViewB.scrollTop = msgViewB.scrollHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+
+            document.getElementById('list-item-a').addEventListener('click', function() {
+                toggleChatBox('a');
+            });
+            document.getElementById('list-item-b').addEventListener('click', function() {
+                toggleChatBox('b');
+            });
+        });
+
+        function toggleChatBox(user) {
+            var chatBoxA = document.getElementById('chat-box-a');
+            var chatBoxB = document.getElementById('chat-box-b');
+
+            if (user === 'a') {
+                if (chatBoxA.style.display === 'none') {
+                    chatBoxA.style.display = 'block';
+                    chatBoxB.style.display = 'none';
+                } else {
+                    chatBoxA.style.display = 'none';
+                }
+            } else {
+                if (chatBoxB.style.display === 'none') {
+                    chatBoxB.style.display = 'block';
+                    chatBoxA.style.display = 'none';
+                } else {
+                    chatBoxB.style.display = 'none';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+            var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+                popperConfig: function() {
+                    return {
+                        placement: 'bottom-start',
+                        modifiers: [
+                            {
+                                name: 'computeStyles',
+                                options: {
+                                    adaptive: false,
+                                    gpuAcceleration: false
+                                }
+                            },
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 0]
+                                }
+                            }
+                        ]
+                    };
+                }
+            });
+
+            dropdownToggle.addEventListener('click', function () {
+                var dropdownMenu = this.nextElementSibling;
+
+                // 드롭다운 메뉴가 열릴 때 스타일 설정
+                setTimeout(function() {
+                    dropdownMenu.style.zIndex = '10000000000';
+                    dropdownMenu.style.position = 'fixed';
+                    dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                    dropdownMenu.style.margin = '0px';
+                    dropdownMenu.style.transform = 'translate(0px, -58px)';
+                }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+            });
+
+            // 드롭다운이 숨겨질 때 위치 초기화
+            dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+                var dropdownMenu = this.nextElementSibling;
+                dropdownMenu.style.position = '';
+                dropdownMenu.style.inset = '';
+                dropdownMenu.style.margin = '';
+                dropdownMenu.style.transform = '';
+            });
+        });
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Popper.js 추가 (integrity 속성 제거) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS 추가 -->
+    <script th:src="@{../static/bootstrap.min.js}"></script>
+    <script src="../../static/assets/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/assets/js/sidebars.js"></script></body>
+
+</body>
+</html>
