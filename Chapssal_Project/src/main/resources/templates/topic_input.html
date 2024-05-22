@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+
+<head>
+    <style>
+        body {
+            font-size: 13px; /* 기본 폰트 크기를 작게 설정 */
+        }
+
+        .edit-profile {
+            background-color: #cccccc; /* 회색 배경 */
+            color: #000000; /* 검정 글씨 */
+            padding: 3px 10px; /* 버튼 크기 조정 */
+            border: none; /* 테두리 제거 */
+            font-size: 12px; /* 글자 크기 조정 */
+            border-radius: 5px; /* 약간 둥근 모서리 */
+            font-weight: bold; /* 텍스트 굵게 */
+        }
+
+        .edit-profile:hover {
+            background-color: #aaaaaa; /* 호버 시 더 진한 회색 */
+        }
+
+        .sub-section {
+            margin-bottom: 5px; /* 각 서브 섹션 간의 간격을 줄입니다 */
+        }
+
+        .sub-section1,
+        .sub-section2,
+        .sub-section3 {
+            padding-left: 10px; /* 텍스트를 우측으로 이동 */
+            cursor: pointer; /* 커서를 포인터로 설정 */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+<div layout:fragment="content" class="container">
+    <div class="container vertical-container">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>24년 5월 3주차 영상 주제 등록</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- 에러 메시지를 표시하는 부분 추가 -->
+                            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                                <p th:text="${errorMessage}"></p>
+                            </div>
+                            <!-- 성공 메시지를 표시하는 부분 추가 -->
+                            <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                                <p th:text="${successMessage}"></p>
+                            </div>
+                            <form th:action="@{/topic/register}" th:object="${topic}" method="post">
+                                <div th:replace="~{form_errors :: formErrorsFragment}"></div>
+                                <div class="mb-3">
+                                    <label for="topic" class="form-label">5월 4주차 토픽을 등록해주세요!</label>
+                                    <input type="text" th:field="*{title}" id="topicInput" class="form-control" placeholder="주제를 입력하세요" maxlength="10" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">등록</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 프래그먼트 삽입 -->
+<div th:replace="~{::editProfileModalFragment}"></div>
+<div th:replace="~{::followersModalFragment}"></div>
+<!-- 외부 스크립트 파일 로드 -->
+<script src="/js/openTab.js" defer></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        /* Check if successMessage is present in the DOM */
+        const successMessage = /*[[${successMessage != null}]]*/ false;
+        if (successMessage) {
+            alert("토픽 등록이 완료되었습니다");
+            document.getElementById("topicInput").value = "";
+        }
+    });
+</script>
+
+</body>
+</html>
