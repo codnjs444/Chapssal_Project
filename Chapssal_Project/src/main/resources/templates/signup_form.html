@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
+</head>
+<body>
+    <div layout:fragment="content" class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">회원가입</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/user/signup}" th:object="${userCreateForm}" method="post">
+                            <div th:replace="~{form_errors :: formErrorsFragment}"></div>
+                            <div class="mb-3">
+                                <label for="userId" class="form-label">사용자ID</label>
+                                <input type="text" th:field="*{userId}" class="form-control" placeholder="사용자ID를 입력하세요" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password1" class="form-label">비밀번호</label>
+                                <input type="password" th:field="*{password1}" class="form-control" placeholder="비밀번호를 입력하세요" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password2" class="form-label">비밀번호 확인</label>
+                                <input type="password" th:field="*{password2}" class="form-control" placeholder="비밀번호를 다시 입력하세요" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="schoolCode" class="form-label">학교 코드</label>
+                                <input type="text" th:field="*{schoolCode}" class="form-control" placeholder="학교 코드를 입력하세요" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">회원가입</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
