@@ -2,6 +2,7 @@ package com.chapssal.user;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
     @Autowired
     private final UserService userService;
-	
+    
     @Autowired
     private FollowService followService;
     
@@ -44,8 +45,7 @@ public class UserController {
         model.addAttribute("userCreateForm", new UserCreateForm());
         return "signup_form";
     }
-
-	
+    
     @PostMapping("/signup")
     public String signup(@Valid UserCreateForm userCreateForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -55,14 +55,14 @@ public class UserController {
             bindingResult.rejectValue("password2", "passwordInCorrect", "2개의 비밀번호가 일치하지 않습니다.");
             return "signup_form";
         }
-
+        
         // 학교 코드가 존재하는지 확인
         School school = schoolRepository.findBySchoolCode(userCreateForm.getSchoolCode()).orElse(null);
         if(school == null) {
                 bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
                 return "signup_form";
         }
-
+        
         try {
             userService.create(
                     userCreateForm.getUserId(),
@@ -87,39 +87,39 @@ public class UserController {
         redirectAttributes.addFlashAttribute("successMessage", "회원가입이 성공하셨습니다.");
         return "redirect:/";
     }
-	
+    
     @GetMapping("/login")
     public String login() {
         return "login_form";
     }
     
- // 이 부분부터 소셜로그인 학교 코드 입력에 대한 부분
-
+    // 이 부분부터 소셜로그인 학교 코드 입력에 대한 부분
+    
     @GetMapping("/enterSchoolCode")
     public String enterSchoolCode(Model model) {
         model.addAttribute("schoolCodeForm", new SchoolCodeForm());
         return "schoolCode_form";
     }
-
+    
     @PostMapping("/enterSchoolCode")
     public String enterSchoolCode(@Valid SchoolCodeForm schoolCodeForm, BindingResult bindingResult, Authentication authentication, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "schoolCode_form";
         }
-
+        
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String userId = oAuth2User.getAttribute("id").toString();
         User user = userService.findByUserId(userId);
-
+        
         School school = schoolRepository.findBySchoolCode(schoolCodeForm.getSchoolCode()).orElse(null);
         if (school == null) {
             bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
             return "schoolCode_form";
         }
-
+        
         user.setSchool(school);
         userService.save(user);
-
+        
         redirectAttributes.addFlashAttribute("successMessage", "학교 코드가 성공적으로 등록되었습니다.");
         return "redirect:/";
     }
@@ -130,35 +130,33 @@ public class UserController {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";  // 로그인 페이지로 리다이렉트
         }
-
+        
         String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
         String schoolName = userService.getSchoolNameByUserId(username);
         String userName = userService.getUserNameByUserId(username);
         String bio = userService.getUserBioByUserId(username);
-
+        
         model.addAttribute("schoolName", schoolName);
         model.addAttribute("userName", userName);
         model.addAttribute("bio", bio);
-
+        
         Integer userNum = userService.getUserNumByUserId(username);
         int followingCount = followService.countFollowingByUserNum(userNum);
         int followerCount = followService.countFollowerByUserNum(userNum);
-
+        
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("followerCount", followerCount);
-
+        
         List<User> followingUsers = followService.getFollowingUsers(userNum);
         List<User> followerUsers = followService.getFollowerUsers(userNum);
-
+        
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);
-        model.addAttribute("currentUserNum", userNum); // 현재 로그인한 사용자의 userNum 추가
-
+        
+        model.addAttribute("currentUserNum", userNum); // 현재 사용자의 userNum 추가
+        
         return "profile";
     }
-
-
-
     
     @PostMapping("/updateProfile")
     public String updateProfile(@RequestParam("userName") String newUserName, @RequestParam("bio") String bio, RedirectAttributes redirectAttributes) {
@@ -166,9 +164,9 @@ public class UserController {
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";  // 로그인 페이지로 리다이렉트
         }
-
+        
         String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
-
+        
         try {
             userService.updateUserName(username, newUserName, bio);
             redirectAttributes.addFlashAttribute("successMessage", "프로필이 성공적으로 업데이트되었습니다.");
@@ -176,38 +174,57 @@ public class UserController {
             redirectAttributes.addFlashAttribute("errorMessage", "프로필 업데이트에 실패했습니다.");
             return "redirect:/user/profile";
         }
-
+        
         return "redirect:/user/profile";
     }
     
     @GetMapping("/profile/{userNum}")
     public String getUserProfile(@PathVariable("userNum") Integer userNum, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+
+        // 현재 로그인한 사용자의 정보를 가져옴
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
+        
+        // 프로필 페이지의 사용자 정보를 가져옴
         User user = userService.findByUserNum(userNum);
         if (user == null) {
             return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
         }
-
+        
         String userName = user.getUserName();
         String schoolName = user.getSchool().getSchoolName();
         String bio = user.getBio();
-
+        
         model.addAttribute("userName", userName);
         model.addAttribute("schoolName", schoolName);
         model.addAttribute("bio", bio);
-        model.addAttribute("userNum", userNum);
-
+        model.addAttribute("userNum", userNum); // 조회된 사용자의 userNum
+        
         int followingCount = followService.countFollowingByUserNum(userNum);
         int followerCount = followService.countFollowerByUserNum(userNum);
-
+        
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("followerCount", followerCount);
         
         List<User> followingUsers = followService.getFollowingUsers(userNum);
         List<User> followerUsers = followService.getFollowerUsers(userNum);
-
+        
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);
-        model.addAttribute("currentUserNum", userNum); // 현재 로그인한 사용자의 userNum 추가
+        model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
+        
         return "user_profile";
     }
+
 }

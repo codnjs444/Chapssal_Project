@@ -7,17 +7,16 @@
     <title>Document</title>
     <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <!-- Bootstrap Icons CSS 추가 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
     <style>
         .no-link-style {
-            color: inherit; /* 텍스트 색상 상속 */
-            text-decoration: none; /* 밑줄 제거 */
-            cursor: pointer; /* 포인터 커서 유지 */
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
         }
         .no-link-style:hover {
-            color: inherit; /* 호버 시에도 텍스트 색상 유지 */
-            text-decoration: none; /* 호버 시에도 밑줄 제거 */
+            color: inherit;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -37,12 +36,12 @@
                 <div class="modal-content">
                     <form th:action="@{/user/updateProfile}" th:method="post">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editProfileModalLabel">프로필 편집</h5>
+                            <h5 class="modal-title" id="editProfileModalLabel">프로필 편집(변경 사항)</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="profilePic" class="form-label">프로필 사진</label>
+                                <label for="profilePic" class="form-label">프로필 사진(변경하였습니다.)</label>
                                 <input type="text" class="form-control" id="profilePic" placeholder="이미지 URL 입력">
                             </div>
                             <div class="mb-3">
@@ -54,7 +53,6 @@
                                 <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
                             </div>
                         </div>
-                        <!-- 모달 푸터 -->
                         <div class="modal-footer d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">저장</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
@@ -96,12 +94,20 @@
                                         <img th:src="${follower.profilePictureUrl != null ? follower.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
                                         <div class="flex-grow-1">
                                             <div>
-                                                <a th:href="@{(${follower.userNum} == ${currentUserNum}) ? '/profile' : '/user/profile/' + ${follower.userNum}}" th:text="${follower.userName}" class="no-link-style">사용자 이름</a>
+                                                <a th:if="${currentUserNum} == ${follower.userNum}"
+                                                   th:href="@{/user/profile}" th:text="${follower.userName}" class="no-link-style">사용자 이름</a>
+                                                <a th:unless="${currentUserNum} == ${follower.userNum}"
+                                                   th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="${follower.userName}" class="no-link-style">사용자 이름</a>
                                             </div>
                                             <div class="text-muted">
-                                                <a th:href="@{(${follower.userNum} == ${currentUserNum}) ? '/profile' : '/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
+                                                <a th:if="${currentUserNum} == ${follower.userNum}"
+                                                   th:href="@{/user/profile}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
+                                                <a th:unless="${currentUserNum} == ${follower.userNum}"
+                                                   th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
                                             </div>
                                         </div>
+<!--                                        <p th:text="'Follower UserNum: ' + ${follower.userNum}"></p>  Follower UserNum 출력 
+                                        <p style="color: blue;" th:text="'Current UserNum: ' + ${currentUserNum}"></p>  현재 로그인한 사용자의 UserNum 출력 -->
                                         <button class="btn btn-outline-danger btn-sm">삭제</button>
                                     </div>
                                 </div>
@@ -112,12 +118,20 @@
                                         <img th:src="${following.profilePictureUrl != null ? following.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
                                         <div class="flex-grow-1">
                                             <div>
-                                                <a th:href="@{(${following.userNum} == ${currentUserNum}) ? '/profile' : '/user/profile/' + ${following.userNum}}" th:text="${following.userName}" class="no-link-style">사용자 이름</a>
+                                                <a th:if="${currentUserNum} == ${following.userNum}"
+                                                   th:href="@{/user/profile}" th:text="${following.userName}" class="no-link-style">사용자 이름</a>
+                                                <a th:unless="${currentUserNum} == ${following.userNum}"
+                                                   th:href="@{'/user/profile/' + ${following.userNum}}" th:text="${following.userName}" class="no-link-style">사용자 이름</a>
                                             </div>
                                             <div class="text-muted">
-                                                <a th:href="@{(${following.userNum} == ${currentUserNum}) ? '/profile' : '/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
+                                                <a th:if="${currentUserNum} == ${following.userNum}"
+                                                   th:href="@{/user/profile}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
+                                                <a th:unless="${currentUserNum} == ${following.userNum}"
+                                                   th:href="@{'/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
                                             </div>
                                         </div>
+<!--                                        <p th:text="'Following UserNum: ' + ${following.userNum}"></p>  Following UserNum 출력 
+                                        <p style="color: blue;" th:text="'Current UserNum: ' + ${currentUserNum}"></p>  현재 로그인한 사용자의 UserNum 출력 -->
                                         <button class="btn btn-outline-danger btn-sm">삭제</button>
                                     </div>
                                 </div>
@@ -140,6 +154,13 @@
     <!-- Bootstrap Bundle with Popper from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
+    <!-- 팔로워 및 팔로우 탭 활성화 설정 -->
+    <script>
+        function openTab(tabName) {
+            let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+            tabTrigger.show();
+        }
+    </script>
     <div th:replace="~{navbar :: uploadModalScript}"></div>
 
 </body>

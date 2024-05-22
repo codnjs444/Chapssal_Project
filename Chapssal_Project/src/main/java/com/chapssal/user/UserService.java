@@ -63,6 +63,10 @@ public class UserService {
     public User findByUserId(String userId) {
         return userRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
+    
+    public Optional<User> findByUserId2(String userId) {
+        return userRepository.findByUserId2(userId);
+    }
 
     public void save(User user) {
         userRepository.save(user);
