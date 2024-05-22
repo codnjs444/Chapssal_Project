@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container-fluid {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 4.5rem;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .chat-list {
+            width: 25%;
+            max-width: 300px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            background-color: #fff;
+        }
+        .msg_view {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .msg_input {
+            padding: 10px;
+            border-top: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+        }
+        .msg_input input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+    </style>
+</head>
+<body>
+<nav th:replace="~{navbar :: navbarFragment}"></nav>
+
+
+<!-- side bar start -->
+<div class="container-fluid">
+    <div class="sidebar">
+        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+            <li class="nav-item">
+                <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" title="Home" data-bs-toggle="tooltip" data-bs-placement="right">
+                    <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Home"><use xlink:href="#home"/></svg>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link py-3 border-bottom rounded-0" title="Dashboard" data-bs-toggle="tooltip" data-bs-placement="right">
+                    <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Dashboard"><use xlink:href="#speedometer2"/></svg>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link py-3 border-bottom rounded-0" title="Orders" data-bs-toggle="tooltip" data-bs-placement="right">
+                    <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Orders"><use xlink:href="#table"/></svg>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link py-3 border-bottom rounded-0" title="Products" data-bs-toggle="tooltip" data-bs-placement="right">
+                    <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Products"><use xlink:href="#grid"/></svg>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link py-3 border-bottom rounded-0" title="Customers" data-bs-toggle="tooltip" data-bs-placement="right">
+                    <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Customers"><use xlink:href="#people-circle"/></svg>
+                </a>
+            </li>
+        </ul>
+        <div class="dropdown border-top " style = "z-index: 1500">
+            <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://github.com/mdo.png" alt="mdo" width="24" height="24" class="rounded-circle">
+            </a>
+            <ul class="dropdown-menu text-small shadow" style = "z-index: 1500">
+                <li><a class="dropdown-item" href="#">New project...</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Sign out</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!--chat list start -->
+    <div class="chat-list">
+        <div class="list-group list-group-flush border-bottom scrollarea">
+            <a href="#" id="list-item-a" class="list-group-item list-group-item-action active py-3 lh-sm" aria-current="true">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">A의 채팅</strong>
+                    <small>날짜</small>
+                </div>
+                <div class="col-10 mb-1 small">내용.</div>
+            </a>
+            <a href="#" id="list-item-b" class="list-group-item list-group-item-action py-3 lh-sm">
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <strong class="mb-1">B의 채팅</strong>
+                    <small class="text-body-secondary">날짜</small>
+                </div>
+                <div class="col-10 mb-1 small">내용.</div>
+            </a>
+            <!-- 더 많은 리스트 아이템을 여기에 추가할 수 있습니다 -->
+        </div>
+    </div>
+
+<!-- chat start -->
+
+    <div class="chat-section">
+        <div class="chat-header">
+            <h3 id="chat-header-title">채팅</h3>
+        </div>
+        <div class="msg_view" id="msg_view"></div>
+        <div class="msg_input">
+            <input type="text" id="message_input" class="form-control" placeholder="메시지 보내기...">
+            <button class="btn btn-primary" onclick="sendMessage()">보내기</button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    var stompClient = null;
+    var currentChat = '';
+
+    function connect() {
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (message) {
+                showMessage(JSON.parse(message.body));
+            });
+        }, function (error) {
+            console.log('STOMP error: ' + error);
+        });
+    }
+
+    function sendMessage() {
+        if (!stompClient) {
+            console.error('WebSocket connection not established.');
+            return;
+        }
+
+        var content = document.getElementById('message_input').value;
+        if (content.trim() !== "" && currentChat !== '') {
+            stompClient.send("/app/chat", {}, JSON.stringify({
+                'sender': currentChat,
+                'content': content
+            }));
+            document.getElementById('message_input').value = '';
+        }
+    }
+
+    function showMessage(message) {
+        var msgView = document.getElementById('msg_view');
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        messageDiv.innerHTML = '<strong>' + message.sender + ':</strong> ' + message.content;
+        msgView.appendChild(messageDiv);
+        msgView.scrollTop = msgView.scrollHeight;
+    }
+
+    function toggleChatBox(chat) {
+        currentChat = chat;
+        document.getElementById('chat-header-title').innerText = chat + '의 채팅';
+        document.getElementById('msg_view').innerHTML = ''; // Clear the chat messages when switching
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        connect();
+
+        document.getElementById('list-item-a').addEventListener('click', function() {
+            toggleChatBox('A');
+        });
+        document.getElementById('list-item-b').addEventListener('click', function() {
+            toggleChatBox('B');
+        });
+    });
+</script>
+
+<script src="../../static/assets/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="../../static/assets/js/sidebars.js"></script></body>
+</body>
+</html>
