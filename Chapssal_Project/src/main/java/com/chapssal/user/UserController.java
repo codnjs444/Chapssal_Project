@@ -236,5 +236,10 @@ public class UserController {
         
         return "user_profile";
     }
+    
+    @GetMapping("/test")
+    public String testPage() {
+        return "test";
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.chapssal.follow;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -42,5 +43,14 @@ public class FollowService {
 
     public boolean isFollowing(Integer follower, Integer following) {
         return followRepository.existsByFollowerAndFollowing(follower, following);
+    }
+    
+    public void followUser(Integer follower, Integer following) {
+        Follow follow = new Follow();
+        follow.setFollower(follower);
+        follow.setFollowing(following);
+        follow.setFollowDate(LocalDateTime.now());
+
+        followRepository.save(follow);
     }
 }
