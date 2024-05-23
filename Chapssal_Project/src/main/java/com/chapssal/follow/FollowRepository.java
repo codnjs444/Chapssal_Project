@@ -12,5 +12,6 @@ public interface FollowRepository extends JpaRepository<Follow, Integer> {
     List<Follow> findByFollowing(Integer following);
 
     boolean existsByFollowerAndFollowing(Integer follower, Integer following);
+    Follow findByFollowerAndFollowing(Integer follower, Integer following);
 }
 

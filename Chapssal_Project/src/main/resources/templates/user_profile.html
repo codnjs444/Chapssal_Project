@@ -71,7 +71,7 @@
                         <div class="profile-actions">
 							<button type="button" 
 							        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-follow btn-sm'"
-							        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}')|">
+							        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
 							    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
 							    <span th:text="${isFollowing} ? '팔로잉' : '팔로우'"></span>
 							</button>

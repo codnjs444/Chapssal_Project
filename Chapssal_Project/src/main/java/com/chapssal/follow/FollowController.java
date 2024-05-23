@@ -24,4 +24,15 @@ public class FollowController {
 
         return ResponseEntity.ok().body("{\"success\": true}");
     }
+
+    @DeleteMapping("/unfollow")
+    public ResponseEntity<?> unfollowUser(@RequestBody FollowRequest followRequest) {
+        Follow follow = followRepository.findByFollowerAndFollowing(followRequest.getFollower(), followRequest.getFollowing());
+        if (follow != null) {
+            followRepository.delete(follow);
+            return ResponseEntity.ok().body("{\"success\": true}");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"success\": false, \"message\": \"팔로우 관계를 찾을 수 없습니다.\"}");
+        }
+    }
 }

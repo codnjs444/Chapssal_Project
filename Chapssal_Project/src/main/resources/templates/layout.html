@@ -162,41 +162,47 @@
         }
     </script>
 
-	<!-- 공통 스크립트 -->
 	<div th:fragment="commonScripts">
 	    <script>
 	        function sendMessage() {
 	            alert("버튼이 눌려졌다");
 	        }
 
-			function followUser(currentUserNum, userNum) {
-			    console.log("followUser 함수 호출됨");
-			    fetch('/follow', {
-			        method: 'POST',
-			        headers: {
-			            'Content-Type': 'application/json'
-			        },
-			        body: JSON.stringify({
-			            follower: currentUserNum,
-			            following: userNum
-			        })
-			    })
-			    .then(response => response.json())
-			    .then(data => {
-			        if (data.success) {
-			            location.reload();
-			        } else {
-			            alert('팔로우 실패: ' + data.message);
-			        }
-			    })
-			    .catch(error => {
-			        console.error('Error:', error);
-			        alert('팔로우 중 오류가 발생했습니다.');
-			    });
-			}
+	        function followUser(currentUserNum, userNum, isFollowing) {
+	            console.log("followUser 함수 호출됨");
 
+	            if (isFollowing === 'true') {
+					if (!confirm(`팔로우를 취소하시겠습니까?`)) {
+					    return;
+					}
+	            }
 
+	            let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+	            let method = isFollowing === 'true' ? 'DELETE' : 'POST';
 
+	            fetch(url, {
+	                method: method,
+	                headers: {
+	                    'Content-Type': 'application/json'
+	                },
+	                body: JSON.stringify({
+	                    follower: currentUserNum,
+	                    following: userNum
+	                })
+	            })
+	            .then(response => response.json())
+	            .then(data => {
+	                if (data.success) {
+	                    location.reload();
+	                } else {
+	                    alert('작업 실패: ' + data.message);
+	                }
+	            })
+	            .catch(error => {
+	                console.error('Error:', error);
+	                alert('작업 중 오류가 발생했습니다.');
+	            });
+	        }
 	    </script>
 	</div>
 
