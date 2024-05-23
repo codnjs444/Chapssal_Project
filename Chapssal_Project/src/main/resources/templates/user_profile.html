@@ -45,6 +45,16 @@
             margin-left: 40px; /* 버튼과 프로필 정보 사이의 간격 줄이기 */
 			margin-bottom: 30px;
         }
+		.btn-follow {
+		    background-color: #0095F6;
+		    color: white;
+		}
+
+		.btn-follow:hover {
+		    background-color: darkblue;
+		    color: white;
+		}
+
     </style>
 </head>
 <body>
@@ -59,13 +69,22 @@
                             <p th:text="${schoolName}" class="mb-1">학교 이름</p>
                         </div>
                         <div class="profile-actions">
-                            <button type="button" class="btn btn-outline-primary btn-sm">팔로우</button>
+							<button type="button" 
+							        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-follow btn-sm'">
+							    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
+							    <span th:text="${isFollowing} ? '팔로잉' : '팔로우'"></span>
+							</button>
                             <button type="button" class="btn btn-outline-secondary btn-sm">메시지 보내기</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-start mb-4">
+					<div class="pe-5">
+						<span>
+						    <strong th:text="${videoCount}">0</strong> 게시글
+						</span>
+					</div>
                     <div class="pe-5">
                         <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('followers')">
                             <strong th:text="${followingCount}">0</strong> 팔로워

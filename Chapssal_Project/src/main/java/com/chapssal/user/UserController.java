@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
+import com.chapssal.video.VideoService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,9 @@ public class UserController {
     
     @Autowired
     private FollowService followService;
+    
+    @Autowired
+    private final VideoService videoService;
     
     @Autowired
     private final SchoolRepository schoolRepository;
@@ -143,9 +147,11 @@ public class UserController {
         Integer userNum = userService.getUserNumByUserId(username);
         int followingCount = followService.countFollowingByUserNum(userNum);
         int followerCount = followService.countFollowerByUserNum(userNum);
+        int videoCount = videoService.countVideosByUserNum(userNum);  // 게시글 수 추가
         
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("followerCount", followerCount);
+        model.addAttribute("videoCount", videoCount); // 게시글 수 모델에 추가
         
         List<User> followingUsers = followService.getFollowingUsers(userNum);
         List<User> followerUsers = followService.getFollowerUsers(userNum);
@@ -213,12 +219,16 @@ public class UserController {
         
         int followingCount = followService.countFollowingByUserNum(userNum);
         int followerCount = followService.countFollowerByUserNum(userNum);
+        int videoCount = videoService.countVideosByUserNum(userNum); // 게시글 수 계산
         
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("followerCount", followerCount);
-        
+        model.addAttribute("videoCount", videoCount); // 게시글 수 모델에 추가
         List<User> followingUsers = followService.getFollowingUsers(userNum);
         List<User> followerUsers = followService.getFollowerUsers(userNum);
+        
+        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        model.addAttribute("isFollowing", isFollowing);
         
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);

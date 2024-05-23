@@ -40,5 +40,7 @@ public class FollowService {
                         .collect(Collectors.toList());
     }
 
-    
+    public boolean isFollowing(Integer follower, Integer following) {
+        return followRepository.existsByFollowerAndFollowing(follower, following);
+    }
 }

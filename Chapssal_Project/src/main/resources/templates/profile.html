@@ -70,6 +70,11 @@
 
                 <!-- 팔로우 및 팔로워 수 -->
                 <div class="d-flex justify-content-start mb-4">
+					<div class="pe-5">
+						<span>
+						    <strong th:text="${videoCount}">0</strong> 게시글
+						</span>
+					</div>
                     <div class="pe-5">
                         <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('followers')">
                             <strong th:text="${followingCount}">0</strong> 팔로워
