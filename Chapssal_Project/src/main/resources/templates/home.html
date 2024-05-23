@@ -1,229 +1,230 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layout}">
-<head>
-    <style>
-        .video-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-		.video-item {
-		    display: flex;
-		    flex-direction: column;
-		    align-items: center;
-		    gap: 20px;
-		}
-
-		.video-container {
-		    position: relative;
-		    width: 40%; /* 화면의 50% 너비 설정 */
-		    padding-bottom: 71.12%; /* 9:16 비율 (16 / 9 * 100) */
-		    background-color: black; /* 영상이 없는 부분을 검게 표시 */
-		    overflow: hidden;
-		    border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
-		}
-
-		.video-container video {
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    width: 100%;
-		    height: 100%;
-		    transform: translate(-50%, -50%);
-		}
-
-		.video-content {
-		    font-size: 14px;
-		    text-align: left;
-		    width: 40%;
-			cursor: pointer;
-		}
-
-		.video-content p {
-		    margin: 0;
-		}
-
-		/* Modal styles */
-		.modal {
-		    display: none;
-		    position: fixed;
-		    z-index: 1;
-		    left: 0;
-		    top: 0;
-		    width: 100%;
-		    height: 100%;
-		    overflow: auto;
-		    background-color: rgba(0,0,0,0.7);
-		}
-
-		.modal-content {
-		    margin: 5% auto;
-		    padding: 20px;
-		    width: 80%;
-		    max-width: 700px;
-		    background-color: white;
-		    border-radius: 10px;
-		}
-
-		.close {
-		    position: absolute;
-		    top: 15px;
-		    right: 35px;
-		    color: #f1f1f1;
-		    font-size: 40px;
-		    font-weight: bold;
-		    transition: 0.3s;
-		    cursor: pointer;
-		}
-
-		.close:hover,
-		.close:focus {
-		    color: #bbb;
-		    text-decoration: none;
-		    cursor: pointer;
-		}
-		
-		.modal-video-container {
-		    position: relative;
-		    width: 80%;
-		    padding-bottom: 142.22%; /* 16:9 aspect ratio */
-		    background-color: black;
-		    overflow: hidden;
-		    border-radius: 10px;
-		    max-height: 70%; /* 비디오 컨테이너의 최대 높이를 70%로 설정 */
-		}
-
-		.modal-video-container video {
-		    position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    width: 100%;
-		    height: 100%;
-		    transform: translate(-50%, -50%);
-		}
-
-		.modal-video-content {
-		    font-size: 14px;
-		    text-align: left;
-		    width: 100%;
-		}
-
-		.modal-video-content p {
-		    margin: 0;
-		}
-    </style>
-</head>
-<body>
-	<div layout:fragment="content" class="container">
-	    <div class="video-list">
-	        <div th:if="${videos != null}">
-	            <div th:each="video : ${videos}" class="video-item">
-	                <!-- 비디오 -->
-	                <div class="video-container" th:onclick="'showModal(this)'" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
-	                    <video controls autoplay muted>
-	                        <source th:src="@{${video.videoUrl}}" type="video/mp4">
-	                        Your browser does not support the video tag.
-	                    </video>
-	                </div>
-
-	                <!-- 영상 콘텐츠 -->
-	                <div class="video-content">
-	                    <p th:text="${video.title}"></p>
-	                    <p th:text="${video.user.userName}"></p>
-	                    <p th:text="'조회수: ' + ${video.viewCount}"></p>
-	                </div>
-	            </div>
-	        </div>
-	        <div th:if="${videos == null}">
-	            <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-	        </div>
-	    </div>
-	</div>
-
-	<th:block th:fragment="homeModalFragment">
-	<!-- The Modal -->
-	<div id="videoModal" class="modal">
-	    <span class="close" onclick="closeModal()">&times;</span>
-	    <div class="modal-content my-2 p-0">
-	        <div class="modal-video-container">
-	            <video id="modalVideo" controls>
-	                <source id="modalVideoSource" src="" type="video/mp4">
-	                Your browser does not support the video tag.
-	            </video>
-	        </div>
-	        <div class="modal-video-content">
-	            <h2 id="modalTitle"></h2>
-	            <p id="modalUserName"></p>
-	            <p id="modalViews"></p>
-	        </div>
-	    </div>
-	</div>
-	</th:block>
+	<head>
+	    <style>
+	        .video-list {
+	            display: flex;
+	            flex-direction: column;
+	            gap: 20px;
+	        }
 	
-    <th:block th:fragment="homeVideoScript">
-    <script>
-		document.addEventListener('DOMContentLoaded', function() {
-		    let options = {
-		        root: null,
-		        rootMargin: '0px',
-		        threshold: 0.5
-		    };
-
-		    let observer = new IntersectionObserver(function(entries, observer) {
-		        entries.forEach(entry => {
-		            if (entry.isIntersecting) {
-		                let video = entry.target.querySelector('video');
-		                if (video) {
-		                    video.play();
-		                }
-		            } else {
-		                let video = entry.target.querySelector('video');
-		                if (video) {
-		                    video.pause();
-		                }
-		            }
-		        });
-		    }, options);
-
-		    document.querySelectorAll('.video-item').forEach(item => {
-		        observer.observe(item);
-		    });
-		});
+			.video-item {
+			    display: flex;
+			    flex-direction: column;
+			    align-items: center;
+			    gap: 20px;
+			}
+	
+			.video-container {
+			    position: relative;
+			    width: 40%; /* 화면의 50% 너비 설정 */
+			    padding-bottom: 71.12%; /* 9:16 비율 (16 / 9 * 100) */
+			    background-color: black; /* 영상이 없는 부분을 검게 표시 */
+			    overflow: hidden;
+			    border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
+			}
+	
+			.video-container video {
+			    position: absolute;
+			    top: 50%;
+			    left: 50%;
+			    width: 100%;
+			    height: 100%;
+			    transform: translate(-50%, -50%);
+			}
+	
+			.video-content {
+			    font-size: 14px;
+			    text-align: left;
+			    width: 40%;
+				cursor: pointer;
+			}
+	
+			.video-content p {
+			    margin: 0;
+			}
+	
+			/* Modal styles */
+			.home-modal {
+			    display: none;
+			    position: fixed;
+			    /*z-index: 1;*/
+			    left: 0;
+			    top: 0;
+			    width: 100%;
+			    height: 100%;
+			    overflow: auto;
+			    background-color: rgba(0,0,0,0.7);
+			}
+	
+			.home-modal-content {
+			    margin: 5% auto;
+			    padding: 20px;
+			    width: 80%;
+			    max-width: 700px;
+			    background-color: white;
+			    border-radius: 10px;
+			}
+	
+			.home-close {
+			    position: absolute;
+			    top: 15px;
+			    right: 35px;
+			    color: #f1f1f1;
+			    font-size: 40px;
+			    font-weight: bold;
+			    transition: 0.3s;
+			    cursor: pointer;
+			}
+	
+			.home-close:hover,
+			.home-close:focus {
+			    color: #bbb;
+			    text-decoration: none;
+			    cursor: pointer;
+			}
+			
+			.home-modal-video-container {
+			    position: relative;
+			    width: 80%;
+			    padding-bottom: 142.22%; /* 16:9 aspect ratio */
+			    background-color: black;
+			    overflow: hidden;
+			    border-radius: 10px;
+			    max-height: 70%; /* 비디오 컨테이너의 최대 높이를 70%로 설정 */
+			}
+	
+			.home-modal-video-container video {
+			    position: absolute;
+			    top: 50%;
+			    left: 50%;
+			    width: 100%;
+			    height: 100%;
+			    transform: translate(-50%, -50%);
+			}
+	
+			.home-modal-video-content {
+			    font-size: 14px;
+			    text-align: left;
+			    width: 100%;
+			}
+	
+			.home-modal-video-content p {
+			    margin: 0;
+			}			
+	    </style>
+	</head>
+	<body>
+		<div layout:fragment="content" class="container">
+		    <div class="video-list">
+		        <div th:if="${videos != null}">
+		            <div th:each="video : ${videos}" class="video-item">
+		                <!-- 비디오 -->
+		                <div class="video-container" th:onclick="'showModal(this)'" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
+		                    <video controls autoplay muted>
+		                        <source th:src="@{${video.videoUrl}}" type="video/mp4">
+		                        Your browser does not support the video tag.
+		                    </video>
+		                </div>
+	
+		                <!-- 영상 콘텐츠 -->
+		                <div class="video-content">
+		                    <p th:text="${video.title}"></p>
+		                    <p th:text="${video.user.userName}"></p>
+		                    <p th:text="'조회수: ' + ${video.viewCount}"></p>
+		                </div>
+		            </div>
+		        </div>
+		        <div th:if="${videos == null}">
+		            <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+		        </div>
+		    </div>
+		</div>
+	
+		<!-- 홈 영상 디테일 모달 -->
+		<th:block th:fragment="homeModalFragment">
+			<div id="videoModal" class="modal home-modal">
+			    <span class="close home-close" onclick="closeModal()">&times;</span>
+			    <div class="modal-content home-modal-content my-2 p-0">
+			        <div class="home-modal-video-container">
+			            <video id="modalVideo" controls>
+			                <source id="modalVideoSource" src="" type="video/mp4">
+			                Your browser does not support the video tag.
+			            </video>
+			        </div>
+			        <div class="home-modal-video-content">
+			            <p id="modalTitle"></p>
+			            <p id="modalUserName"></p>
+			            <p id="modalViews"></p>
+			        </div>
+			    </div>
+			</div>
+		</th:block>
 		
-		function showModal(videoContainer) {
-		    const modal = document.getElementById('videoModal');
-		    const title = videoContainer.getAttribute('data-title');
-		    const username = videoContainer.getAttribute('data-username');
-		    const views = videoContainer.getAttribute('data-views');
-		    const videoUrl = videoContainer.getAttribute('data-videourl');
-
-		    document.getElementById('modalTitle').innerText = title;
-		    document.getElementById('modalUserName').innerText = username;
-		    document.getElementById('modalViews').innerText = '조회수: ' + views;
-
-		    const modalVideoSource = document.getElementById('modalVideoSource');
-		    modalVideoSource.src = videoUrl;
-		    document.getElementById('modalVideo').load();
-
-		    modal.style.display = "block";
-		}
-
-		function closeModal() {
-		    const modal = document.getElementById('videoModal');
-		    modal.style.display = "none";
-		    const modalVideo = document.getElementById('modalVideo');
-		    modalVideo.pause();
-		}
-
-		// Close the modal when the user clicks anywhere outside of the modal
-		window.onclick = function(event) {
-		    const modal = document.getElementById('videoModal');
-		    if (event.target == modal) {
-		        closeModal();
-		    }
-		}
-    </script>
-    </th:block>
-</body>
+		<!-- 홈 스크립트 -->
+	    <th:block th:fragment="homeVideoScript">
+		    <script>
+				document.addEventListener('DOMContentLoaded', function() {
+				    let options = {
+				        root: null,
+				        rootMargin: '0px',
+				        threshold: 0.5
+				    };
+		
+				    let observer = new IntersectionObserver(function(entries, observer) {
+				        entries.forEach(entry => {
+				            if (entry.isIntersecting) {
+				                let video = entry.target.querySelector('video');
+				                if (video) {
+				                    video.play();
+				                }
+				            } else {
+				                let video = entry.target.querySelector('video');
+				                if (video) {
+				                    video.pause();
+				                }
+				            }
+				        });
+				    }, options);
+		
+				    document.querySelectorAll('.video-item').forEach(item => {
+				        observer.observe(item);
+				    });
+				});
+				
+				function showModal(videoContainer) {
+				    const modal = document.getElementById('videoModal');
+				    const title = videoContainer.getAttribute('data-title');
+				    const username = videoContainer.getAttribute('data-username');
+				    const views = videoContainer.getAttribute('data-views');
+				    const videoUrl = videoContainer.getAttribute('data-videourl');
+		
+				    document.getElementById('modalTitle').innerText = title;
+				    document.getElementById('modalUserName').innerText = username;
+				    document.getElementById('modalViews').innerText = '조회수: ' + views;
+		
+				    const modalVideoSource = document.getElementById('modalVideoSource');
+				    modalVideoSource.src = videoUrl;
+				    document.getElementById('modalVideo').load();
+		
+				    modal.style.display = "block";
+				}
+		
+				function closeModal() {
+				    const modal = document.getElementById('videoModal');
+				    modal.style.display = "none";
+				    const modalVideo = document.getElementById('modalVideo');
+				    modalVideo.pause();
+				}
+		
+				// Close the modal when the user clicks anywhere outside of the modal
+				window.onclick = function(event) {
+				    const modal = document.getElementById('videoModal');
+				    if (event.target == modal) {
+				        closeModal();
+				    }
+				}
+		    </script>
+	    </th:block>
+	</body>
 </html>
