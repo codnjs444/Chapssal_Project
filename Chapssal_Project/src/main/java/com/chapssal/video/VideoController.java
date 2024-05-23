@@ -108,13 +108,26 @@ public class VideoController {
         return "redirect:/";
     }
 
-    @GetMapping("/home/{videoNum}")
+    @GetMapping("/explore/{videoNum}")
     public String viewVideo(@PathVariable("videoNum") int videoNum, Model model) {
         Video video = videoService.findById(videoNum).orElseThrow(() -> new RuntimeException("Video not found"));
         User user = video.getUser();
 
         model.addAttribute("video", video);    
         model.addAttribute("uploader", user);
-        return "home";
+        return "explore"; // 여기서 home.html을 explore.html로 변경했습니다.
+    }
+    
+    @GetMapping("/explore")
+    public String viewExplorePage(Model model) {
+        model.addAttribute("videos", videoService.findAll()); // 모든 비디오를 모델에 추가
+        return "explore"; // explore.html 템플릿을 렌더링
+    }
+
+    @GetMapping("/home")
+    public String viewHomePage(Model model) {
+        // 필요한 데이터를 모델에 추가하여 홈 페이지에 전달
+        model.addAttribute("videos", videoService.findAll()); // 예시: 모든 비디오를 전달
+        return "home"; // home.html로 매핑
     }
 }

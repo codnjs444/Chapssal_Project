@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>ChapSsal</title>
     <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
@@ -134,6 +134,7 @@
     </div>
 
     <div th:replace="~{navbar :: uploadModalFragment}"></div>
+	<div th:replace="~{home :: homeModalFragment}"></div>
 
     <!-- Bootstrap Bundle with Popper from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
@@ -146,7 +147,8 @@
         }
     </script>
     <div th:replace="~{navbar :: uploadModalScript}"></div>
-
+	<div th:replace="~{home :: homeVideoScript}"></div>
+	<div th:replace="~{explore :: exploreVideoScript}"></div>	
 </body>
 
 </html>
