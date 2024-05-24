@@ -1,109 +1,22 @@
 <!DOCTYPE html>
-<html layout:decorate="~{layout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<html layout:decorate="~{message/layout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
 <div layout:fragment="content" class="container-fluid">
     <!-- 컨텐츠 자리 -->
-    <div class = "row" style = "height: 100%">
-
+    <div class="row" style="height: 100%">
         <!-- list group -->
         <div class="col-lg-3 col-md-3 col-sm-1">
             <!-- extra space -->
             <div class="extraspace">
-                <!-- 여기에 원하는 내용을 추가하세요 -->
+                <p>Chat Rooms Count: <span th:text="${chatRoomCount}"></span></p>
             </div>
             <div class="list-group list-group-flush border-bottom scrollarea">
-                <a href="#" id="list-item-a" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
+                <a th:each="chatRoom : ${chatRooms}" href="#" class="list-group-item list-group-item-action py-3 lh-sm" th:data-roomnum="${chatRoom.roomNum}">
                     <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1" style="margin-left: 3%">A의 채팅</strong>
-                        <small>날짜</small>
+                        <strong class="mb-1" style="margin-left: 3%" th:text="${chatRoom.roomNum + '의 채팅'}"></strong>
+                        <small th:text="${chatRoom.createDate != null ? T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd').format(chatRoom.createDate) : ''}"></small>
                     </div>
-                    <div class="col-10 mb-1 small">내용.</div>
+                    <div class="col-10 mb-1 small" th:text="${chatRoom.title}"></div>
                 </a>
-                <a href="#" id="list-item-b" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-<!---->
-                <a href="#" id="list-item-c" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-d" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-e" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-g" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-h" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-i" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-j" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-k" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-f" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-q" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <a href="#" id="list-item-s" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex w-100 align-items-center justify-content-between">
-                        <strong class="mb-1"  style="margin-left: 3%">B의 채팅</strong>
-                        <small class="text-body-secondary">날짜</small>
-                    </div>
-                    <div class="col-10 mb-1 small">내용.</div>
-                </a>
-                <!-- 더 많은 리스트 아이템을 여기에 추가할 수 있습니다 -->
             </div>
         </div>
 
@@ -111,31 +24,27 @@
         <div class="col-lg-9 col-md-9 col-sm-9 chat-section">
             <div class="row chat-page">
                 <div class="col chat-box" id="chat-box-a" style="display: none;">
-                    <h3>A의 채팅</h3>
-                    <div class="msg_view scrollarea" id="msg_view_a"></div>
+                    <h3>Participant: <span id="participant_a"></span></h3>
+                    <div class="msg_view scrollarea" id="chatMessages"></div>
                     <div class="msg_input">
-                        <input type="text" id="message_a" class="form-control" placeholder="메시지 보내기...">
-                        <button class="btn btn-primary" onclick="sendMessage('a')">send</button>
-                    </div>
-                </div>
-
-                <div class="col chat-box" id="chat-box-b" style="display: none;">
-                    <h3>B의 채팅</h3>
-                    <div class="msg_view scrollarea" id="msg_view_b"></div>
-                    <div class="msg_input">
-                        <input type="text" id="message_b" class="form-control" placeholder="메시지 보내기...">
-                        <button class="btn btn-primary" onclick="sendMessage('b')">send</button>
+                        <form id="sendMessageForm">
+                            <input type="hidden" id="currentRoomNum">
+                            <input type="hidden" id="sender" value=1>  <!-- 실제로는 로그인된 사용자 ID를 사용 -->
+                            <input type="text" id="messageText" class="form-control" placeholder="메시지 보내기...">
+                            <button class="btn btn-primary" type="submit">send</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
 
-        </div>
+
     </div>
+</div>
 
     <!-- 컨텐츠 자리 -->
 </div>
-<script src="../../static/assets/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
 
-<script src="../../static/assets/js/sidebars.js"></script></body>
+<script th:src="@{/assets/js/sidebars.js}"></script>
 </html>

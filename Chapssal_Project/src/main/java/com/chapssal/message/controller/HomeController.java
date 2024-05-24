@@ -1,15 +1,19 @@
 package com.chapssal.message.controller;
 
+import com.chapssal.message.model.ChatRoom;
+import com.chapssal.message.service.ChatRoomService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 @Controller
 public class HomeController {
 
-    @GetMapping("/")
-    public String home() {
-        return "redirect:/index.html";
-    }
+    @Autowired
+    private ChatRoomService chatRoomService;
 
     @GetMapping("/message")
     public String message() {
@@ -26,8 +30,12 @@ public class HomeController {
         return "message/message3";
     }
 
-    @GetMapping("/home")
-    public String home2() {
+    @GetMapping("message/home")
+    public String messageHome(Model model) {
+        long chatRoomCount = chatRoomService.getChatRoomCount();
+        List<ChatRoom> chatRooms = chatRoomService.getAllChatRooms();
+        model.addAttribute("chatRoomCount", chatRoomCount);
+        model.addAttribute("chatRooms", chatRooms);
         return "message/home";
     }
 }

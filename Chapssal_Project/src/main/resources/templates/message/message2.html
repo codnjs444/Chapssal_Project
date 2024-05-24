@@ -151,7 +151,8 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     var stompClient = null;
-    var currentChat = '';
+    var userA = 1;
+    var userB = 2;
 
     function connect() {
         var socket = new SockJS('/ws');
@@ -166,47 +167,174 @@
         });
     }
 
-    function sendMessage() {
+    function sendMessage(user) {
         if (!stompClient) {
             console.error('WebSocket connection not established.');
             return;
         }
 
-        var content = document.getElementById('message_input').value;
-        if (content.trim() !== "" && currentChat !== '') {
-            stompClient.send("/app/chat", {}, JSON.stringify({
-                'sender': currentChat,
-                'content': content
-            }));
-            document.getElementById('message_input').value = '';
+        var content, sender, receiver;
+        if (user === 1) {
+            content = document.getElementById('message_a').value;
+            sender = userA;
+            receiver = userB;
+            if (content.trim() !== "") {
+                stompClient.send("/app/chat", {}, JSON.stringify({
+                    'sender': sender,
+                    'receiver': receiver,
+                    'text': content
+                }));
+                document.getElementById('message_a').value = '';
+            }
+        } else {
+            content = document.getElementById('message_b').value;
+            sender = userB;
+            receiver = userA;
+            if (content.trim() !== "") {
+                stompClient.send("/app/chat", {}, JSON.stringify({
+                    'sender': sender,
+                    'receiver': receiver,
+                    'text': content
+                }));
+                document.getElementById('message_b').value = '';
+            }
         }
     }
 
     function showMessage(message) {
-        var msgView = document.getElementById('msg_view');
-        var messageDiv = document.createElement('div');
-        messageDiv.className = 'message';
-        messageDiv.innerHTML = '<strong>' + message.sender + ':</strong> ' + message.content;
-        msgView.appendChild(messageDiv);
-        msgView.scrollTop = msgView.scrollHeight;
-    }
+        var msgViewA = document.getElementById('msg_view_a');
+        var msgViewB = document.getElementById('msg_view_b');
+        var messageDivA = document.createElement('div');
+        var messageDivB = document.createElement('div');
 
-    function toggleChatBox(chat) {
-        currentChat = chat;
-        document.getElementById('chat-header-title').innerText = chat + '의 채팅';
-        document.getElementById('msg_view').innerHTML = ''; // Clear the chat messages when switching
+        if (message.sender === userA) {
+            messageDivA.className = 'message sender';
+            messageDivA.innerHTML = '<strong>나:</strong> ' + message.text;
+            messageDivB.className = 'message receiver';
+            messageDivB.innerHTML = '<strong>1:</strong> ' + message.text;
+        } else {
+            messageDivA.className = 'message receiver';
+            messageDivA.innerHTML = '<strong>2:</strong> ' + message.text;
+            messageDivB.className = 'message sender';
+            messageDivB.innerHTML = '<strong>나:</strong> ' + message.text;
+        }
+
+        msgViewA.appendChild(messageDivA);
+        msgViewB.appendChild(messageDivB);
+
+        msgViewA.scrollTop = msgViewA.scrollHeight;
+        msgViewB.scrollTop = msgViewB.scrollHeight;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         connect();
 
         document.getElementById('list-item-a').addEventListener('click', function() {
-            toggleChatBox('A');
+            toggleChatBox(userA);
         });
         document.getElementById('list-item-b').addEventListener('click', function() {
-            toggleChatBox('B');
+            toggleChatBox(userB);
         });
     });
+
+        document.querySelectorAll('.list-group-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.list-group-item').forEach(function(i) {
+                    i.classList.remove('active');
+                });
+                item.classList.add('active');
+            });
+        });
+
+          document.getElementById('message_a').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage(1);
+            }
+        });
+
+        document.getElementById('message_b').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage(2);
+            }
+        });
+
+    function toggleChatBox(user) {
+        var chatBoxA = document.getElementById('chat-box-a');
+        var chatBoxB = document.getElementById('chat-box-b');
+
+        if (user === 1) {
+            if (chatBoxA.style.display === 'none') {
+                chatBoxA.style.display = 'block';
+                chatBoxB.style.display = 'none';
+            } else {
+                chatBoxA.style.display = 'none';
+            }
+             var msgViewA = document.getElementById('msg_view_a');
+            msgViewA.scrollTop = msgViewA.scrollHeight;
+        } else {
+            if (chatBoxB.style.display === 'none') {
+                chatBoxB.style.display = 'block';
+                chatBoxA.style.display = 'none';
+            } else {
+                chatBoxB.style.display = 'none';
+            }
+           var msgViewB = document.getElementById('msg_view_b');
+            msgViewB.scrollTop = msgViewB.scrollHeight;
+        }
+    }
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+        var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+            popperConfig: function() {
+                return {
+                    placement: 'bottom-start',
+                    modifiers: [
+                        {
+                            name: 'computeStyles',
+                            options: {
+                                adaptive: false,
+                                gpuAcceleration: false
+                            }
+                        },
+                        {
+                            name: 'offset',
+                            options: {
+                                offset: [0, 0]
+                            }
+                        }
+                    ]
+                };
+            }
+        });
+
+        dropdownToggle.addEventListener('click', function () {
+            var dropdownMenu = this.nextElementSibling;
+
+            // 드롭다운 메뉴가 열릴 때 스타일 설정
+            setTimeout(function() {
+                dropdownMenu.style.zIndex = '10000000000';
+                dropdownMenu.style.position = 'fixed';
+                dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                dropdownMenu.style.margin = '0px';
+                dropdownMenu.style.transform = 'translate(0px, -58px)';
+            }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+        });
+
+        // 드롭다운이 숨겨질 때 위치 초기화
+        dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+            var dropdownMenu = this.nextElementSibling;
+            dropdownMenu.style.position = '';
+            dropdownMenu.style.inset = '';
+            dropdownMenu.style.margin = '';
+            dropdownMenu.style.transform = '';
+        });
+    });
+
+
 </script>
 
 <script src="../../static/assets/dist/js/bootstrap.bundle.min.js"></script>

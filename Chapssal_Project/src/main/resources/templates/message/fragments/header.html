@@ -5,7 +5,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="../../../static/assets/js/color-modes.js"></script>
+    <script th:src="@{/assets/js/color-modes.js}"></script>
     <!-- link href 를 제외한 모든 코드 동일 -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,22 +13,23 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.122.0">
     <title>Messenger</title>
-    <link rel="stylesheet" th:href="@{../../static/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{../../static/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/sidebars/">
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/list-groups/">
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/navbars/">
 
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
 
-    <link href="../../../static/assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/assets/dist/css/bootstrap.min.css}" rel="stylesheet">
     <!-- Custom styles for this template -->
-    <link href="../../../static/assets/dist/css/sidebars.css" rel="stylesheet">
-    <link href="../../../static/assets/dist/css/list-groups.css" rel="stylesheet">
+    <link th:href="@{/assets/dist/css/sidebars.css}" rel="stylesheet">
+    <link th:href="@{/assets/dist/css/list-groups.css}" rel="stylesheet">
 
     <style>
         .bd-placeholder-img {
@@ -150,6 +151,11 @@
     padding: 10px;
     margin-right: 10px;
 }
+
+    .msg_input form {
+            display: flex;
+            width: 100%;
+    }
 
 .msg_input button {
     padding: 10px 20px;

@@ -1,126 +1,163 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:layout="http://www.w3.org/1999/xhtml">
-<head th:replace="~{fragments/header}">
+<head th:replace="~{message/fragments/header}">
     <meta charset="UTF-8">
     <title>ChapSsenger</title>
 </head>
 
 <body>
-    <nav th:replace="~{navbar :: navbarFragment}"></nav>
-    <nav th:replace="~{fragments/sidebars :: sidebarsFragment}"></nav>
+    <nav th:replace="~{message/navbar :: navbarFragment}"></nav>
+    <nav th:replace="~{message/fragments/sidebars :: sidebarsFragment}"></nav>
 
     <div layout:fragment="content" class="content" style="weight:100%; height:100%;">
         <!-- 메인 콘텐츠가 들어갈 부분 -->
     </div>
 
     <script>
+
+  function escapeHtml(text) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+
         var stompClient = null;
-        var userA = 'a';
-        var userB = 'b';
+        var receiverId;
 
-        function connect() {
-            var socket = new SockJS('/ws');
-            stompClient = Stomp.over(socket);
-            stompClient.connect({}, function (frame) {
-                console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/messages', function (message) {
-                    showMessage(JSON.parse(message.body));
+$(document).ready(function() {
+    connect();
+
+    $('.list-group-item').on('click', function(event) {
+        event.preventDefault();
+        var roomNum = $(this).data('roomnum');
+
+        if (!roomNum) {
+            console.error('roomNum is undefined');
+            return;
+        }
+
+        $('#currentRoomNum').val(roomNum);
+
+        // Fetch participants
+        $.ajax({
+            url: '/api/chat/rooms/' + roomNum + '/participants',
+            method: 'GET',
+            dataType: 'json',
+            success: function(participants) {
+                console.log('Participants fetched:', participants);
+
+                if (!participants || participants.length === 0) {
+                    console.error('No participants found for roomNum:', roomNum);
+                    return;
+                }
+
+                var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
+                var receiver = participants.find(p => p.user !== currentUserId);
+
+                if (!receiver) {
+                    console.error('No receiver found for currentUserId:', currentUserId);
+                    return;
+                }
+
+                receiverId = receiver.user;
+
+                $('#participant_a').text(receiverId);
+
+                // Fetch messages
+                $.ajax({
+                    url: '/api/chat/rooms/' + roomNum + '/messages',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(messages) {
+                        $('#chatMessages').empty();
+                        messages.forEach(function(message) {
+                            var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
+                            $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
+                        });
+
+                        // Scroll to bottom
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                    },
+                    error: function(err) {
+                        console.error('Failed to fetch messages:', err);
+                    }
                 });
-            }, function (error) {
-                console.log('STOMP error: ' + error);
-            });
-        }
-
-        function sendMessage(user) {
-            if (!stompClient) {
-                console.error('WebSocket connection not established.');
-                return;
+            },
+            error: function(err) {
+                console.error('Failed to fetch participants:', err);
+                console.log('Response Text:', err.responseText);
             }
-
-            var content, sender, receiver;
-            if (user === 'a') {
-                content = document.getElementById('message_a').value;
-                sender = userA;
-                receiver = userB;
-                if (content.trim() !== "") {
-                    stompClient.send("/app/chat", {}, JSON.stringify({
-                        'sender': sender,
-                        'receiver': receiver,
-                        'content': content
-                    }));
-                    document.getElementById('message_a').value = '';
-                }
-            } else {
-                content = document.getElementById('message_b').value;
-                sender = userB;
-                receiver = userA;
-                if (content.trim() !== "") {
-                    stompClient.send("/app/chat", {}, JSON.stringify({
-                        'sender': sender,
-                        'receiver': receiver,
-                        'content': content
-                    }));
-                    document.getElementById('message_b').value = '';
-                }
-            }
-        }
-
-        function showMessage(message) {
-            var msgViewA = document.getElementById('msg_view_a');
-            var msgViewB = document.getElementById('msg_view_b');
-            var messageDivA = document.createElement('div');
-            var messageDivB = document.createElement('div');
-
-            if (message.sender === userA) {
-                messageDivA.className = 'message sender';
-                messageDivA.innerHTML = '<strong>나:</strong> ' + message.content;
-                messageDivB.className = 'message receiver';
-                messageDivB.innerHTML = '<strong>A:</strong> ' + message.content;
-            } else {
-                messageDivA.className = 'message receiver';
-                messageDivA.innerHTML = '<strong>B:</strong> ' + message.content;
-                messageDivB.className = 'message sender';
-                messageDivB.innerHTML = '<strong>나:</strong> ' + message.content;
-            }
-
-            msgViewA.appendChild(messageDivA);
-            msgViewB.appendChild(messageDivB);
-
-            msgViewA.scrollTop = msgViewA.scrollHeight;
-            msgViewB.scrollTop = msgViewB.scrollHeight;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            connect();
-
-            document.getElementById('list-item-a').addEventListener('click', function() {
-                toggleChatBox('a');
-            });
-            document.getElementById('list-item-b').addEventListener('click', function() {
-                toggleChatBox('b');
-            });
         });
 
-        function toggleChatBox(user) {
-            var chatBoxA = document.getElementById('chat-box-a');
-            var chatBoxB = document.getElementById('chat-box-b');
+        $('#chat-box-a').show();
+    });
 
-            if (user === 'a') {
-                if (chatBoxA.style.display === 'none') {
-                    chatBoxA.style.display = 'block';
-                    chatBoxB.style.display = 'none';
-                } else {
-                    chatBoxA.style.display = 'none';
-                }
-            } else {
-                if (chatBoxB.style.display === 'none') {
-                    chatBoxB.style.display = 'block';
-                    chatBoxA.style.display = 'none';
-                } else {
-                    chatBoxB.style.display = 'none';
-                }
-            }
+    $('#sendMessageForm').on('submit', function(event) {
+        event.preventDefault();
+        sendMessage();
+    });
+
+    // Send message on Enter key press
+    $('#messageText').on('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            $('#sendMessageForm').submit();
         }
+    });
+});
+
+function connect() {
+    var socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/messages', function (message) {
+            showMessage(JSON.parse(message.body));
+        });
+    }, function (error) {
+        console.log('STOMP error: ' + error);
+    });
+}
+
+function sendMessage() {
+    if (!stompClient) {
+        console.error('WebSocket connection not established.');
+        return;
+    }
+
+    var content = $('#messageText').val();
+    var roomNum = parseInt($('#currentRoomNum').val(), 10); // roomNum을 숫자로 변환
+    var sender = parseInt($('#sender').val(), 10); // sender를 숫자로 변환
+
+    if (content.trim() !== "") {
+        stompClient.send("/app/chat", {}, JSON.stringify({
+            'roomNum': roomNum,
+            'sender': sender,
+            'receiver': receiverId,
+            'text': escapeHtml(content),
+            'messageType': 1, // messageType을 1로 설정
+            'isRead': 0// isRead를 1로 설정
+        }));
+        $('#messageText').val('');
+    }
+}
+
+function showMessage(message) {
+    var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
+    var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
+
+    $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
+    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+}
+
+
+
 
         document.addEventListener('DOMContentLoaded', function () {
             var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
@@ -169,18 +206,22 @@
                 dropdownMenu.style.transform = '';
             });
         });
+
+
+
+
+
     </script>
 
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Popper.js 추가 (integrity 속성 제거) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
     <!-- Bootstrap JS 추가 -->
-    <script th:src="@{../static/bootstrap.min.js}"></script>
-    <script src="../../static/assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../static/assets/js/sidebars.js"></script></body>
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/js/sidebars.js}"></script>
 
 </body>
 </html>
