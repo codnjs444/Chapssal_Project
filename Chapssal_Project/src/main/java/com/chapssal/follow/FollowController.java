@@ -35,4 +35,6 @@ public class FollowController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"success\": false, \"message\": \"팔로우 관계를 찾을 수 없습니다.\"}");
         }
     }
+    
+    
 }
