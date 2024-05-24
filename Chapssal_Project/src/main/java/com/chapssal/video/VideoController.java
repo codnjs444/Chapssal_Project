@@ -1,5 +1,7 @@
 package com.chapssal.video;
 
+import com.chapssal.topic.Topic;
+import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +22,24 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Controller
 public class VideoController {
 
-    private static final Logger logger = LoggerFactory.getLogger(VideoController.class);
     private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
     private final VideoService videoService;
     private final S3Service s3Service;
     private final UserService userService;
+    private final TopicService topicService;
 
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService) {
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, TopicService topicService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
+        this.topicService = topicService;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -126,8 +128,12 @@ public class VideoController {
 
     @GetMapping("/home")
     public String viewHomePage(Model model) {
-        // 필요한 데이터를 모델에 추가하여 홈 페이지에 전달
-        model.addAttribute("videos", videoService.findAll()); // 예시: 모든 비디오를 전달
+        List<Topic> topics = topicService.findAll();
+        model.addAttribute("topics", topics);
+
+        List<Video> videos = videoService.findAll();
+        model.addAttribute("videos", videos);
+
         return "home"; // home.html로 매핑
     }
 }
