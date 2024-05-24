@@ -3,10 +3,12 @@
 <div layout:fragment="content" class="container-fluid">
     <!-- 컨텐츠 자리 -->
     <div class="row" style="height: 100%">
+
         <!-- list group -->
         <div class="col-lg-3 col-md-3 col-sm-1">
             <!-- extra space -->
             <div class="extraspace">
+                <p>Current User Num: <span th:text="${currentUserNum}"></span></p> <!-- Added line to display currentUserNum -->
                 <p>Chat Rooms Count: <span th:text="${chatRoomCount}"></span></p>
             </div>
             <div class="list-group list-group-flush border-bottom scrollarea">
@@ -29,7 +31,7 @@
                     <div class="msg_input">
                         <form id="sendMessageForm">
                             <input type="hidden" id="currentRoomNum">
-                            <input type="hidden" id="sender" value=1>  <!-- 실제로는 로그인된 사용자 ID를 사용 -->
+                            <input type="hidden" id="sender">
                             <input type="text" id="messageText" class="form-control" placeholder="메시지 보내기...">
                             <button class="btn btn-primary" type="submit">send</button>
                         </form>

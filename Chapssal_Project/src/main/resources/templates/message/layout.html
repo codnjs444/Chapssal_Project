@@ -15,197 +15,204 @@
 
     <script>
 
-  function escapeHtml(text) {
-    var map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
+        function escapeHtml(text) {
+          var map = {
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#039;'
+          };
+          return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+      }
 
 
-        var stompClient = null;
-        var receiverId;
+              var stompClient = null;
+              var receiverId;
 
-$(document).ready(function() {
-    connect();
+      $(document).ready(function() {
+          connect();
 
-    $('.list-group-item').on('click', function(event) {
-        event.preventDefault();
-        var roomNum = $(this).data('roomnum');
+          $('.list-group-item').on('click', function(event) {
+              event.preventDefault();
+              var roomNum = $(this).data('roomnum');
 
-        if (!roomNum) {
-            console.error('roomNum is undefined');
-            return;
-        }
+              if (!roomNum) {
+                  console.error('roomNum is undefined');
+                  return;
+              }
 
-        $('#currentRoomNum').val(roomNum);
+              $('#currentRoomNum').val(roomNum);
 
-        // Fetch participants
-        $.ajax({
-            url: '/api/chat/rooms/' + roomNum + '/participants',
-            method: 'GET',
-            dataType: 'json',
-            success: function(participants) {
-                console.log('Participants fetched:', participants);
+              // Fetch participants
+              $.ajax({
+                  url: '/api/chat/rooms/' + roomNum + '/participants',
+                  method: 'GET',
+                  dataType: 'json',
+                  success: function(participants) {
+                      console.log('Participants fetched:', participants);
 
-                if (!participants || participants.length === 0) {
-                    console.error('No participants found for roomNum:', roomNum);
-                    return;
-                }
+                      if (!participants || participants.length === 0) {
+                          console.error('No participants found for roomNum:', roomNum);
+                          return;
+                      }
 
-                var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
-                var receiver = participants.find(p => p.user !== currentUserId);
+                      var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
+                      var receiver = participants.find(p => p.user !== currentUserId);
 
-                if (!receiver) {
-                    console.error('No receiver found for currentUserId:', currentUserId);
-                    return;
-                }
+                      if (!receiver) {
+                          console.error('No receiver found for currentUserId:', currentUserId);
+                          return;
+                      }
 
-                receiverId = receiver.user;
+                      receiverId = receiver.user;
 
-                $('#participant_a').text(receiverId);
+                      $('#participant_a').text(receiverId);
 
-                // Fetch messages
-                $.ajax({
-                    url: '/api/chat/rooms/' + roomNum + '/messages',
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function(messages) {
-                        $('#chatMessages').empty();
-                        messages.forEach(function(message) {
-                            var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
-                            $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
-                        });
+                      // Fetch messages
+                      $.ajax({
+                          url: '/api/chat/rooms/' + roomNum + '/messages',
+                          method: 'GET',
+                          dataType: 'json',
+                          success: function(messages) {
+                              $('#chatMessages').empty();
+                              messages.forEach(function(message) {
+                                  var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
+                                  $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
+                              });
 
-                        // Scroll to bottom
-                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-                    },
-                    error: function(err) {
-                        console.error('Failed to fetch messages:', err);
-                    }
-                });
-            },
-            error: function(err) {
-                console.error('Failed to fetch participants:', err);
-                console.log('Response Text:', err.responseText);
-            }
-        });
+                              // Scroll to bottom
+                              $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                          },
+                          error: function(err) {
+                              console.error('Failed to fetch messages:', err);
+                          }
+                      });
+                  },
+                  error: function(err) {
+                      console.error('Failed to fetch participants:', err);
+                      console.log('Response Text:', err.responseText);
+                  }
+              });
 
-        $('#chat-box-a').show();
-    });
+              $('#chat-box-a').show();
+          });
 
-    $('#sendMessageForm').on('submit', function(event) {
-        event.preventDefault();
-        sendMessage();
-    });
+          $('#sendMessageForm').on('submit', function(event) {
+              event.preventDefault();
+              sendMessage();
+          });
 
-    // Send message on Enter key press
-    $('#messageText').on('keydown', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            $('#sendMessageForm').submit();
-        }
-    });
-});
+          // Send message on Enter key press
+          $('#messageText').on('keydown', function(event) {
+              if (event.key === 'Enter') {
+                  event.preventDefault();
+                  $('#sendMessageForm').submit();
+              }
+          });
+      });
 
-function connect() {
-    var socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
-        console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/messages', function (message) {
-            showMessage(JSON.parse(message.body));
-        });
-    }, function (error) {
-        console.log('STOMP error: ' + error);
-    });
-}
+      function connect() {
+          var socket = new SockJS('/ws');
+          stompClient = Stomp.over(socket);
+          stompClient.connect({}, function (frame) {
+              console.log('Connected: ' + frame);
+              stompClient.subscribe('/topic/messages', function (message) {
+                  showMessage(JSON.parse(message.body));
+              });
+          }, function (error) {
+              console.log('STOMP error: ' + error);
+          });
+      }
 
-function sendMessage() {
-    if (!stompClient) {
-        console.error('WebSocket connection not established.');
-        return;
-    }
+      function sendMessage() {
+          if (!stompClient) {
+              console.error('WebSocket connection not established.');
+              return;
+          }
 
-    var content = $('#messageText').val();
-    var roomNum = parseInt($('#currentRoomNum').val(), 10); // roomNum을 숫자로 변환
-    var sender = parseInt($('#sender').val(), 10); // sender를 숫자로 변환
+          var content = $('#messageText').val();
+          var roomNum = parseInt($('#currentRoomNum').val(), 10); // roomNum을 숫자로 변환
+          var sender = parseInt($('#sender').val(), 10); // sender를 숫자로 변환
 
-    if (content.trim() !== "") {
-        stompClient.send("/app/chat", {}, JSON.stringify({
-            'roomNum': roomNum,
-            'sender': sender,
-            'receiver': receiverId,
-            'text': escapeHtml(content),
-            'messageType': 1, // messageType을 1로 설정
-            'isRead': 0// isRead를 1로 설정
-        }));
-        $('#messageText').val('');
-    }
-}
+          if (content.trim() !== "") {
+              stompClient.send("/app/chat", {}, JSON.stringify({
+                  'roomNum': roomNum,
+                  'sender': sender,
+                  'receiver': receiverId,
+                  'text': escapeHtml(content),
+                  'messageType': 1, // messageType을 1로 설정
+                  'isRead': 0// isRead를 1로 설정
+              }));
+              $('#messageText').val('');
+          }
+      }
 
-function showMessage(message) {
-    var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
-    var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
+      function showMessage(message) {
+          var currentUserId = 1; // 현재 로그인된 사용자 ID (임시로 1로 고정)
+          var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';
 
-    $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
-    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-}
+          $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');
+          $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+      }
+
+      <!--    function showMessage(message) {-->
+      <!--        var alignment = message.sender === currentUserId ? 'message sender' : 'message receiver';-->
+
+      <!--        $('#chatMessages').append('<div class="' + alignment + '"><strong>' + message.sender + ':</strong> ' + message.text + '</div>');-->
+      <!--        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);-->
+      <!--    }-->
 
 
 
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
-            var dropdown = new bootstrap.Dropdown(dropdownToggle, {
-                popperConfig: function() {
-                    return {
-                        placement: 'bottom-start',
-                        modifiers: [
-                            {
-                                name: 'computeStyles',
-                                options: {
-                                    adaptive: false,
-                                    gpuAcceleration: false
-                                }
-                            },
-                            {
-                                name: 'offset',
-                                options: {
-                                    offset: [0, 0]
-                                }
-                            }
-                        ]
-                    };
-                }
-            });
+              document.addEventListener('DOMContentLoaded', function () {
+                  var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+                  var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+                      popperConfig: function() {
+                          return {
+                              placement: 'bottom-start',
+                              modifiers: [
+                                  {
+                                      name: 'computeStyles',
+                                      options: {
+                                          adaptive: false,
+                                          gpuAcceleration: false
+                                      }
+                                  },
+                                  {
+                                      name: 'offset',
+                                      options: {
+                                          offset: [0, 0]
+                                      }
+                                  }
+                              ]
+                          };
+                      }
+                  });
 
-            dropdownToggle.addEventListener('click', function () {
-                var dropdownMenu = this.nextElementSibling;
+                  dropdownToggle.addEventListener('click', function () {
+                      var dropdownMenu = this.nextElementSibling;
 
-                // 드롭다운 메뉴가 열릴 때 스타일 설정
-                setTimeout(function() {
-                    dropdownMenu.style.zIndex = '10000000000';
-                    dropdownMenu.style.position = 'fixed';
-                    dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
-                    dropdownMenu.style.margin = '0px';
-                    dropdownMenu.style.transform = 'translate(0px, -58px)';
-                }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
-            });
+                      // 드롭다운 메뉴가 열릴 때 스타일 설정
+                      setTimeout(function() {
+                          dropdownMenu.style.zIndex = '10000000000';
+                          dropdownMenu.style.position = 'fixed';
+                          dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                          dropdownMenu.style.margin = '0px';
+                          dropdownMenu.style.transform = 'translate(0px, -58px)';
+                      }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+                  });
 
-            // 드롭다운이 숨겨질 때 위치 초기화
-            dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
-                var dropdownMenu = this.nextElementSibling;
-                dropdownMenu.style.position = '';
-                dropdownMenu.style.inset = '';
-                dropdownMenu.style.margin = '';
-                dropdownMenu.style.transform = '';
-            });
-        });
+                  // 드롭다운이 숨겨질 때 위치 초기화
+                  dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+                      var dropdownMenu = this.nextElementSibling;
+                      dropdownMenu.style.position = '';
+                      dropdownMenu.style.inset = '';
+                      dropdownMenu.style.margin = '';
+                      dropdownMenu.style.transform = '';
+                  });
+              });
 
 
 
