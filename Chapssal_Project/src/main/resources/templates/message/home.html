@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html layout:decorate="~{message/layout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<div layout:fragment="content" class="container-fluid">
+    <!-- 컨텐츠 자리 -->
+    <div class="row" style="height: 100%">
+        <!-- list group -->
+        <div class="col-lg-3 col-md-3 col-sm-1">
+            <!-- extra space -->
+            <div class="extraspace">
+                <p>Chat Rooms Count: <span th:text="${chatRoomCount}"></span></p>
+            </div>
+            <div class="list-group list-group-flush border-bottom scrollarea">
+                <a th:each="chatRoom : ${chatRooms}" href="#" class="list-group-item list-group-item-action py-3 lh-sm" th:data-roomnum="${chatRoom.roomNum}">
+                    <div class="d-flex w-100 align-items-center justify-content-between">
+                        <strong class="mb-1" style="margin-left: 3%" th:text="${chatRoom.roomNum + '의 채팅'}"></strong>
+                        <small th:text="${chatRoom.createDate != null ? T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd').format(chatRoom.createDate) : ''}"></small>
+                    </div>
+                    <div class="col-10 mb-1 small" th:text="${chatRoom.title}"></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 채팅 섹션 -->
+        <div class="col-lg-9 col-md-9 col-sm-9 chat-section">
+            <div class="row chat-page">
+                <div class="col chat-box" id="chat-box-a" style="display: none;">
+                    <h3>Participant: <span id="participant_a"></span></h3>
+                    <div class="msg_view scrollarea" id="chatMessages"></div>
+                    <div class="msg_input">
+                        <form id="sendMessageForm">
+                            <input type="hidden" id="currentRoomNum">
+                            <input type="hidden" id="sender" value=1>  <!-- 실제로는 로그인된 사용자 ID를 사용 -->
+                            <input type="text" id="messageText" class="form-control" placeholder="메시지 보내기...">
+                            <button class="btn btn-primary" type="submit">send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+    <!-- 컨텐츠 자리 -->
+</div>
+<script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+
+<script th:src="@{/assets/js/sidebars.js}"></script>
+</html>
