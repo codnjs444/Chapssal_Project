@@ -3,12 +3,13 @@ import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chapssal.notification.NotificationService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
+import com.chapssal.notification.NotificationType;
 
 @Service
 public class FollowService {
@@ -16,6 +17,8 @@ public class FollowService {
     private FollowRepository followRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     public int countFollowingByUserNum(Integer userNum) {
         return followRepository.countByFollowing(userNum);
@@ -52,5 +55,11 @@ public class FollowService {
         follow.setFollowDate(LocalDateTime.now());
 
         followRepository.save(follow);
+        
+        // 팔로우 알림 생성
+        User followerUser = userRepository.findById(follower).orElseThrow(() -> new IllegalArgumentException("Invalid follower ID"));
+        User followingUser = userRepository.findById(following).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
+        
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, followerUser.getUserName() + "님이 팔로우했습니다.");
     }
 }
