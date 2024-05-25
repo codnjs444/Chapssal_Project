@@ -5,38 +5,70 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.WeekFields;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/topic")
 public class TopicController {
     private final TopicService topicService;
     private final UserService userService;
+    private final SelectedTopicRepository selectedTopicRepository;
 
-    public  TopicController(TopicService topicService, UserService userService){
+    public TopicController(TopicService topicService, UserService userService, SelectedTopicRepository selectedTopicRepository) {
         this.topicService = topicService;
         this.userService = userService;
+        this.selectedTopicRepository = selectedTopicRepository;
     }
 
+    // 현재 년/월/주차를 계산해서 모델에 추가하는 메서드
+    private void addCurrentWeekToModel(Model model) {
+        LocalDate now = LocalDate.now();
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int week = now.get(weekFields.weekOfMonth());
+        String formattedDate = year + "년 " + month + "월 " + week + "주차";
+        model.addAttribute("currentWeek", formattedDate);
+    }
+
+    // 현재 시간에 따라 topic에 접근시 어떤 페이지를 리턴할지 정하는 메서드
+    // 테스트용이므로 임시로 현재 시간의 분의 끝자리에 따라 어떤 페이지를 리턴할지 결정
+    @GetMapping
+    public String routeToPage(Model model) {
+        int minute = LocalDateTime.now().get(ChronoField.MINUTE_OF_HOUR);
+        if (minute % 10 <= 3) {
+            return showTopicInputForm(model);
+        } else if (minute % 10 <= 6) {
+            return showVotePage(model);
+        } else {
+            return showResultsPage(model);
+        }
+    }
+
+    // 토픽 입력 페이지 출력 메서드
     @GetMapping("/input")
     public String showTopicInputForm(Model model) {
         model.addAttribute("topic", new Topic());
+        addCurrentWeekToModel(model);
         return "topic_input";
     }
 
-    // 주제 등록 로직은 여기서 처리
+    // 토픽 등록 처리 로직 메서드
     @PostMapping("/register")
     public String registerTopic(@ModelAttribute Topic topic, BindingResult result, Model model) {
         if (result.hasErrors()) {
@@ -60,16 +92,87 @@ public class TopicController {
                 model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
             }
         }
+        addCurrentWeekToModel(model);
 
         return "topic_input"; // 등록 후 리다이렉트할 페이지
     }
 
-    // 투표 페이지 컨트롤러
+    // 투표 페이지 리턴 메서드
     @GetMapping("/vote")
     public String showVotePage(Model model) {
-        List<Topic> topics = topicService.findAll();
-        model.addAttribute("topics", topics);
+        List<Topic> topics = topicService.findThisWeekTopics();
+        Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
+
+        // 토픽 목록을 투표 횟수에 따라 내림차순으로 정렬
+        List<Topic> sortedTopics = topics.stream()
+                .sorted((t1, t2) -> voteCounts.getOrDefault(t2.getTopicNum(), 0L).compareTo(voteCounts.getOrDefault(t1.getTopicNum(), 0L)))
+                .collect(Collectors.toList());
+
+        // 현재 사용자가 투표한 토픽 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUserId(username);
+
+        Set<Integer> votedTopicIds = selectedTopicRepository.findByUser(user).stream()
+                .map(selectedTopic -> selectedTopic.getTopic().getTopicNum())
+                .collect(Collectors.toSet());
+
+        addCurrentWeekToModel(model);
+        model.addAttribute("topics", sortedTopics);
+        model.addAttribute("voteCounts", voteCounts);
+        model.addAttribute("votedTopicIds", votedTopicIds);
+        model.addAttribute("userVoteCount", user.getVote()); // 유저의 이번 주 투표횟수
+        model.addAttribute("maxVoteCount", 5); // 최대 투표 가능 횟수
         return "vote_page";
     }
 
+    // 투표 버튼 클릭 메서드
+    @PostMapping("/select")
+    @ResponseBody
+    public String selectTopic(@RequestParam Integer topicId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUserId(username);
+
+        if (user != null) {
+            if (userService.hasReachedVoteLimit(user)) {
+                return "이번주 투표 가능한 횟수 5회를 모두 사용하셨습니다.";
+            }
+
+            Topic topic = topicService.findById(topicId);
+            if (topic != null) {
+                SelectedTopic selectedTopic = new SelectedTopic();
+                selectedTopic.setTopic(topic);
+                selectedTopic.setUser(user);
+                selectedTopicRepository.save(selectedTopic);
+
+                // 투표 횟수 증가
+                userService.incrementVote(user);
+
+                return "투표가 완료되었습니다.";
+            } else {
+                return "유효하지 않은 토픽입니다.";
+            }
+        } else {
+            return "사용자를 찾을 수 없습니다.";
+        }
+    }
+
+    // 결과 페이지 리턴 메서드
+    @GetMapping("/results")
+    public String showResultsPage(Model model) {
+        List<Topic> topics = topicService.findThisWeekTopics();
+        Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
+
+        // 토픽 목록을 투표 횟수에 따라 내림차순으로 정렬하고 상위 10개만 추출
+        List<Topic> sortedTopics = topics.stream()
+                .sorted((t1, t2) -> voteCounts.getOrDefault(t2.getTopicNum(), 0L).compareTo(voteCounts.getOrDefault(t1.getTopicNum(), 0L)))
+                .limit(10)
+                .collect(Collectors.toList());
+
+        addCurrentWeekToModel(model);
+        model.addAttribute("topics", sortedTopics);
+        model.addAttribute("voteCounts", voteCounts);
+        return "vote_results_page";
+    }
 }

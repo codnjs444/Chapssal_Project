@@ -43,7 +43,8 @@
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
-                            <h4>24년 5월 3주차 영상 주제 등록</h4>
+                            <h4 th:text="${currentWeek} + ' 영상 토픽 등록'">영상 토픽 등록</h4>
+                        </div>
                         </div>
                         <div class="card-body">
                             <!-- 에러 메시지를 표시하는 부분 추가 -->
@@ -58,7 +59,7 @@
                                 <div th:replace="~{form_errors :: formErrorsFragment}"></div>
                                 <div class="mb-3">
                                     <label for="topic" class="form-label">5월 4주차 토픽을 등록해주세요!</label>
-                                    <input type="text" th:field="*{title}" id="topicInput" class="form-control" placeholder="주제를 입력하세요" maxlength="10" required>
+                                    <input type="text" th:field="*{title}" id="topicInput" class="form-control" placeholder="토픽을 입력하세요" maxlength="10" required>
                                 </div>
                                 <div class="d-grid">
                                     <button type="submit" class="btn btn-primary">등록</button>

@@ -3,18 +3,26 @@ package com.chapssal.topic;
 import com.chapssal.user.User;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @Service
 public class TopicService {
 
     private final TopicRepository topicRepository;
+    private final SelectedTopicRepository selectedTopicRepository;
 
-    public TopicService(TopicRepository topicRepository) {
+    public TopicService(TopicRepository topicRepository, SelectedTopicRepository selectedTopicRepository) {
         this.topicRepository = topicRepository;
+        this.selectedTopicRepository = selectedTopicRepository;
     }
 
     public void save(Topic topic) {
@@ -32,5 +40,32 @@ public class TopicService {
     // 모든 토픽 찾기
     public List<Topic> findAll() {
         return topicRepository.findAll();
+    }
+
+    // 각 토픽에 대한 투표 수 계산
+    public Map<Integer, Long> getVoteCountsForTopics() {
+        List<SelectedTopic> selectedTopics = selectedTopicRepository.findAll();
+        return selectedTopics.stream()
+                .collect(Collectors.groupingBy(st -> st.getTopic().getTopicNum(), Collectors.counting()));
+    }
+
+    // 아이디로 토픽 찾기 메서드
+    public Topic findById(Integer id) {
+        Optional<Topic> topic = topicRepository.findById(id);
+        return topic.orElse(null);
+    }
+
+    // 이번 주의 토픽만 가져오는 메서드
+    public List<Topic> findThisWeekTopics() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfWeek = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).with(LocalTime.MIN);
+        LocalDateTime endOfWeek = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
+
+        return topicRepository.findAll().stream()
+                .filter(topic -> {
+                    LocalDateTime topicDate = topic.getCreateDate(); // 토픽 생성 날짜를 가져온다고 가정
+                    return !topicDate.isBefore(startOfWeek) && !topicDate.isAfter(endOfWeek);
+                })
+                .collect(Collectors.toList());
     }
 }

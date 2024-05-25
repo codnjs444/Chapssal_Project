@@ -22,130 +22,178 @@
 </head>
 
 <body>
-    <nav th:replace="~{navbar :: navbarFragment}"></nav>
-    <nav th:replace="~{sidebar :: sidebarFragment}"></nav>
+<nav th:replace="~{navbar :: navbarFragment}"></nav>
+<nav th:replace="~{sidebar :: sidebarFragment}"></nav>
 
-    <div layout:fragment="content" class="content" style="margin-left: 10%; padding: 20px;">
-        <!-- 메인 콘텐츠가 들어갈 부분 -->
-    </div>
+<div layout:fragment="content" class="content" style="margin-left: 10%; padding: 20px;">
+    <!-- 메인 콘텐츠가 들어갈 부분 -->
+</div>
 
-    <!-- 프로필 수정 모달 -->
-    <div th:fragment="editProfileModalFragment">
-        <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form th:action="@{/user/updateProfile}" th:method="post">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editProfileModalLabel">프로필 편집(변경 사항)</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="profilePic" class="form-label">프로필 사진(변경하였습니다.)</label>
-                                <input type="text" class="form-control" id="profilePic" placeholder="이미지 URL 입력">
-                            </div>
-                            <div class="mb-3">
-                                <label for="userName" class="form-label">닉네임</label>
-                                <input type="text" class="form-control" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="bio" class="form-label">자기소개</label>
-                                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">저장</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 팔로워 모달 -->
-    <div th:fragment="followersModalFragment">
-        <div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-md">
-                <div class="modal-content">
+<!-- 프로필 수정 모달 -->
+<div th:fragment="editProfileModalFragment">
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/user/updateProfile}" th:method="post">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="followersModalLabel">소셜 네트워크</h5>
+                        <h5 class="modal-title" id="editProfileModalLabel">프로필 편집(변경 사항)</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="followers-tab" data-bs-toggle="tab" data-bs-target="#followers" type="button" role="tab" aria-controls="followers" aria-selected="true">팔로워</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following" type="button" role="tab" aria-controls="following" aria-selected="false">팔로우</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button" role="tab" aria-controls="friends" aria-selected="false">친구</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="false">추천</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="followers" role="tabpanel" aria-labelledby="followers-tab">
-                                <div class="list-group">
-                                    <div th:each="follower : ${followerUsers}" class="list-group-item d-flex align-items-center">
-                                        <img th:src="${follower.profilePictureUrl != null ? follower.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
-                                        <div class="flex-grow-1">
-                                            <div>
-                                                <a th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="${follower.userName}" class="no-link-style">사용자 이름</a>
-                                            </div>
-                                            <div class="text-muted">
-                                                <a th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
-                                            </div>
+                        <div class="mb-3">
+                            <label for="profilePic" class="form-label">프로필 사진(변경하였습니다.)</label>
+                            <input type="text" class="form-control" id="profilePic" placeholder="이미지 URL 입력">
+                        </div>
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">닉네임</label>
+                            <input type="text" class="form-control" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">자기소개</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">저장</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 팔로워 모달 -->
+<div th:fragment="followersModalFragment">
+    <div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="followersModalLabel">소셜 네트워크</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="followers-tab" data-bs-toggle="tab" data-bs-target="#followers" type="button" role="tab" aria-controls="followers" aria-selected="true">팔로워</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following" type="button" role="tab" aria-controls="following" aria-selected="false">팔로우</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button" role="tab" aria-controls="friends" aria-selected="false">친구</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="recommendations-tab" data-bs-toggle="tab" data-bs-target="#recommendations" type="button" role="tab" aria-controls="recommendations" aria-selected="false">추천</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="followers" role="tabpanel" aria-labelledby="followers-tab">
+                            <div class="list-group">
+                                <div th:each="follower : ${followerUsers}" class="list-group-item d-flex align-items-center">
+                                    <img th:src="${follower.profilePictureUrl != null ? follower.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <a th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="${follower.userName}" class="no-link-style">사용자 이름</a>
                                         </div>
-                                        <button class="btn btn-outline-danger btn-sm">삭제</button>
+                                        <div class="text-muted">
+                                            <a th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
+                                        </div>
                                     </div>
+                                    <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="following" role="tabpanel" aria-labelledby="following-tab">
-                                <div class="list-group">
-                                    <div th:each="following : ${followingUsers}" class="list-group-item d-flex align-items-center">
-                                        <img th:src="${following.profilePictureUrl != null ? following.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
-                                        <div class="flex-grow-1">
-                                            <div>
-                                                <a th:href="@{'/user/profile/' + ${following.userNum}}" th:text="${following.userName}" class="no-link-style">사용자 이름</a>
-                                            </div>
-                                            <div class="text-muted">
-                                                <a th:href="@{'/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
-                                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="following" role="tabpanel" aria-labelledby="following-tab">
+                            <div class="list-group">
+                                <div th:each="following : ${followingUsers}" class="list-group-item d-flex align-items-center">
+                                    <img th:src="${following.profilePictureUrl != null ? following.profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 50px; height: 50px;">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <a th:href="@{'/user/profile/' + ${following.userNum}}" th:text="${following.userName}" class="no-link-style">사용자 이름</a>
                                         </div>
-                                        <button class="btn btn-outline-danger btn-sm">삭제</button>
+                                        <div class="text-muted">
+                                            <a th:href="@{'/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
+                                        </div>
                                     </div>
+                                    <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="friends" role="tabpanel" aria-labelledby="friends-tab">
-                                <p>친구 목록이 여기에 표시됩니다.</p>
-                            </div>
-                            <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
-                                <p>추천 목록이 여기에 표시됩니다.</p>
-                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="friends" role="tabpanel" aria-labelledby="friends-tab">
+                            <p>친구 목록이 여기에 표시됩니다.</p>
+                        </div>
+                        <div class="tab-pane fade" id="recommendations" role="tabpanel" aria-labelledby="recommendations-tab">
+                            <p>추천 목록이 여기에 표시됩니다.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div th:replace="~{navbar :: uploadModalFragment}"></div>
+<div th:replace="~{navbar :: uploadModalFragment}"></div>
 
-    <!-- Bootstrap Bundle with Popper from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery 먼저 로드 -->
+<!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap Bundle with Popper from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 팔로워 및 팔로우 탭 활성화 설정 -->
+<!-- 팔로워 및 팔로우 탭 활성화 설정 -->
+<script>
+    function openTab(tabName) {
+        let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+        tabTrigger.show();
+    }
+</script>
+<div th:replace="~{navbar :: uploadModalScript}"></div>
+
+
+<!-- 공통 스크립트 정의 -->
+<div th:fragment="commonScripts">
     <script>
-        function openTab(tabName) {
-            let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
-            tabTrigger.show();
+        // 투표 함수 추가
+        function selectTopic(button) {
+            var topicId = button.getAttribute("data-id");
+            console.log("Topic ID: " + topicId);
+
+            // Ajax 요청 보내기
+            $.post("/topic/select", { topicId: topicId }, function(response) {
+                alert(response); // 서버 응답 메시지 표시
+
+                // 버튼의 배경을 빨간색으로 변경하고 텍스트를 "투표 완료"로 변경
+                button.style.backgroundColor = "red";
+                button.textContent = "투표 완료";
+                button.disabled = true; // 버튼을 비활성화하여 중복 투표를 방지
+
+                // 페이지 새로고침하여 투표 횟수를 업데이트
+                location.reload();
+            }).fail(function() {
+                alert("토픽 선택에 실패했습니다.");
+            });
         }
+
+        // 페이지 로드 시 이미 투표한 버튼 업데이트
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('button[data-voted="true"]').forEach(button => {
+                button.style.backgroundColor = "pink";
+                button.textContent = "투표 완료";
+                button.disabled = true;
+            });
+
+            // 버튼의 data-onclick 속성을 읽어서 이벤트 핸들러 설정
+            document.querySelectorAll('button[data-onclick="selectTopic"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    selectTopic(this);
+                });
+            });
+        });
     </script>
-    <div th:replace="~{navbar :: uploadModalScript}"></div>
+</div>
+
+
 
 </body>
 
