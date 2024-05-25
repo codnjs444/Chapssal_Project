@@ -1,15 +1,17 @@
 package com.chapssal.follow;
-import java.util.stream.Collectors;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.chapssal.notification.NotificationService;
+import com.chapssal.notification.NotificationType;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
-import com.chapssal.notification.NotificationType;
 
 @Service
 public class FollowService {
@@ -32,7 +34,7 @@ public class FollowService {
         List<Follow> followings = followRepository.findByFollower(userNum);
         return followings.stream()
                          .map(follow -> userRepository.findById(follow.getFollowing()).orElse(null))
-                         .filter(Objects::nonNull) // null 값 필터링
+                         .filter(Objects::nonNull)
                          .collect(Collectors.toList());
     }
 
@@ -40,7 +42,7 @@ public class FollowService {
         List<Follow> followers = followRepository.findByFollowing(userNum);
         return followers.stream()
                         .map(follow -> userRepository.findById(follow.getFollower()).orElse(null))
-                        .filter(Objects::nonNull) // null 값 필터링
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }
 
@@ -60,6 +62,7 @@ public class FollowService {
         User followerUser = userRepository.findById(follower).orElseThrow(() -> new IllegalArgumentException("Invalid follower ID"));
         User followingUser = userRepository.findById(following).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
         
-        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, followerUser.getUserName() + "님이 팔로우했습니다.");
+        String message = followerUser.getUserName() + "님이 팔로우했습니다.";
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message);
     }
 }

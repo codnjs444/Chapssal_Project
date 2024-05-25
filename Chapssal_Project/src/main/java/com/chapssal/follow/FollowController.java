@@ -1,11 +1,11 @@
 package com.chapssal.follow;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 
 import com.chapssal.notification.NotificationService;
 import com.chapssal.notification.NotificationType;
@@ -37,7 +37,8 @@ public class FollowController {
         User followerUser = userRepository.findById(followRequest.getFollower()).orElseThrow(() -> new IllegalArgumentException("Invalid follower ID"));
         User followingUser = userRepository.findById(followRequest.getFollowing()).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
         
-        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, followerUser.getUserName() + "님이 팔로우했습니다.");
+        String message = followerUser.getUserName() + "님이 팔로우했습니다.";
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message);
 
         return ResponseEntity.ok().body("{\"success\": true}");
     }
@@ -53,3 +54,4 @@ public class FollowController {
         }
     }
 }
+

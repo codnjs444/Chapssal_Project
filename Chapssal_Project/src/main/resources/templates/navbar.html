@@ -230,7 +230,9 @@
             <ul id="notificationList">
                 <!-- 알림 항목이 여기에 추가됩니다 -->
                 <li id="notification-[[${notification.notiNum}]]" th:each="notification : ${notifications}">
-                    <span th:text="${notification.message}"></span>
+                    <span>
+                        <a th:href="@{'/user/profile/' + ${notification.sender.userNum}}" class="notification-user-link" th:text="${notification.sender.userName}">사용자 이름</a>님이 당신을 팔로우했습니다.
+                    </span>
                     <button th:onclick="'confirmNotification(' + ${notification.notiNum} + ')'" >확인</button>
                 </li>
             </ul>
@@ -284,14 +286,14 @@
 		            });
 		        })
 		        .catch(error => console.error('Error fetching unread notifications:', error));
-		    
+
 		    function addNotification(notification) {
 		        var notificationList = document.getElementById('notificationList');
 		        var listItem = document.createElement('li');
 		        listItem.id = 'notification-' + notification.notiNum;
 
 		        var messageSpan = document.createElement('span');
-		        messageSpan.textContent = notification.message;
+		        messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
 
 		        var confirmButton = document.createElement('button');
 		        confirmButton.textContent = '확인';
@@ -304,6 +306,11 @@
 		        listItem.appendChild(messageSpan);
 		        listItem.appendChild(confirmButton);
 		        notificationList.appendChild(listItem);
+
+		        // 새로 추가된 링크에도 클릭 이벤트 핸들러 추가
+		        listItem.querySelector('.notification-user-link').addEventListener('click', function(event) {
+		            document.getElementById('notificationPanel').classList.remove('active');
+		        });
 		    }
 
 		    function confirmNotification(notificationId) {
@@ -330,5 +337,6 @@
 		        }
 		    }
 		});
+
     </script>
 </th:block>
