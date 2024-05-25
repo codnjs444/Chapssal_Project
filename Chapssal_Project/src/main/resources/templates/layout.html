@@ -18,35 +18,113 @@
 		    color: inherit;
 		    text-decoration: none;
 		}
-		
 		.notification-panel {
 		    position: fixed;
-		    right: 20px;
 		    top: 60px;
-		    width: 300px;
-		    background: white;
-		    border-radius: 8px;
+		    right: 10px;
+		    width: 350px;
+		    max-height: 80vh;
+		    background-color: white;
+		    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		    border-radius: 10px;
 		    overflow: hidden;
 		    z-index: 1050;
-		    display: none;
+		    display: none; /* 패널을 처음에는 보이지 않도록 설정 */
+		    transition: transform 0.3s ease-in-out;
 		}
+
 		.notification-panel.active {
-		    display: block;
+		    display: block; /* 패널을 보이도록 설정 */
+		    transform: translateY(0);
 		}
-		.notification-tabs button {
+
+
+		.notification-header {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;
+		    padding: 10px 15px;
+		    background-color: #f8f9fa;
+		    border-bottom: 1px solid #e9ecef;
+		}
+
+		.notification-header h5 {
+		    margin: 0;
+		    font-size: 16px;
+		    font-weight: bold;
+		}
+
+		.notification-body {
+		    padding: 10px;
+		    max-height: calc(80vh - 50px);
+		    overflow-y: auto;
+		}
+
+		.notification-body ul {
+		    list-style-type: none;
+		    padding: 0;
+		    margin: 0;
+		}
+
+		.notification-body ul li {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;
+		    padding: 10px;
+		    background-color: #ffffff;
+		    border: 1px solid #e9ecef;
+		    border-radius: 8px;
+		    margin-bottom: 8px;
+		    transition: background-color 0.3s;
+		}
+
+		.notification-body ul li:hover {
+		    background-color: #f1f1f1;
+		}
+
+		.notification-body ul li button {
+		    background: #007bff;
+		    color: white;
 		    border: none;
-		    font-size: 14px;
+		    border-radius: 5px;
+		    padding: 5px 10px;
 		    cursor: pointer;
+		    transition: background-color 0.3s;
 		}
-		.no-notifications img {
-		    margin-bottom: 10px;
+
+		.notification-body ul li button:hover {
+		    background-color: #0056b3;
 		}
-		.tab-content {
-		    display: none;
+
+		.notification-body ul li span {
+		    flex-grow: 1;
+		    margin-right: 10px;
 		}
-		.tab-content.active {
-		    display: block;
+		.notification-icon {
+		    position: relative;
 		}
+
+		#notificationCount {
+		    position: absolute;
+		    top: 10px; /* 더 아래로 이동 */
+		    right: 10px; /* 약간 왼쪽으로 이동 */
+		    transform: translate(50%, -50%);
+		    display: inline-block;
+		    padding: 0.3em 0.5em;
+		    font-size: 75%;
+		    font-weight: 700;
+		    line-height: 1;
+		    color: #fff;
+		    text-align: center;
+		    white-space: nowrap;
+		    vertical-align: baseline;
+		    background-color: #dc3545;
+		    border-radius: 0.75rem; /* 둥근 모서리를 더 강조 */
+		}
+
+
+
+
     </style>
 </head>
 
