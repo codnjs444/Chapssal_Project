@@ -229,9 +229,9 @@
         <div class="notification-body">
             <ul id="notificationList">
                 <!-- 알림 항목이 여기에 추가됩니다 -->
-                <li th:each="notification : ${notifications}">
+                <li id="notification-[[${notification.notiNum}]]" th:each="notification : ${notifications}">
                     <span th:text="${notification.message}"></span>
-                    <button th:onclick="'markAsRead(' + ${notification.notiNum} + ')'" >확인</button>
+                    <button th:onclick="'confirmNotification(' + ${notification.notiNum} + ')'" >확인</button>
                 </li>
             </ul>
         </div>
@@ -270,6 +270,7 @@
         function addNotification(notification) {
             var notificationList = document.getElementById('notificationList');
             var listItem = document.createElement('li');
+            listItem.id = 'notification-' + notification.notiNum;
             listItem.textContent = notification.message;
 
             var confirmButton = document.createElement('button');
@@ -295,14 +296,17 @@
         }
 
         function updateNotificationCount() {
-            fetch('/notifications/unread')
-                .then(response => response.json())
-                .then(data => {
-                    var count = document.getElementById('notificationCount');
-                    count.innerText = data.length;
-                    count.style.display = data.length > 0 ? 'block' : 'none';
-                })
-                .catch(error => console.error('Error updating notification count:', error));
+            var countElement = document.getElementById('notificationCount');
+            var count = parseInt(countElement.innerText);
+
+            if (count > 0) {
+                count--;
+                countElement.innerText = count;
+
+                if (count === 0) {
+                    countElement.style.display = 'none';
+                }
+            }
         }
     </script>
 </th:block>

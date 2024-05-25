@@ -47,7 +47,7 @@ public class NotificationController {
     }
 
     @PostMapping("/mark-as-read/{id}")
-    public void markAsRead(@PathVariable Long id) {
+    public void markAsRead(@PathVariable("id") Long id) {
         notificationService.markAsRead(id);
     }
 }
