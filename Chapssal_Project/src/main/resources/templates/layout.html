@@ -135,6 +135,10 @@
 
     <div th:replace="~{navbar :: uploadModalFragment}"></div>
 	<div th:replace="~{home :: homeModalFragment}"></div>
+	
+	<!-- jQuery 먼저 로드 -->
+	<!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Bootstrap Bundle with Popper from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>

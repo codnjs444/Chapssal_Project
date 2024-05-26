@@ -7,11 +7,12 @@
 	            flex-direction: column;
 	        }
 	
-	        .video-item {
-	            display: flex;
-	            flex-direction: column;
-	            align-items: center;
-	        }
+			.video-item {
+			    display: flex;
+			    flex-direction: column;
+			    align-items: center;
+			    position: relative; /* 버튼을 영상 오른쪽에 배치하기 위해 필요한 스타일 */
+			}
 	
 	        .video-container {
 	            position: relative;
@@ -20,6 +21,7 @@
 	            background-color: black; /* 영상이 없는 부분을 검게 표시 */
 	            overflow: hidden;
 	            border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
+				position: relative;
 	        }
 	
 	        .video-container video {
@@ -33,13 +35,26 @@
 
 			.video-buttons {
 			    position: absolute;
-			    right: -50px;
-			    bottom: 10px;
+			    top: 70%;
+			    left: 70%;
 			    display: flex;
 			    flex-direction: column;
 			    gap: 10px;
 			}
-	
+
+			.action-btn {
+			    background-color: rgba(0, 0, 0, 0.1);
+			    border: none;
+			    color: black;
+			    border-radius: 50%;
+			    width: 40px;
+			    height: 40px;
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			    cursor: pointer;
+			}
+				
 	        .video-content {
 	            font-size: 14px;
 	            text-align: left;
@@ -145,11 +160,33 @@
 	            font-size: 14px;
 	            text-align: left;
 	            width: 100%;
+				overflow-y: auto; /* 스크롤 추가 */
+				max-height: 98vh; /* 최대 높이 설정 */
+				padding-left: 15px; /* 패딩 추가 */
+				box-sizing: border-box; /* 스크롤바 너비 포함 */
 	        }
+			
+			.home-modal-video-content .uploader-info {
+			    margin-bottom: 10px;
+			    padding-bottom: 10px;
+			    border-bottom: 1px solid #ccc;
+			}
+
+			.home-modal-video-content .uploader-info img {
+			    width: 50px;
+			    height: 50px;
+			    border-radius: 50%;
+			    margin-right: 10px;
+			}
+
+			.home-modal-video-content .uploader-info p {
+			    display: inline;
+			    vertical-align: middle;
+			}
 	
 	        .home-modal-video-content p {
 	            margin: 0;
-	        }       
+	        }
 	    </style>
 	</head>
 	<body>
@@ -181,18 +218,18 @@
 										</div>
 									</div>
 		                        </div>
-		                        <div class="video-container" th:onclick="'showModal(this)'" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
-		                            <video controls autoplay muted>
-		                                <source th:src="@{${video.videoUrl}}" type="video/mp4">
-		                                Your browser does not support the video tag.
-		                            </video>
-									<div class="video-buttons">
-									    <button class="action-btn">좋아요</button>
-									    <button class="action-btn">댓글</button>
-									    <button class="action-btn">즐겨찾기</button>
-									    <button class="action-btn">공유</button>
-									</div>
-								</div>
+							    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
+							        <video controls autoplay muted>
+							            <source th:src="@{${video.videoUrl}}" type="video/mp4">
+							            Your browser does not support the video tag.
+							        </video>
+							    </div>
+							    <div class="video-buttons">
+							        <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+							        <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+							        <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+							        <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+							    </div>
 								<br>
 								<hr width="700">
 								<br>
@@ -220,24 +257,33 @@
 									</div>
 								</div>
 		                    </div>
-		                    <div class="video-container" th:onclick="'showModal(this)'" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
+		                    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
 		                        <video controls autoplay muted>
 		                            <source th:src="@{${video.videoUrl}}" type="video/mp4">
 		                            Your browser does not support the video tag.
 		                        </video>
 		                    </div>
+							<div class="video-buttons">
+							    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+							    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+							    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+							    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+							</div>
+							<br>
+							<hr width="700">
+							<br>
 		                </div>
 		            </div>
 		        </div>
 		    </div>
 		</div>
 	
-	    <!-- 홈 영상 디테일 모달 -->
-	    <th:block th:fragment="homeModalFragment">
-	        <div id="videoModal" class="modal home-modal">
-	            <span class="close home-close" onclick="closeModal()">&times;</span>
-	            <div class="modal-content home-modal-content my-2 p-0">
-					<div class="row">
+		<!-- 홈 영상 디테일 모달 -->
+		<th:block th:fragment="homeModalFragment">
+		    <div id="videoModal" class="modal home-modal">
+		        <span class="close home-close" onclick="closeModal()">&times;</span>
+		        <div class="modal-content home-modal-content my-2 p-0">
+		            <div class="row">
 		                <div class="col home-modal-video-container">
 		                    <video id="modalVideo" controls>
 		                        <source id="modalVideoSource" src="" type="video/mp4">
@@ -245,85 +291,148 @@
 		                    </video>
 		                </div>
 		                <div class="col home-modal-video-content">
-		                    <p id="modalTitle"></p>
-		                    <p id="modalUserName"></p>
-		                    <p id="modalViews"></p>
+		                    <!-- 업로더의 프로필, 이름, 글 내용 출력 -->
+		                    <div id="uploader-info">
+		                        <img id="uploaderProfilePic" class="rounded-circle profile-pic" alt="프로필 사진">
+		                        <p id="uploaderName"></p>
+		                        <p id="videoTitle"></p>
+		                    </div>
+		                    <hr>
+		                    <!-- 댓글 리스트 -->
+		                    <div id="comments">
+		                        <!-- 댓글 목록이 표시될 영역 -->
+		                    </div>
+		                    <hr>
+		                    <!-- 댓글 등록 폼 -->
+		                    <form id="commentForm">
+		                        <input type="hidden" id="videoNum" name="videoNum" />
+		                        <textarea name="text" placeholder="댓글을 입력하세요"></textarea>
+		                        <button type="submit">댓글 등록</button>
+		                    </form>
 		                </div>
-					</div>
-	            </div>
-	        </div>
-	    </th:block>
+		            </div>
+		        </div>
+		    </div>
+		</th:block>
 	    
 	    <!-- 홈 스크립트 -->
 	    <th:block th:fragment="homeVideoScript">
 	        <script>
-	            document.addEventListener('DOMContentLoaded', function(){ 
-	                let options = {
-	                    root: null,
-	                    rootMargin: '0px',
-	                    threshold: 0.5
-	                };
+				$(document).ready(function() {
+				    let options = {
+				        root: null,
+				        rootMargin: '0px',
+				        threshold: 0.5
+				    };
+
+				    let observer = new IntersectionObserver(function(entries, observer) {
+				        entries.forEach(entry => {
+				            if (entry.isIntersecting) {
+				                let video = entry.target.querySelector('video');
+				                if (video) {
+				                    video.play();
+				                }
+				            } else {
+				                let video = entry.target.querySelector('video');
+				                if (video) {
+				                    video.pause();
+				                }
+				            }
+				        });
+				    }, options);
+
+				    document.querySelectorAll('.video-item').forEach(item => {
+				        observer.observe(item);
+				    });
+
+				    // esc key to close modal
+				    $(document).keydown(function(event) {
+				        if (event.key === "Escape") {
+				            closeModal();
+				        }
+				    });
+
+				    // 주석: 댓글 폼 제출 이벤트 리스너 추가
+				    $('#commentForm').submit(function(event) {
+				        event.preventDefault();
+				        const videoNum = $('#videoNum').val();
+				        const text = $(this).find('textarea[name="text"]').val();
+
+				        $.ajax({
+				            url: '/comment/add',
+				            type: 'POST',
+				            contentType: 'application/json',
+				            data: JSON.stringify({ video: { videoNum: videoNum }, text: text }),
+				            success: function(response) {
+				                fetchComments(videoNum);
+				                $('#commentForm').find('textarea[name="text"]').val('');
+				            },
+				            error: function() {
+				                alert('댓글 등록 실패');
+				            }
+				        });
+				    });
+				});
+				
+				$('.modal-open').on('click', function() {
+				    const videoContainer = $(this).closest('.video-item').find('.video-container')[0];
+				    showModal(videoContainer);
+				});
+				
+				function showModal(videoContainer) {
+				    const modal = $('#videoModal');
+				    const videoNum = $(videoContainer).attr('data-video-id');
+				    const title = $(videoContainer).attr('data-title');
+				    const username = $(videoContainer).attr('data-username');
+				    const views = $(videoContainer).attr('data-views');
+				    const videoUrl = $(videoContainer).attr('data-videourl');
+
+				    $('#modalUploaderProfile').attr('src', $(videoContainer).find('img').attr('src'));
+				    $('#modalUploaderName').text(username);
+				    $('#modalTitle').text(title);
+				    $('#videoNum').val(videoNum);
+
+				    $('#modalVideoSource').attr('src', videoUrl);
+				    $('#modalVideo')[0].load();
+
+				    fetchComments(videoNum);
+
+				    modal.css('display', 'block');
+				}
 	
-	                let observer = new IntersectionObserver(function(entries, observer) {
-	                    entries.forEach(entry => {
-	                        if (entry.isIntersecting) {
-	                            let video = entry.target.querySelector('video');
-	                            if (video) {
-	                                video.play();
-	                            }
-	                        } else {
-	                            let video = entry.target.querySelector('video');
-	                            if (video) {
-	                                video.pause();
-	                            }
-	                        }
-	                    });
-	                }, options);
-	
-	                document.querySelectorAll('.video-item').forEach(item => {
-	                    observer.observe(item);
-	                });
-					
-					// esc key to close modal
-	                document.addEventListener('keydown', function(event) {
-	                    if (event.key === "Escape") {
-	                        closeModal();
-	                    }
-	                });
-	            });
-	
-	            function showModal(videoContainer) {
-	                const modal = document.getElementById('videoModal');
-	                const title = videoContainer.getAttribute('data-title');
-	                const username = videoContainer.getAttribute('data-username');
-	                const views = videoContainer.getAttribute('data-views');
-	                const videoUrl = videoContainer.getAttribute('data-videourl');
-	
-	                document.getElementById('modalTitle').innerText = title;
-	                document.getElementById('modalUserName').innerText = username;
-	                document.getElementById('modalViews').innerText = '조회수: ' + views;
-	
-	                const modalVideoSource = document.getElementById('modalVideoSource');
-	                modalVideoSource.src = videoUrl;
-	                document.getElementById('modalVideo').load();
-	
-	                modal.style.display = "block";
-	            }
-	
-	            function closeModal() {
-	                const modal = document.getElementById('videoModal');
-	                modal.style.display = "none";
-	                const modalVideo = document.getElementById('modalVideo');
-	                modalVideo.pause();
-	            }
-	
-	            // Close the modal when the user clicks anywhere outside of the modal
-	            window.onclick = function(event) {
-	                const modal = document.getElementById('videoModal');
-	                if (event.target == modal) {
-	                    closeModal();
-	                }
-	            }
+				function closeModal() {
+				    const modal = $('#videoModal');
+				    modal.css('display', 'none');
+				    $('#modalVideo')[0].pause();
+				}
+
+				// Close the modal when the user clicks anywhere outside of the modal
+				$(window).click(function(event) {
+				    const modal = $('#videoModal');
+				    if (event.target == modal[0]) {
+				        closeModal();
+				    }
+				});
+				
+				function fetchComments(videoNum) {
+				    $.ajax({
+				        url: `/comment/video/${videoNum}`,
+				        type: 'GET',
+				        success: function(comments) {
+				            const commentsDiv = $('#comments');
+				            commentsDiv.empty();
+				            comments.forEach(comment => {
+				                const commentElement = $('<div>').addClass('comment-item');
+				                const profilePic = $('<img>').attr('src', comment.user.profilePictureUrl || '/images/default_profile.png').addClass('rounded-circle profile-pic');
+				                const userName = $('<p>').text(comment.user.userName);
+				                const text = $('<p>').text(comment.text);
+
+				                commentElement.append(profilePic, userName, text);
+				                commentsDiv.append(commentElement);
+				            });
+				        }
+				    });
+				}
 	        </script>
 	    </th:block>
 	</body>
