@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.chapssal.award.Award;
+import com.chapssal.award.AwardService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
@@ -43,6 +45,9 @@ public class UserController {
     
     @Autowired
     private final SchoolRepository schoolRepository;
+    
+    @Autowired
+    private AwardService awardService;
     
     @GetMapping("/signup")
     public String signup(Model model) {
@@ -128,6 +133,7 @@ public class UserController {
         return "redirect:/";
     }
     
+
     @GetMapping("/profile")
     public String getUserProfile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -160,6 +166,10 @@ public class UserController {
         model.addAttribute("followerUsers", followerUsers);
         
         model.addAttribute("currentUserNum", userNum); // 현재 사용자의 userNum 추가
+        
+        // 수상 정보 추가
+        List<Award> awards = awardService.getAwardsByUserNum(userNum);
+        model.addAttribute("awards", awards);
         
         return "profile";
     }
