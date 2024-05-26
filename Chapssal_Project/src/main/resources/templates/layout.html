@@ -153,8 +153,51 @@
 		    margin: 0;
 		    font-size: 14px;
 		}
-
-
+		.modal-lg {
+		    max-width: 600px;
+		}
+		.modal-content {
+		    border-radius: 20px;
+		    padding: 20px;
+		}
+		.modal-header {
+		    border-bottom: none;
+		}
+		.modal-body {
+		    padding: 20px;
+		}
+		.modal-footer {
+		    border-top: none;
+		    padding-top: 0;
+		}
+		.form-label {
+		    font-weight: bold;
+		}
+		.form-control, .form-select {
+		    border-radius: 10px;
+		}
+		.btn-outline-primary {
+		    border-radius: 10px;
+		    border-width: 2px;
+		}
+		.btn-primary {
+		    border-radius: 10px;
+		    background-color: #0095f6;
+		    border-color: #0095f6;
+		}
+		.btn-primary:hover {
+		    background-color: #007bb5;
+		    border-color: #007bb5;
+		}
+		.btn-secondary {
+		    border-radius: 10px;
+		    background-color: #e1e1e1;
+		    border-color: #e1e1e1;
+		}
+		.btn-secondary:hover {
+		    background-color: #c1c1c1;
+		    border-color: #c1c1c1;
+		}
 
     </style>
 </head>
@@ -167,42 +210,43 @@
         <!-- 메인 콘텐츠가 들어갈 부분 -->
     </div>
 
-    <!-- 프로필 수정 모달 -->
-    <div th:fragment="editProfileModalFragment">
-        <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form th:action="@{/user/updateProfile}" th:method="post">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editProfileModalLabel">프로필 편집(변경 사항)</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="profilePic" class="form-label">프로필 사진(변경하였습니다.)</label>
-                                <input type="text" class="form-control" id="profilePic" placeholder="이미지 URL 입력">
-                            </div>
-							
-							control
-							
-                            <div class="mb-3">
-                                <label for="userName" class="form-label">닉네임</label>
-                                <input type="text" class="form-control" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="bio" class="form-label">자기소개</label>
-                                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">저장</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- 프로필 수정 모달 -->
+	<div th:fragment="editProfileModalFragment">
+	    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+	        <div class="modal-dialog modal-lg">
+	            <div class="modal-content">
+	                <div class="modal-header">
+	                    <h5 class="modal-title" id="editProfileModalLabel">프로필 편집</h5>
+	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                </div>
+	                <div class="modal-body">
+	                    <div class="d-flex align-items-center mb-4" style="background-color: #f8f9fa; border-radius: 15px; padding: 15px;">
+	                        <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 80px; height: 80px;">
+	                        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+	                            <h5 th:text="${userName}" class="mb-1"></h5>
+	                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('profilePicInput').click()">사진 변경</button>
+	                        </div>
+	                        <input type="file" id="profilePicInput" name="profilePicInput" style="display: none;" accept="image/*" onchange="previewImage(event)">
+	                    </div>
+	                    <form th:action="@{/user/updateProfile}" th:method="post" enctype="multipart/form-data">
+	                        <div class="mb-3">
+	                            <label for="userName" class="form-label">닉네임</label>
+	                            <input type="text" class="form-control rounded" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
+	                        </div>
+	                        <div class="mb-3">
+	                            <label for="bio" class="form-label">자기소개</label>
+	                            <textarea class="form-control rounded" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
+	                        </div>
+	                        <div class="d-flex justify-content-end">
+	                            <button type="submit" class="btn btn-primary">저장</button>
+	                            <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">취소</button>
+	                        </div>
+	                    </form>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
     <!-- 팔로워 모달 -->
     <div th:fragment="followersModalFragment">
@@ -304,6 +348,9 @@
             let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
             tabTrigger.show();
         }
+		function changeProfilePicture() {
+		    document.getElementById('profilePic').focus();
+		}
     </script>
 
 	<div th:fragment="commonScripts">
@@ -357,6 +404,15 @@
 			        });
 			    });
 			});
+			
+			function previewImage(event) {
+			    var reader = new FileReader();
+			    reader.onload = function(){
+			        var output = document.querySelector('.rounded-circle');
+			        output.src = reader.result;
+			    };
+			    reader.readAsDataURL(event.target.files[0]);
+			}
 	    </script>
 	</div>
 
