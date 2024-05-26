@@ -5,6 +5,7 @@ import com.chapssal.message.model.Message;
 import com.chapssal.message.repository.ChatRoomRepository;
 import com.chapssal.message.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,17 @@ public class MessageService {
 
     public List<Message> getMessagesByRoomNum(int roomNum) {
         return messageRepository.findByChatRoom_RoomNum(roomNum);
+    }
+
+
+    public List<Message> getMessagesBeforeId(int roomNum, Integer oldestMessageId, int limit) {
+        if (oldestMessageId == null) {
+            // 만약 oldestMessageId가 null이면, 가장 최신 메시지들을 가져옴
+            return messageRepository.findByChatRoom_RoomNumOrderBySendDateDesc(roomNum, PageRequest.of(0, limit));
+        } else {
+            // 이전 메시지들을 가져옴
+            return messageRepository.findByChatRoom_RoomNumAndMessageNumLessThanOrderBySendDateDesc(roomNum, oldestMessageId, PageRequest.of(0, limit));
+        }
     }
 
     public Message saveMessage(Message message) {

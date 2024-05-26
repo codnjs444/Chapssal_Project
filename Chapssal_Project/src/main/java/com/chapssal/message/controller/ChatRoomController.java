@@ -7,6 +7,7 @@ import com.chapssal.message.service.ChatRoomService;
 import com.chapssal.message.service.MessageService;
 import com.chapssal.message.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,9 +49,18 @@ public class ChatRoomController {
         return chatRoomService.getChatRoomCount();
     }
 
+    @GetMapping("/rooms/{roomNum}/participants")
+    public List<Participant> getParticipantsByRoomNum(@PathVariable int roomNum) {
+        return chatRoomService.getParticipantsByRoomNum(roomNum);
+    }
+
     @GetMapping("/rooms/{roomNum}/messages")
-    public List<Message> getMessagesByRoomNum(@PathVariable int roomNum) {
-        return chatRoomService.getMessagesByRoomNum(roomNum);
+    public ResponseEntity<List<Message>> getMessages(
+            @PathVariable Integer roomNum,
+            @RequestParam(required = false) Integer oldestMessageId,
+            @RequestParam(defaultValue = "20") int limit) {
+        List<Message> messages = messageService.getMessagesBeforeId(roomNum, oldestMessageId, limit);
+        return ResponseEntity.ok(messages);
     }
 
     @PostMapping("/rooms/{roomNum}/messages")
@@ -58,10 +68,5 @@ public class ChatRoomController {
         ChatRoom chatRoom = chatRoomService.getChatRoomById(roomNum);
         message.setChatRoom(chatRoom);
         return messageService.saveMessage(message);
-    }
-
-    @GetMapping("/rooms/{roomNum}/participants")
-    public List<Participant> getParticipantsByRoomNum(@PathVariable int roomNum) {
-        return chatRoomService.getParticipantsByRoomNum(roomNum);
     }
 }

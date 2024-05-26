@@ -1,5 +1,6 @@
 package com.chapssal.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	
     @Query("SELECT u.userNum FROM User u WHERE u.userId = :userId")
     Integer findUserNumByUserId(@Param("userId") String userId);
+
+    @Query("SELECT p.user FROM Participant p WHERE p.room.roomNum = :roomNum AND p.user.userNum != :currentUserNum")
+    List<User> findOtherParticipants(@Param("roomNum") Integer roomNum, @Param("currentUserNum") Integer currentUserNum);
 }

@@ -30,4 +30,5 @@ public class Message {
 
     @Transient
     private int roomNum; // Transient 필드 추가
+
 }
