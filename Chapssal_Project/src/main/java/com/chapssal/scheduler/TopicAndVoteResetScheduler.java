@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class VoteResetScheduler {
+public class TopicAndVoteResetScheduler {
 
     private final UserService userService;
     private final SelectedTopicRepository selectedTopicRepository;
 
-    public VoteResetScheduler(UserService userService, SelectedTopicRepository selectedTopicRepository) {
+    public TopicAndVoteResetScheduler(UserService userService, SelectedTopicRepository selectedTopicRepository) {
         this.userService = userService;
         this.selectedTopicRepository = selectedTopicRepository;
     }
@@ -23,8 +23,13 @@ public class VoteResetScheduler {
     @Scheduled(cron = "0 20 17 * * FRI")
     @Transactional
     public void resetVotes() {
+        // 모든 유저의 topic / vote 철럼 초기화
+        userService.resetAllTopics();
         userService.resetAllVotes();
-        selectedTopicRepository.deleteAll();
+
+        // 모든 selectedTopic table 삭제
+        // 해당 메서드 실행하지 않도록 변경
+        // selectedTopicRepository.deleteAll();
     }
 }
 

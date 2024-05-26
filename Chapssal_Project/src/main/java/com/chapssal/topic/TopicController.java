@@ -16,10 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.WeekFields;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -82,14 +79,38 @@ public class TopicController {
 
         // 사용자가 널이 아니면 토픽 저장
         if (user != null) {
-            // 이번주 토픽을 이미 등록했는지 확인
-            if (topicService.hasRegisteredThisWeek(user)) {
+              // 테이블 구조 변경으로 토픽 등록 메서드 수정
+//            // 이번주 토픽을 이미 등록했는지 확인
+//            if (topicService.hasRegisteredThisWeek(user)) {
+//                model.addAttribute("errorMessage", "이미 이번 주 토픽을 등록하셨습니다.");
+//            } else {
+//                topic.setUser(user);
+//                topic.setCreateDate(LocalDateTime.now());
+//                topicService.save(topic);
+//                model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+//            }
+            if (user.getTopic() >= 1) {
                 model.addAttribute("errorMessage", "이미 이번 주 토픽을 등록하셨습니다.");
             } else {
-                topic.setUser(user);
-                topic.setCreateDate(LocalDateTime.now());
-                topicService.save(topic);
-                model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+                // 이번 주에 동일한 타이틀의 토픽이 있는지 확인
+                Optional<Topic> existingTopic = topicService.findTopicByTitleThisWeek(topic.getTitle());
+                if (existingTopic.isPresent()) {
+                    // 이미 존재하면 count 값 증가
+                    Topic foundTopic = existingTopic.get();
+                    foundTopic.setCount(foundTopic.getCount() + 1);
+                    topicService.save(foundTopic);
+                    model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+                } else {
+                    // 존재하지 않으면 새로 등록
+                    topic.setCreateDate(LocalDateTime.now());
+                    topic.setCount(1); // 처음 등록이므로 count를 1로 설정
+                    topicService.save(topic);
+                    model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+                }
+
+                // 유저 테이블의 topic 컬럼 값을 1 증가
+                user.setTopic(user.getTopic() + 1);
+                userService.save(user);
             }
         }
         addCurrentWeekToModel(model);

@@ -30,12 +30,13 @@ public class TopicService {
     }
 
     // 이번주에 유저가 이미 토픽을 등록했는지 확인하는 메서드
-    public boolean hasRegisteredThisWeek(User user) {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-        List<Topic> topics = topicRepository.findByUserAndCreateDateBetween(user, startOfWeek, endOfWeek);
-        return !topics.isEmpty();
-    }
+    // 테이블 구조 변경으로 해당 메서드는 더 이상 사용하지 않음
+//    public boolean hasRegisteredThisWeek(User user) {
+//        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
+//        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
+//        List<Topic> topics = topicRepository.findByUserAndCreateDateBetween(user, startOfWeek, endOfWeek);
+//        return !topics.isEmpty();
+//    }
 
     // 모든 토픽 찾기
     public List<Topic> findAll() {
@@ -67,5 +68,13 @@ public class TopicService {
                     return !topicDate.isBefore(startOfWeek) && !topicDate.isAfter(endOfWeek);
                 })
                 .collect(Collectors.toList());
+    }
+
+    // 이번 주에 특정 타이틀의 토픽이 이미 존재하는지 확인하는 메서드
+    public Optional<Topic> findTopicByTitleThisWeek(String title) {
+        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
+        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
+        List<Topic> topics = topicRepository.findByTitleAndCreateDateBetween(title, startOfWeek, endOfWeek);
+        return topics.stream().findFirst();
     }
 }
