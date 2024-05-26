@@ -79,8 +79,6 @@
 		    border-radius: 50%; /* 이미지가 원형 틀에 맞도록 설정 */
 		}
 
-
-
     </style>
 </head>
 <body>
@@ -128,13 +126,16 @@
                 </div>
 				
 				<!-- 수상 내용 섹션 -->
-				 <div class="awards-section">
-				     <div th:each="award : ${awards}" class="award-item">
-				         <div class="award-icon">
-				             <img th:src="@{/images/} + ${award.awardType.toLowerCase()} + '.png'" th:alt="${award.awardType}">
-				         </div>
-				     </div>
-				 </div>
+				<div class="awards-section">
+				    <div th:each="award : ${awards}" class="award-item">
+				        <div class="award-icon" 
+				             th:data-bs-content="|<div class='popover-body'><img src='/images/${award.awardType.toLowerCase()}.png' alt='${award.awardType}' style='width: 100%; height: auto;'><br> ${award.awardName}<br>${award.awardType}<br>${award.awardDate}</div>|"
+				             data-bs-toggle="popover"
+				             data-bs-html="true">
+				            <img th:src="@{/images/} + ${award.awardType.toLowerCase()} + '.png'" th:alt="${award.awardType}">
+				        </div>
+				    </div>
+				</div>
 
                 <!-- 구분선 -->
                 <hr>
@@ -184,6 +185,8 @@
     <!-- openTab 함수 정의 -->
     <script src="/js/openTab.js" defer></script>
 
+	<!-- 공통 스크립트 파일 로드 -->
+	<div th:replace="~{layout :: commonScripts}"></div>
     <!-- 아이콘 네비게이션 활성화 스크립트 -->
     <script>
         document.querySelectorAll('.icon-btn').forEach(button => {
@@ -196,6 +199,7 @@
                 document.getElementById(target).classList.add('show', 'active');
             });
         });
+
     </script>
 </body>
 </html>

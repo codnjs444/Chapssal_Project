@@ -244,6 +244,9 @@ public class UserController {
         model.addAttribute("followerUsers", followerUsers);
         model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
         
+        // 수상 정보 추가
+        List<Award> awards = awardService.getAwardsByUserNum(userNum);
+        model.addAttribute("awards", awards);
         return "user_profile";
     }
     

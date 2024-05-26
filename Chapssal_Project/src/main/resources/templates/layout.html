@@ -122,6 +122,37 @@
 		    border-radius: 0.75rem; /* 둥근 모서리를 더 강조 */
 		}
 
+		.popover {
+		    max-width: 250px; /* 팝오버 최대 너비 조정 */
+		    background-color: #fff; /* 배경색을 흰색으로 변경 */
+		    border: 1px solid #ddd; /* 테두리 색상을 연하게 변경 */
+		    border-radius: 10px; /* 테두리를 둥글게 */
+		    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+		}
+
+		.popover .popover-body {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    padding: 15px;
+		}
+
+		.popover .popover-body .popover-image {
+		    width: 50px;
+		    height: 50px;
+		    border-radius: 50%;
+		    margin-bottom: 10px;
+		}
+
+		.popover .popover-body strong {
+		    font-size: 14px;
+		    margin-bottom: 5px;
+		}
+
+		.popover .popover-body p {
+		    margin: 0;
+		    font-size: 14px;
+		}
 
 
 
@@ -316,6 +347,16 @@
 	                alert('작업 중 오류가 발생했습니다.');
 	            });
 	        }
+
+			document.addEventListener('DOMContentLoaded', function() {
+			    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+			    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+			        return new bootstrap.Popover(popoverTriggerEl, {
+			            html: true,
+			            sanitize: false
+			        });
+			    });
+			});
 	    </script>
 	</div>
 
