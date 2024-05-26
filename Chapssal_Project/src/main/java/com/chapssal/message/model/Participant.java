@@ -1,5 +1,6 @@
 package com.chapssal.message.model;
 
+import com.chapssal.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,7 +16,9 @@ public class Participant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int num;
 
-    private int user;
+    @ManyToOne
+    @JoinColumn(name = "user")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "room")
