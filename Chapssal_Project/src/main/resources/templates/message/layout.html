@@ -253,9 +253,12 @@
             });
 
             $('#messageText').on('keydown', function (event) {
-                if (event.key === 'Enter') {
+                if ((event.key === 'Enter' && !event.shiftKey && !event.altKey) || event.key === 'NumpadEnter') {
                     event.preventDefault();
                     $('#sendMessageForm').submit();
+                } else if ((event.key === 'Enter' && event.shiftKey) || (event.key === 'Enter' && event.altKey)) {
+                    event.preventDefault();
+                    insertNewLine($(this));
                 }
             });
 
@@ -269,6 +272,16 @@
                 }
             });
         });
+
+        function insertNewLine(textArea) {
+            var cursorPos = textArea.prop('selectionStart');
+            var text = textArea.val();
+            var before = text.substring(0, cursorPos);
+            var after = text.substring(cursorPos, text.length);
+            textArea.val(before + "\n" + after);
+            textArea.prop('selectionStart', cursorPos + 1);
+            textArea.prop('selectionEnd', cursorPos + 1);
+        }
 
         function sendMessage() {
             if (!stompClient) {
