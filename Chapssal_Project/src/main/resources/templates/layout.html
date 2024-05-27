@@ -220,28 +220,28 @@
 	                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	                </div>
 	                <div class="modal-body">
-	                    <div class="d-flex align-items-center mb-4" style="background-color: #f8f9fa; border-radius: 15px; padding: 15px;">
-	                        <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 80px; height: 80px;">
-	                        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
-	                            <h5 th:text="${userName}" class="mb-1"></h5>
-	                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('profilePicInput').click()">사진 변경</button>
-	                        </div>
-	                        <input type="file" id="profilePicInput" name="profilePicInput" style="display: none;" accept="image/*" onchange="previewImage(event)">
-	                    </div>
-	                    <form th:action="@{/user/updateProfile}" th:method="post" enctype="multipart/form-data">
-	                        <div class="mb-3">
-	                            <label for="userName" class="form-label">닉네임</label>
-	                            <input type="text" class="form-control rounded" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
-	                        </div>
-	                        <div class="mb-3">
-	                            <label for="bio" class="form-label">자기소개</label>
-	                            <textarea class="form-control rounded" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
-	                        </div>
-	                        <div class="d-flex justify-content-end">
-	                            <button type="submit" class="btn btn-primary">저장</button>
-	                            <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">취소</button>
-	                        </div>
-	                    </form>
+						<form th:action="@{/user/updateProfile}" th:method="post" enctype="multipart/form-data">
+							<div class="d-flex align-items-center mb-4" style="background-color: #f8f9fa; border-radius: 15px; padding: 15px;">
+							    <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3" alt="프로필 사진" style="width: 80px; height: 80px;">
+							    <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+							        <h5 th:text="${userName}" class="mb-1"></h5>
+							        <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('profilePicInput').click()">사진 변경</button>
+							    </div>
+							    <input type="file" id="profilePicInput" name="profilePicInput" style="display: none;" accept="image/*" onchange="previewImage(event)">
+							</div>
+						    <div class="mb-3">
+						        <label for="userName" class="form-label">닉네임</label>
+						        <input type="text" class="form-control rounded" id="userName" name="userName" placeholder="닉네임 입력" th:value="${userName}">
+						    </div>
+						    <div class="mb-3">
+						        <label for="bio" class="form-label">자기소개</label>
+						        <textarea class="form-control rounded" id="bio" name="bio" rows="3" placeholder="자기소개 입력" th:text="${bio}"></textarea>
+						    </div>
+						    <div class="d-flex justify-content-end">
+						        <button type="submit" class="btn btn-primary">저장</button>
+						        <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">취소</button>
+						    </div>
+						</form>
 	                </div>
 	            </div>
 	        </div>

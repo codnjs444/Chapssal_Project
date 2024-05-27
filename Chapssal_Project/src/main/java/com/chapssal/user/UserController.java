@@ -3,6 +3,12 @@ package com.chapssal.user;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.chapssal.award.Award;
@@ -25,6 +32,7 @@ import com.chapssal.award.AwardService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
+import com.chapssal.video.S3Service;
 import com.chapssal.video.VideoService;
 
 import jakarta.validation.Valid;
@@ -48,6 +56,10 @@ public class UserController {
     
     @Autowired
     private AwardService awardService;
+    
+    @Autowired
+    private S3Service s3Service;
+    private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
     
     @GetMapping("/signup")
     public String signup(Model model) {
@@ -142,13 +154,16 @@ public class UserController {
         }
         
         String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        User user = userService.getUser(username);
         String schoolName = userService.getSchoolNameByUserId(username);
         String userName = userService.getUserNameByUserId(username);
         String bio = userService.getUserBioByUserId(username);
+        String profilePictureUrl = user.getProfilePictureUrl();
         
         model.addAttribute("schoolName", schoolName);
         model.addAttribute("userName", userName);
         model.addAttribute("bio", bio);
+        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
         
         Integer userNum = userService.getUserNumByUserId(username);
         int followingCount = followService.countFollowingByUserNum(userNum);
@@ -175,22 +190,41 @@ public class UserController {
     }
     
     @PostMapping("/updateProfile")
-    public String updateProfile(@RequestParam("userName") String newUserName, @RequestParam("bio") String bio, RedirectAttributes redirectAttributes) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+    public String updateProfile(@RequestParam("userName") String userName,
+                                @RequestParam("bio") String bio,
+                                @RequestParam("profilePicInput") MultipartFile file,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+
+        User user = userService.getUser(authentication.getName());
+
+        if (!file.isEmpty()) {
+            try {
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path tempFilePath = Paths.get(TEMP_FOLDER, fileName);
+                Files.write(tempFilePath, file.getBytes());
+
+                File tempFile = tempFilePath.toFile();
+                String s3Key = "profile-pictures/" + fileName;
+                s3Service.uploadFile(s3Key, tempFile);
+
+                String profilePictureUrl = s3Service.getFileUrl(s3Key);
+                user.setProfilePictureUrl(profilePictureUrl);
+
+                Files.delete(tempFilePath);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                redirectAttributes.addFlashAttribute("message", "File upload failed: " + e.getMessage());
+                return "redirect:/";
+            }
         }
-        
-        String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
-        
-        try {
-            userService.updateUserName(username, newUserName, bio);
-            redirectAttributes.addFlashAttribute("successMessage", "프로필이 성공적으로 업데이트되었습니다.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "프로필 업데이트에 실패했습니다.");
-            return "redirect:/user/profile";
-        }
-        
+
+        user.setUserName(userName);
+        user.setBio(bio);
+        userService.updateUser(user);
+
+        redirectAttributes.addFlashAttribute("message", "Profile updated successfully!");
         return "redirect:/user/profile";
     }
     
@@ -221,10 +255,12 @@ public class UserController {
         String userName = user.getUserName();
         String schoolName = user.getSchool().getSchoolName();
         String bio = user.getBio();
+        String profilePictureUrl = user.getProfilePictureUrl(); // 상대방의 프로필 사진 URL을 가져옴
         
         model.addAttribute("userName", userName);
         model.addAttribute("schoolName", schoolName);
         model.addAttribute("bio", bio);
+        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
         model.addAttribute("userNum", userNum); // 조회된 사용자의 userNum
         
         int followingCount = followService.countFollowingByUserNum(userNum);
@@ -249,6 +285,7 @@ public class UserController {
         model.addAttribute("awards", awards);
         return "user_profile";
     }
+
     
     @GetMapping("/test")
     public String testPage() {

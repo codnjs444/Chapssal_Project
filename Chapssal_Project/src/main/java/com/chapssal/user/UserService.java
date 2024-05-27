@@ -105,6 +105,9 @@ public class UserService {
         return userRepository.findById(userNum).orElse(null);
     }
     
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
 //    public Optional<User> findByNum(Integer userNum) {
 //        return userRepository.findById(userNum);
 //    }
