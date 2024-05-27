@@ -196,4 +196,30 @@ public class TopicController {
         model.addAttribute("voteCounts", voteCounts);
         return "vote_results_page";
     }
+
+    // 투표 입력시 자동완성 AJAX 처리
+    @GetMapping("/inputsuggestions")
+    @ResponseBody
+    public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
+        if (query == null || query.isEmpty()) {
+            return topicService.findTopTopicsThisWeek();
+        } else {
+            return topicService.findTopTopicsThisWeek(query);
+        }
+    }
+
+    // 투표 페이지에서 검색요청 처리 메서드
+    @GetMapping("/votesearch")
+    @ResponseBody
+    public List<TopicDTO> searchTopicsForVoting(@RequestParam String query) {
+        List<Topic> topics = topicService.searchTopicsThisWeek(query);
+        Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
+
+        return topics.stream()
+                .map(topic -> new TopicDTO(topic.getTopicNum(), topic.getTitle(), voteCounts.getOrDefault(topic.getTopicNum(), 0L)))
+                .sorted(Comparator.comparingLong(TopicDTO::getVoteCount).reversed())
+                .collect(Collectors.toList());
+    }
+
+
 }

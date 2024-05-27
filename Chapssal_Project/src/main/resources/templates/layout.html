@@ -175,6 +175,7 @@
             });
         }
 
+
         // 페이지 로드 시 이미 투표한 버튼 업데이트
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('button[data-voted="true"]').forEach(button => {
@@ -189,7 +190,67 @@
                     selectTopic(this);
                 });
             });
+
+            // 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가
+            $('#topicInput').on('input focus', function() {
+                let query = $(this).val();
+                $.ajax({
+                    url: '/topic/inputsuggestions',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function(data) {
+                        $('#suggestions').empty();
+                        data.forEach(function(item) {
+                            $('#suggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.title + '</a>');
+                        });
+                    }
+                });
+            });
+
+            // 자동완성 항목 클릭 시 입력창에 해당 값 설정
+            $('#suggestions').on('click', 'a', function(e) {
+                e.preventDefault();
+                $('#topicInput').val($(this).text());
+                $('#suggestions').empty();
+            });
+
+            // 입력창에서 벗어나면 추천 기능 사라지게 하기
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#topicInput, #suggestions').length) {
+                    $('#suggestions').empty();
+                }
+            });
+
+            // 투표 페이지 검색 기능 추가
+            $('#searchInput').on('input', function() {
+                let query = $(this).val();
+                $.ajax({
+                    url: '/topic/search',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function(data) {
+                        $('#voteCards').empty();
+                        data.forEach(function(item) {
+                            $('#voteCards').append(`
+                                <div class="col-md-4">
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${item.title}</h5>
+                                            <button type="button" class="btn btn-primary" data-id="${item.topicNum}" onclick="selectTopic(this)">투표</button>
+                                            <p>투표받은 횟수: ${item.voteCount}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                    }
+                });
+            });
+
         });
+
+
+
     </script>
 </div>
 
