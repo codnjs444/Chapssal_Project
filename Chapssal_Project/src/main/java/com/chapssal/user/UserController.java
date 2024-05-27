@@ -1,7 +1,9 @@
 package com.chapssal.user;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +14,7 @@ import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -228,6 +232,43 @@ public class UserController {
         return "redirect:/user/profile";
     }
     
+    @PostMapping("/uploadProfilePicture")
+    public ResponseEntity<Map<String, Object>> uploadProfilePicture(@RequestParam("profilePicInput") MultipartFile file, Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        if (!file.isEmpty()) {
+            try {
+                User user = userService.getUser(authentication.getName());
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path tempFilePath = Paths.get(TEMP_FOLDER, fileName);
+                Files.write(tempFilePath, file.getBytes());
+
+                File tempFile = tempFilePath.toFile();
+                String s3Key = "profile-pictures/" + fileName;
+                s3Service.uploadFile(s3Key, tempFile);
+
+                String profilePictureUrl = s3Service.getFileUrl(s3Key);
+                user.setProfilePictureUrl(profilePictureUrl);
+                userService.save(user);
+
+                Files.delete(tempFilePath);
+
+                response.put("success", true);
+                response.put("profilePictureUrl", profilePictureUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+                response.put("success", false);
+                response.put("message", "File upload failed: " + e.getMessage());
+            }
+        } else {
+            response.put("success", false);
+            response.put("message", "No file selected");
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    
     @GetMapping("/profile/{userNum}")
     public String getUserProfile(@PathVariable("userNum") Integer userNum, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -286,7 +327,25 @@ public class UserController {
         return "user_profile";
     }
 
-    
+    @PostMapping("/resetProfilePicture")
+    @ResponseBody
+    public Map<String, Object> resetProfilePicture(Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            User user = userService.getUser(authentication.getName());
+            user.setProfilePictureUrl(null); // 기본 이미지를 사용하기 위해 URL을 null로 설정
+            userService.save(user);
+            
+            response.put("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+        }
+
+        return response;
+    }
+
     @GetMapping("/test")
     public String testPage() {
         return "test";
