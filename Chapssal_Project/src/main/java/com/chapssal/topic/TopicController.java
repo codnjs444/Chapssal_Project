@@ -196,4 +196,15 @@ public class TopicController {
         model.addAttribute("voteCounts", voteCounts);
         return "vote_results_page";
     }
+
+    // AJAX 요청을 처리하는 메서드
+    @GetMapping("/suggestions")
+    @ResponseBody
+    public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
+        if (query == null || query.isEmpty()) {
+            return topicService.findTopTopicsThisWeek();
+        } else {
+            return topicService.findTopTopicsThisWeek(query);
+        }
+    }
 }

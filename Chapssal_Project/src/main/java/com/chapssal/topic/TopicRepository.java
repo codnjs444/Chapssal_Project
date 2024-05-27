@@ -15,4 +15,9 @@ public interface TopicRepository extends JpaRepository<Topic, Integer> {
 
     // 이번 주에 특정 타이틀의 토픽이 존재하는지 확인하는 메서드
     List<Topic> findByTitleAndCreateDateBetween(String title, LocalDateTime startOfWeek, LocalDateTime endOfWeek);
+
+    List<Topic> findTop3ByTitleStartingWithIgnoreCaseAndCreateDateBetweenOrderByCountDesc(String title, LocalDateTime startOfWeek, LocalDateTime endOfWeek);
+
+    List<Topic> findTop3ByCreateDateBetweenOrderByCountDesc(LocalDateTime startOfWeek, LocalDateTime endOfWeek);
+
 }
