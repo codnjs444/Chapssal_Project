@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.chapssal.DataNotFoundException;
 import com.chapssal.school.School;
@@ -31,6 +32,8 @@ public class UserService {
         user.setCreateDate(createDate);
         user.setLastUpdate(lastUpdate);
         user.setLastLogin(lastLogin);
+        user.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
+        user.setVote(0); // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정
 
         userRepository.save(user);
         return user;
@@ -41,6 +44,8 @@ public class UserService {
         user.setUserId(userId);
         user.setUserName(userName);
         user.setCreateDate(LocalDateTime.now());
+        user.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
+        user.setVote(0); // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정
 
         userRepository.save(user);
         return user;
@@ -100,8 +105,35 @@ public class UserService {
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
     }
-    
-//    public Optional<User> findByNum(Integer userNum) {
-//        return userRepository.findById(userNum);
-//    }
+
+    // 유저 투표시 vote 필드 1 증가
+    public void incrementVote(User user) {
+        user.setVote(user.getVote() + 1);
+        userRepository.save(user);
+    }
+
+    // 유저가 이번주 최대 투표수에 도달했는지 판별
+    public boolean hasReachedVoteLimit(User user) {
+        return user.getVote() >= 5;
+    }
+
+    // 유저 테이블의 topic 컬럼을 0으로 초기화하는 메서드
+    @Transactional
+    public void resetAllTopics() {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            user.setTopic(0);
+        }
+        userRepository.saveAll(users);
+    }
+
+    // 유저 테이블의 vote 컬럼을 0으로 초기화하는 메서드
+    @Transactional
+    public void resetAllVotes() {
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            user.setVote(0);
+        }
+        userRepository.saveAll(users);
+    }
 }

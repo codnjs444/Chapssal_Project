@@ -1,5 +1,7 @@
 package com.chapssal.video;
 
+import com.chapssal.topic.SelectedTopic;
+import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.topic.Topic;
 import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
@@ -32,14 +34,14 @@ public class VideoController {
     private final VideoService videoService;
     private final S3Service s3Service;
     private final UserService userService;
-    private final TopicService topicService;
+    private final SelectedTopicService selectedTopicService;
 
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, TopicService topicService) {
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
-        this.topicService = topicService;
+        this.selectedTopicService = selectedTopicService;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -128,8 +130,8 @@ public class VideoController {
 
     @GetMapping("/home")
     public String viewHomePage(Model model) {
-        List<Topic> topics = topicService.findAll();
-        model.addAttribute("topics", topics);
+        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
         List<Video> videos = videoService.findAll();
         model.addAttribute("videos", videos);

@@ -16,8 +16,10 @@
 	
 	        .video-container {
 	            position: relative;
-	            width: 36%; /* 화면의 35% 너비 설정 */
-	            padding-bottom: 64%; /* 9:16 비율 (16 / 9 * 35) */
+	            width: 36%; /* 화면의 36% 너비 설정 */
+				min-width: 461px;
+				min-height: 819px;
+	            padding-bottom: 64%; /* 9:16 비율 (16 / 9 * 36) */
 	            background-color: black; /* 영상이 없는 부분을 검게 표시 */
 	            overflow: hidden;
 	            border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
@@ -35,7 +37,7 @@
 
 			.video-buttons {
 			    position: absolute;
-			    top: 70%;
+			    top: 65%;
 			    left: 70%;
 			    display: flex;
 			    flex-direction: column;
@@ -47,8 +49,21 @@
 			    border: none;
 			    color: black;
 			    border-radius: 50%;
-			    width: 40px;
-			    height: 40px;
+			    width: 50px;
+			    height: 50px;
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			    cursor: pointer;
+			}
+			
+			.modal-action-btn {
+			    background-color: white;
+			    border: none;
+			    color: black;
+			    border-radius: 50%;
+			    width: 50px;
+			    height: 50px;
 			    display: flex;
 			    align-items: center;
 			    justify-content: center;
@@ -59,6 +74,7 @@
 	            font-size: 14px;
 	            text-align: left;
 	            width: 45%;
+				min-width: 576px;
 	        }
 			
 			.video-content .col-5,
@@ -156,15 +172,18 @@
 	            transform: translate(-50%, -50%);
 	        }
 	
-	        .home-modal-video-content {
-	            font-size: 14px;
-	            text-align: left;
-	            width: 100%;
-				overflow-y: auto; /* 스크롤 추가 */
-				max-height: 98vh; /* 최대 높이 설정 */
+			.home-modal-video-content {
+			    font-size: 14px;
+			    text-align: left;
+			    width: 100%;
+				display: flex; /* flex 컨테이너로 설정 */
+				flex-direction: column; /* 세로 정렬 */
+				height: 98vh; /* 모달의 전체 높이 설정 */
+				overflow-y: auto; /* 컨텐츠가 넘칠 때 세로 스크롤만 추가 */
+				overflow-x: hidden; /* 가로 스크롤 숨김 */ 
 				padding-left: 15px; /* 패딩 추가 */
 				box-sizing: border-box; /* 스크롤바 너비 포함 */
-	        }
+			}
 			
 			.home-modal-video-content .uploader-info {
 			    margin-bottom: 10px;
@@ -173,10 +192,9 @@
 			}
 
 			.home-modal-video-content .uploader-info img {
-			    width: 50px;
+			    width: 74px;
 			    height: 50px;
 			    border-radius: 50%;
-			    margin-right: 10px;
 			}
 
 			.home-modal-video-content .uploader-info p {
@@ -187,6 +205,31 @@
 	        .home-modal-video-content p {
 	            margin: 0;
 	        }
+
+			.comment-list {
+				flex: 1; /* 남은 공간을 차지 */
+				overflow-y: auto; /* 스크롤 추가 */
+				overflow-x: hidden;
+				padding-right: 5%;
+			}
+
+			.comment-form {
+				border-top: 1px solid #ccc;
+				padding-top: 10px;
+				margin-top: 10px;
+			}
+			
+			.modal-profile {
+			    width: 10vw;
+			    height: 10vw;
+			    max-width: 74px; /* Ensure the image doesn't grow too large */
+			    max-height: 50px;
+			    object-fit: cover; /* Ensures the image covers the element without distorting */
+			}
+			
+			body.modal-open {
+			    overflow: hidden;
+			}
 	    </style>
 	</head>
 	<body>
@@ -194,8 +237,7 @@
 		    <nav class="container">
 		        <div class="nav nav-pills center" id="nav-tab" role="tablist">
 		            <button class="nav-link active" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-		            <button class="nav-link" th:each="topic : ${topics}" th:id="'nav-' + ${topic.topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic.topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic.topicNum}" aria-selected="false" th:text="${topic.title}"></button>
-		        </div>
+		            <button class="nav-link" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button></div>
 		    </nav>
 			<br>
 			<br>
@@ -231,7 +273,7 @@
 							        <button class="action-btn"><i class="bi bi-share-fill"></i></button>
 							    </div>
 								<br>
-								<hr width="700">
+								<hr style="width: 700px;">
 								<br>
 		                    </div>
 		                </div>
@@ -240,9 +282,9 @@
 		                </div>
 		            </div>
 		        </div>
-		        <div class="tab-pane fade" th:each="topic : ${topics}" th:id="'nav-' + ${topic.topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic.topicNum} + '-tab'" tabindex="0">
+		        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
 		            <div class="video-list">
-		                <div th:each="video : ${videos}" th:if="${video.topic != null and video.topic == topic.topicNum}" class="video-item">
+		                <div th:each="video : ${videos}" th:if="${video.topic != null and video.topic == topic[0].topicNum}" class="video-item">
 		                    <div class="video-content">
 								<div class="row">
 									<div class="col-5">
@@ -270,7 +312,7 @@
 							    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
 							</div>
 							<br>
-							<hr width="700">
+							<hr style="width: 700px;">
 							<br>
 		                </div>
 		            </div>
@@ -292,23 +334,37 @@
 		                </div>
 		                <div class="col home-modal-video-content">
 		                    <!-- 업로더의 프로필, 이름, 글 내용 출력 -->
-		                    <div id="uploader-info">
-		                        <img id="uploaderProfilePic" class="rounded-circle profile-pic" alt="프로필 사진">
-		                        <p id="uploaderName"></p>
-		                        <p id="videoTitle"></p>
-		                    </div>
-		                    <hr>
+							<div class="comment-item row uploader-info border-0 pt-3 pb-0 mb-0">
+							    <img id="modalUploaderProfile" class="rounded-circle profile-pic uploader-modal-profile col-2" alt="프로필 사진">
+								<div class="col">
+								    <p id="modalUploaderName"><strong></strong></p>
+								    <p id="modalTitle"></p>
+								</div>
+							</div>
+		                    <hr style="width: 470px;">
 		                    <!-- 댓글 리스트 -->
-		                    <div id="comments">
+		                    <div id="comments-list" class="comment-list">
 		                        <!-- 댓글 목록이 표시될 영역 -->
 		                    </div>
-		                    <hr>
 		                    <!-- 댓글 등록 폼 -->
-		                    <form id="commentForm">
-		                        <input type="hidden" id="videoNum" name="videoNum" />
-		                        <textarea name="text" placeholder="댓글을 입력하세요"></textarea>
-		                        <button type="submit">댓글 등록</button>
-		                    </form>
+							<hr class="mb-0" style="width: 470px;">
+							<div class="comment-form p-0 border-0 mt-0">
+								<div class="row pt-1 pb-0">
+									<button class="modal-action-btn"><i class="bi bi-heart col"></i></button>
+								    <button class="modal-action-btn"><i class="bi bi-bookmark col"></i></button>
+								    <button class="modal-action-btn"><i class="bi bi-share col"></i></button>
+								</div>
+								<p>동영상 좋아요 수</p>
+								<p>업로드 날짜</p>
+								<hr style="width: 470px;">
+			                    <form id="commentForm">
+			                        <input type="hidden" id="videoNum" name="videoNum" />
+									<div class="row mx-0 mb-2" style="width: 100%;">
+				                        <textarea name="text" placeholder="댓글 달기..." class="col-10 border-0" style="height: 29px; max-height: 300px; overflow-y: auto; resize: none;"></textarea>
+				                        <button type="submit" class="col-2 bg-white border-0 text-primary">게시</button>
+									</div>
+			                    </form>
+							</div>
 		                </div>
 		            </div>
 		        </div>
@@ -351,27 +407,49 @@
 				            closeModal();
 				        }
 				    });
+					
+					$('#commentForm').submit(function (event) {
+					    event.preventDefault();
+					    submitComment();
+					});
+					
+					$('#commentForm textarea[name="text"]').keydown(function (event) {
+					    if (event.key === "Enter" && !event.shiftKey) {
+					        event.preventDefault();
+					        submitComment();
+					    }
+					});
 
-				    // 주석: 댓글 폼 제출 이벤트 리스너 추가
-				    $('#commentForm').submit(function(event) {
-				        event.preventDefault();
-				        const videoNum = $('#videoNum').val();
-				        const text = $(this).find('textarea[name="text"]').val();
+					function submitComment() {
+					    const videoNum = $('#videoNum').val();
+					    const text = $('#commentForm').find('textarea[name="text"]').val();
 
-				        $.ajax({
-				            url: '/comment/add',
-				            type: 'POST',
-				            contentType: 'application/json',
-				            data: JSON.stringify({ video: { videoNum: videoNum }, text: text }),
-				            success: function(response) {
-				                fetchComments(videoNum);
-				                $('#commentForm').find('textarea[name="text"]').val('');
-				            },
-				            error: function() {
-				                alert('댓글 등록 실패');
-				            }
-				        });
-				    });
+					    $.ajax({
+					        url: '/comment/add',
+					        type: 'POST',
+					        contentType: 'application/json',
+					        data: JSON.stringify({video: {videoNum: videoNum}, text: text}),
+					        success: function (response) {
+					            fetchComments(videoNum);
+					            $('#commentForm').find('textarea[name="text"]').val('');
+					        },
+					        error: function () {
+					            alert('댓글 등록 실패');
+					        }
+					    });
+					}
+					
+					// textarea의 높이를 자동으로 조정하는 함수
+					function autoResizeTextarea(textarea) {
+					    textarea.style.height = 'auto'; // 높이를 자동으로 설정
+					    textarea.style.height = textarea.scrollHeight + 'px'; // 내용에 맞춰 높이 조정
+					}
+
+					// textarea에 input 이벤트 리스너 추가
+					const commentTextarea = $('#commentForm textarea[name="text"]');
+					commentTextarea.on('input', function() {
+					    autoResizeTextarea(this);
+					});
 				});
 				
 				$('.modal-open').on('click', function() {
@@ -387,7 +465,8 @@
 				    const views = $(videoContainer).attr('data-views');
 				    const videoUrl = $(videoContainer).attr('data-videourl');
 
-				    $('#modalUploaderProfile').attr('src', $(videoContainer).find('img').attr('src'));
+					const profilePicUrl = $(videoContainer).find('img').attr('src') || '/images/default_profile.png';
+				    $('#modalUploaderProfile').attr('src', profilePicUrl);
 				    $('#modalUploaderName').text(username);
 				    $('#modalTitle').text(title);
 				    $('#videoNum').val(videoNum);
@@ -398,12 +477,14 @@
 				    fetchComments(videoNum);
 
 				    modal.css('display', 'block');
+				    $('body').addClass('modal-open'); // 모달 열릴 때 body에 클래스 추가
 				}
 	
 				function closeModal() {
 				    const modal = $('#videoModal');
 				    modal.css('display', 'none');
 				    $('#modalVideo')[0].pause();
+					$('body').removeClass('modal-open'); // 모달 닫힐 때 body에서 클래스 제거
 				}
 
 				// Close the modal when the user clicks anywhere outside of the modal
@@ -419,16 +500,22 @@
 				        url: `/comment/video/${videoNum}`,
 				        type: 'GET',
 				        success: function(comments) {
-				            const commentsDiv = $('#comments');
+				            const commentsDiv = $('#comments-list');
 				            commentsDiv.empty();
 				            comments.forEach(comment => {
-				                const commentElement = $('<div>').addClass('comment-item');
-				                const profilePic = $('<img>').attr('src', comment.user.profilePictureUrl || '/images/default_profile.png').addClass('rounded-circle profile-pic');
-				                const userName = $('<p>').text(comment.user.userName);
-				                const text = $('<p>').text(comment.text);
+				                const commentElement = $('<div>').addClass('comment-item row');
+				                const profilePic = $('<img>').attr('src', comment.user.profilePictureUrl || '/images/default_profile.png').addClass('rounded-circle profile-pic modal-profile col-2');
+								const testElement1 = $('<div>').addClass('col p-0')
+				                const userNameAndText = $('<p>').html('<strong>' + comment.user.userName + '</strong> ' + comment.text).addClass('col');
+								const commentLike = $('<button>').html('좋아요').addClass('row m-0 border-0 bg-white');
 
-				                commentElement.append(profilePic, userName, text);
-				                commentsDiv.append(commentElement);
+								// userNameAndText와 commentLike를 testElement1에 추가
+								testElement1.append(userNameAndText, commentLike);
+
+								// commentElement에 profilePic과 testElement1을 추가
+								commentElement.append(profilePic, testElement1);
+
+								commentsDiv.append(commentElement, '<br>', '<br>');
 				            });
 				        }
 				    });
