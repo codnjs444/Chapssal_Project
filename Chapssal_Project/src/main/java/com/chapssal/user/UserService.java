@@ -111,6 +111,10 @@ public class UserService {
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
     }
+    
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
 
     // 유저 투표시 vote 필드 1 증가
     public void incrementVote(User user) {
