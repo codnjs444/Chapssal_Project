@@ -199,6 +199,7 @@ public class TopicController {
     }
 
     // AJAX 요청을 처리하는 메서드
+    // 토픽 입력 자동 추천
     @GetMapping("/topicsuggestions")
     @ResponseBody
     public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
@@ -206,6 +207,18 @@ public class TopicController {
             return topicService.findTopTopicsThisWeek();
         } else {
             return topicService.findTopTopicsThisWeekByTitle(query);
+        }
+    }
+
+    // AJAX 요청을 처리하는 메서드
+    // 토픽 투표 자동 추천
+    @GetMapping("/votesuggestions")
+    @ResponseBody
+    public List<Topic> getVoteSuggestions(@RequestParam(required = false) String query) {
+        if (query == null || query.isEmpty()) {
+            return topicService.findTopTopicsByVotes();
+        } else {
+            return topicService.findTopTopicsByVotes(query);
         }
     }
 }

@@ -33,8 +33,34 @@
             border: none; /* 버튼 테두리 제거 */
             border-radius: 10px; /* 모서리를 둥글게 설정 */
         }
-    </style>
 
+        .search-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0; /* 위아래 마진을 추가하여 첫 번째 카드와의 간격 조정 */
+            width: 100%;
+        }
+
+        .search-container input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px; /* 오른쪽 마진 추가 */
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+       #searchSuggestions {
+            margin-top: 10px;
+            margin-bottom: 20px; /* 마진 바텀 추가 */
+            max-height: 200px;
+            overflow-y: auto;
+            width: 90%; /* 너비를 80%로 설정 */
+        }
+    </style>
 </head>
 
 <body>
@@ -49,6 +75,16 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 검색창 및 검색 버튼 추가 -->
+            <div class="col-md-12">
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="form-control" placeholder="토픽을 검색하세요">
+                    <button type="button" id="searchButton" class="btn btn-primary">검색</button>
+                </div>
+                <div id="searchSuggestions" class="list-group"></div> <!-- 자동완성 결과를 표시할 div -->
+            </div>
+
             <div class="row">
                 <div th:each="topic : ${topics}" class="col-md-4 mb-3">
                     <div class="card">
@@ -68,8 +104,6 @@
         </div>
     </div>
 </div>
-</div>
-
 
 <div th:replace="~{::editProfileModalFragment}"></div>
 <div th:replace="~{::followersModalFragment}"></div>
@@ -80,5 +114,7 @@
 
 <!-- 공통 스크립트 포함 -->
 <div th:replace="~{layout :: commonScripts}"></div>
+
+
 </body>
 </html>
