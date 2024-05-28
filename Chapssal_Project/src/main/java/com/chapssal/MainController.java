@@ -6,6 +6,8 @@ import com.chapssal.video.VideoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -17,6 +19,11 @@ public class MainController {
     private final VideoService videoService;
     private final SelectedTopicService selectedTopicService;
 
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+        return selectedTopicService.findTopicsByVoteCount();
+    }
+    
     @GetMapping("/")
     public String showMainPage(Model model) {
         List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();

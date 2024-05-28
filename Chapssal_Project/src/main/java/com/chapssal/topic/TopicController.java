@@ -6,10 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 
 import java.time.LocalDate;
@@ -150,35 +150,42 @@ public class TopicController {
     // 투표 버튼 클릭 메서드
     @PostMapping("/select")
     @ResponseBody
-    public String selectTopic(@RequestParam Integer topicId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userService.findByUserId(username);
+    public ResponseEntity<String> selectTopic(@RequestParam(name = "topicId") Integer topicId) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            User user = userService.findByUserId(username);
 
-        if (user != null) {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
             if (userService.hasReachedVoteLimit(user)) {
-                return "이번주 투표 가능한 횟수 5회를 모두 사용하셨습니다.";
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("이번주 투표 가능한 횟수 5회를 모두 사용하셨습니다.");
             }
 
             Topic topic = topicService.findById(topicId);
-            if (topic != null) {
-                SelectedTopic selectedTopic = new SelectedTopic();
-                selectedTopic.setTopic(topic);
-                selectedTopic.setUser(user);
-                selectedTopic.setCreateDate(LocalDateTime.now()); // 현재 시간으로 등록
-                selectedTopicRepository.save(selectedTopic);
-
-                // 투표 횟수 증가
-                userService.incrementVote(user);
-
-                return "투표가 완료되었습니다.";
-            } else {
-                return "유효하지 않은 토픽입니다.";
+            if (topic == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 토픽입니다.");
             }
-        } else {
-            return "사용자를 찾을 수 없습니다.";
+
+            SelectedTopic selectedTopic = new SelectedTopic();
+            selectedTopic.setTopic(topic);
+            selectedTopic.setUser(user);
+            selectedTopic.setCreateDate(LocalDateTime.now()); // 현재 시간으로 등록
+            selectedTopicRepository.save(selectedTopic);
+
+            // 투표 횟수 증가
+            userService.incrementVote(user);
+
+            return ResponseEntity.ok("투표가 완료되었습니다.");
+        } catch (Exception e) {
+            // 예외를 잡아서 로그에 기록
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 오류가 발생했습니다.");
         }
     }
+
 
     // 결과 페이지 리턴 메서드
     @GetMapping("/results")
@@ -202,7 +209,7 @@ public class TopicController {
     // 토픽 입력 자동 추천
     @GetMapping("/topicsuggestions")
     @ResponseBody
-    public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
+    public List<Topic> getSuggestions(@RequestParam(name = "query", required = false) String query) {
         if (query == null || query.isEmpty()) {
             return topicService.findTopTopicsThisWeek();
         } else {
@@ -214,7 +221,7 @@ public class TopicController {
     // 토픽 투표 자동 추천
     @GetMapping("/votesuggestions")
     @ResponseBody
-    public List<Topic> getVoteSuggestions(@RequestParam(required = false) String query) {
+    public List<Topic> getVoteSuggestions(@RequestParam(name = "query",required = false) String query) {
         if (query == null || query.isEmpty()) {
             return topicService.findTopTopicsByVotes();
         } else {
@@ -225,7 +232,7 @@ public class TopicController {
     // 검색 버튼 이벤트 구현 메서드
     @GetMapping("/search")
     @ResponseBody
-    public List<Map<String, Object>> searchTopics(@RequestParam String query) {
+    public List<Map<String, Object>> searchTopics(@RequestParam(name = "query",required = false) String query) {
         List<Topic> topics = topicService.searchTopicsByVotes(query);
         Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
 

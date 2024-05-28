@@ -260,6 +260,7 @@
 										</div>
 									</div>
 		                        </div>
+								<br>
 							    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
 							        <video controls autoplay muted>
 							            <source th:src="@{${video.videoUrl}}" type="video/mp4">
@@ -299,6 +300,7 @@
 									</div>
 								</div>
 		                    </div>
+							<br>
 		                    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
 		                        <video controls autoplay muted>
 		                            <source th:src="@{${video.videoUrl}}" type="video/mp4">
@@ -465,7 +467,7 @@
 				    const views = $(videoContainer).attr('data-views');
 				    const videoUrl = $(videoContainer).attr('data-videourl');
 
-					const profilePicUrl = $(videoContainer).find('img').attr('src') || '/images/default_profile.png';
+					const profilePicUrl = $(videoContainer).siblings('.video-content').find('img').attr('src') || '/images/default_profile.png';
 				    $('#modalUploaderProfile').attr('src', profilePicUrl);
 				    $('#modalUploaderName').text(username);
 				    $('#modalTitle').text(title);

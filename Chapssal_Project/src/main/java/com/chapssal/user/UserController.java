@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ import com.chapssal.award.AwardService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
+import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.video.S3Service;
 import com.chapssal.video.VideoService;
 
@@ -62,8 +64,16 @@ public class UserController {
     private AwardService awardService;
     
     @Autowired
+    private SelectedTopicService selectedTopicService;
+    
+    @Autowired
     private S3Service s3Service;
     private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
+    
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+        return selectedTopicService.findTopicsByVoteCount();
+    }
     
     @GetMapping("/signup")
     public String signup(Model model) {

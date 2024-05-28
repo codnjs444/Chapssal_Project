@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,11 @@ public class VideoController {
         this.s3Service = s3Service;
         this.userService = userService;
         this.selectedTopicService = selectedTopicService;
+    }
+    
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+        return selectedTopicService.findTopicsByVoteCount();
     }
 
     @PreAuthorize("isAuthenticated()")

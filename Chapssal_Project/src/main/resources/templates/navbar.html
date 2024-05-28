@@ -79,9 +79,7 @@
                         <div class="mb-3">
                             <label for="topic" class="form-label">주제</label>
                             <select name="topic" class="form-control" id="topic" required>
-                                <option value="1">주제 1</option>
-                                <option value="2">주제 2</option>
-                                <!-- 추가 주제 옵션들 -->
+								<option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
                             </select>
                         </div>
                         <input type="hidden" name="thumbnail" id="thumbnailInput">

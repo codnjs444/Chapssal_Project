@@ -607,6 +607,18 @@
                 alert('프로필 사진 기본 이미지 변경 중 오류가 발생했습니다.');
             });
         }
+		
+		// 현재 페이지 URL에 맞는 사이드바 항목에 active 클래스 추가
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+                if (link.getAttribute("href") === currentPath) {
+                    link.classList.add("active");
+                } else {
+                    link.classList.remove("active");
+                }
+            });
+        });
     </script>
 </div>
 </body>
