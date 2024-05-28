@@ -68,6 +68,10 @@ public class UserService {
     public User findByUserId(String userId) {
         return userRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
+    
+    public Optional<User> findByUserId2(String userId) {
+        return userRepository.findByUserId2(userId);
+    }
 
     public void save(User user) {
         userRepository.save(user);
@@ -112,6 +116,11 @@ public class UserService {
         return userRepository.findById(userNum).orElse(null);
     }
 
+    
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
     // 유저 투표시 vote 필드 1 증가
     public void incrementVote(User user) {
         user.setVote(user.getVote() + 1);
@@ -143,3 +152,6 @@ public class UserService {
         userRepository.saveAll(users);
     }
 }
+
+}
+

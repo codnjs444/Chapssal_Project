@@ -110,4 +110,4 @@ public class TopicService {
                 .sorted((t1, t2) -> Long.compare(t2.getVoteCount(), t1.getVoteCount()))
                 .collect(Collectors.toList());
     }
-}
+

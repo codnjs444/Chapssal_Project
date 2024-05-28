@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
 
-import com.chapssal.user.User;
-
 @Entity
 @Table(name = "Topic")
 @Getter
