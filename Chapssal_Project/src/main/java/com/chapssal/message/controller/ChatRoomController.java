@@ -69,4 +69,25 @@ public class ChatRoomController {
         message.setChatRoom(chatRoom);
         return messageService.saveMessage(message);
     }
+
+    @GetMapping("/rooms/{roomNum}/unreadCount")
+    public ResponseEntity<Long> getUnreadMessageCount(
+            @PathVariable int roomNum,
+            @RequestParam int userNum) {
+        long unreadCount = messageService.countUnreadMessages(roomNum, userNum);
+        return ResponseEntity.ok(unreadCount);
+    }
+
+    @PostMapping("/rooms/{roomNum}/markAsRead")
+    public ResponseEntity<Void> markMessagesAsRead(@PathVariable int roomNum, @RequestParam int userNum) {
+        messageService.markMessagesAsRead(roomNum, userNum);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/rooms/{roomNum}/participants/{userNum}")
+    public ResponseEntity<Void> leaveChatRoom(@PathVariable Long roomNum, @PathVariable Long userNum) {
+        chatRoomService.leaveChatRoom(roomNum, userNum);
+        return ResponseEntity.noContent().build();
+    }
+
 }

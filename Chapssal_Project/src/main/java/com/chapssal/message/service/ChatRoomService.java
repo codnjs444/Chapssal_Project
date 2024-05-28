@@ -104,4 +104,11 @@ public class ChatRoomService {
         return chatRooms;
     }
 
+
+    public void leaveChatRoom(Long roomNum, Long userNum) {
+        ChatRoom room = chatRoomRepository.findById(Math.toIntExact(roomNum)).orElseThrow(() -> new IllegalArgumentException("Invalid room ID"));
+        User user = userRepository.findById(Math.toIntExact(userNum)).orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+        participantRepository.deleteByRoomAndUser(room, user);
+    }
+
 }

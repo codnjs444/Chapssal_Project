@@ -4,6 +4,7 @@ import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
 import com.chapssal.message.repository.ChatRoomRepository;
 import com.chapssal.message.repository.MessageRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -55,4 +56,13 @@ public class MessageService {
         message.setSendDate(LocalDateTime.now());
         return messageRepository.save(message);
     }
+
+    public long countUnreadMessages(int roomNum, int currentUserNum) {
+        return messageRepository.countByChatRoom_RoomNumAndReceiver_UserNumAndIsRead(roomNum, currentUserNum);
+    }
+
+    public void markMessagesAsRead(int roomNum, int currentUserNum) {
+        messageRepository.updateIsReadByChatRoom_RoomNumAndReceiver_UserNum(roomNum, currentUserNum);
+    }
+
 }
