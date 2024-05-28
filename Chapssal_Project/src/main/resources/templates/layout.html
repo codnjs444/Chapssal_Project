@@ -228,7 +228,7 @@
                     method: 'GET',
                     data: { query: query },
                     success: function(data) {
-                        $('#searchSuggestions').empty(); // searchSuggestions 아이디 변경
+                        $('#searchSuggestions').empty();
                         data.forEach(function(item) {
                             $('#searchSuggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.title + '</a>');
                         });
@@ -237,7 +237,7 @@
             });
 
             // 자동완성 항목 클릭 시 검색창에 해당 값 설정 (새로운 기능)
-            $('#searchSuggestions').on('click', 'a', function(e) { // searchSuggestions 아이디 변경
+            $('#searchSuggestions').on('click', 'a', function(e) {
                 e.preventDefault();
                 $('#searchInput').val($(this).text());
                 $('#searchSuggestions').empty();
@@ -245,13 +245,49 @@
 
             // 검색창에서 벗어나면 추천 기능 사라지게 하기 (새로운 기능)
             $(document).on('click', function(e) {
-                if (!$(e.target).closest('#searchInput, #searchSuggestions').length) { // searchSuggestions 아이디 변경
+                if (!$(e.target).closest('#searchInput, #searchSuggestions').length) {
                     $('#searchSuggestions').empty();
                 }
+            });
+
+            // 검색 버튼 클릭 시 검색 기능 추가
+            $('#searchButton').on('click', function() {
+                let query = $('#searchInput').val();
+                $.ajax({
+                    url: '/topic/search',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function(data) {
+                        $('#topicCards').empty();
+                        data.forEach(function(item) {
+                            const voted = item.voted ? '투표 완료' : '투표';
+                            const buttonClass = item.voted ? 'voted-button' : 'vote-button';
+                            const buttonStyle = item.voted ? 'style="background-color: pink;"' : '';
+                            const disabled = item.voted ? 'disabled' : '';
+                            $('#topicCards').append(`
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${item.title}</h5>
+                                            <button data-id="${item.topicNum}" data-voted="${item.voted}" class="${buttonClass}" ${disabled} data-onclick="selectTopic">${voted}</button>
+                                            <span class="vote-count">투표받은 횟수: <span>${item.voteCount}</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        });
+
+                        // 새로 추가된 버튼들에 이벤트 핸들러 설정
+                        document.querySelectorAll('button[data-onclick="selectTopic"]').forEach(button => {
+                            button.addEventListener('click', function() {
+                                selectTopic(this);
+                            });
+                        });
+                    }
+                });
             });
         });
     </script>
 </div>
-
 </body>
 </html>

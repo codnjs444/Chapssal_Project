@@ -221,4 +221,29 @@ public class TopicController {
             return topicService.findTopTopicsByVotes(query);
         }
     }
+
+    // 검색 버튼 이벤트 구현 메서드
+    @GetMapping("/search")
+    @ResponseBody
+    public List<Map<String, Object>> searchTopics(@RequestParam String query) {
+        List<Topic> topics = topicService.searchTopicsByVotes(query);
+        Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUserId(username);
+
+        Set<Integer> votedTopicIds = selectedTopicRepository.findByUser(user).stream()
+                .map(selectedTopic -> selectedTopic.getTopic().getTopicNum())
+                .collect(Collectors.toSet());
+
+        return topics.stream().map(topic -> {
+            Map<String, Object> result = new HashMap<>();
+            result.put("topicNum", topic.getTopicNum());
+            result.put("title", topic.getTitle());
+            result.put("voteCount", voteCounts.getOrDefault(topic.getTopicNum(), 0L));
+            result.put("voted", votedTopicIds.contains(topic.getTopicNum()));
+            return result;
+        }).collect(Collectors.toList());
+    }
 }

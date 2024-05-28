@@ -8,7 +8,7 @@
             font-size: 15px; /* 기본 폰트 크기를 설정 */
         }
         .voted-button {
-            background-color: maroon;
+            background-color: pink;
             width: 45%; /* 버튼의 너비를 카드의 너비에 맞춤 */
             color: black;
             font-size: 14px; /* 버튼 글자 크기 조정 */
@@ -53,7 +53,7 @@
             font-size: 16px;
         }
 
-       #searchSuggestions {
+        #searchSuggestions {
             margin-top: 10px;
             margin-bottom: 20px; /* 마진 바텀 추가 */
             max-height: 200px;
@@ -85,7 +85,7 @@
                 <div id="searchSuggestions" class="list-group"></div> <!-- 자동완성 결과를 표시할 div -->
             </div>
 
-            <div class="row">
+            <div class="row" id="topicCards">
                 <div th:each="topic : ${topics}" class="col-md-4 mb-3">
                     <div class="card">
                         <div class="card-body">
@@ -114,7 +114,6 @@
 
 <!-- 공통 스크립트 포함 -->
 <div th:replace="~{layout :: commonScripts}"></div>
-
 
 </body>
 </html>

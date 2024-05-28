@@ -121,4 +121,15 @@ public class TopicService {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
+
+    // 검색 결과를 가져오는 서비스 메서드
+    public List<Topic> searchTopicsByVotes(String query) {
+        return selectedTopicRepository.findAll().stream()
+                .filter(st -> st.getTopic().getTitle().contains(query))
+                .collect(Collectors.groupingBy(SelectedTopic::getTopic, Collectors.counting()))
+                .entrySet().stream()
+                .sorted(Map.Entry.<Topic, Long>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
 }
