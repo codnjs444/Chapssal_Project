@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head th:replace="~{message/fragments/header}">
+    <meta charset="UTF-8">
+    <title>ChapSsenger</title>
+</head>
+
+<body>
+    <nav th:replace="~{message/navbar :: navbarFragment}"></nav>
+    <nav th:replace="~{message/fragments/sidebars :: sidebarsFragment}"></nav>
+
+    <div layout:fragment="content" class="content" style="weight:100%; height:100%;">
+        <!-- 메인 콘텐츠가 들어갈 부분 -->
+    </div>
+
+    <script>
+        let lastMessageTime = null;
+        let lastMessageDate = null;
+        let loadedMessages = new Set(); // 이미 로딩된 메시지를 추적하기 위한 Set
+
+        function escapeHtml(text) {
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+        }
+
+        function formatRelativeDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date)) {
+                return 'Invalid Date';
+            }
+
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return '오늘';
+            } else if (diffDays === 1) {
+                return '어제';
+            } else if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                if (diffWeeks < 4) {
+                    return `${diffWeeks}주 전`;
+                } else {
+                    const diffMonths = Math.floor(diffDays / 30);
+                    if (diffMonths < 12) {
+                        return `${diffMonths}달 전`;
+                    } else {
+                        const diffYears = Math.floor(diffDays / 365);
+                        return `${diffYears}년 전`;
+                    }
+                }
+            }
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateElements = document.querySelectorAll('.recent-message-date');
+
+            dateElements.forEach(function (element) {
+                const dateStr = element.getAttribute('data-date');
+                const formattedDate = formatRelativeDate(dateStr);
+                element.textContent = formattedDate;
+            });
+        });
+
+        function updateLastMessageInChatList(roomNum, message) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            chatRoomElement.find('.small.text-muted').text(message.text);
+
+            if (message.sendDate) {
+                chatRoomElement.find('.recent-message-date').text(formatRelativeDate(message.sendDate));
+            } else {
+                console.error('Message sendDate is undefined:', message);
+            }
+        }
+
+        function showMessage(message, prepend = false) {
+            var currentUserNum = parseInt($('#sender').val(), 10);
+
+            if (typeof message.sender !== 'undefined') {
+                // 이미 로딩된 메시지인지 확인
+                if (loadedMessages.has(message.messageNum)) {
+                    return;
+                }
+
+                // 새로운 메시지이면 Set에 추가
+                loadedMessages.add(message.messageNum);
+
+                var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
+                var currentTime = new Date(message.sendDate);
+                var currentDate = currentTime.toLocaleDateString();
+
+                var messageHtml = '';
+
+                if (!lastMessageDate || lastMessageDate !== currentDate) {
+                    messageHtml += '<div class="date-separator">' + currentDate + '</div>';
+                    lastMessageDate = currentDate;
+                }
+
+                messageHtml += '<div class="' + alignment + '">';
+                messageHtml += escapeHtml(message.text);
+
+                if (lastMessageTime && currentTime.getHours() === lastMessageTime.getHours() && currentTime.getMinutes() === lastMessageTime.getMinutes()) {
+                    $('.time').last().remove(); // 이전 메시지의 시간을 제거
+                }
+
+                messageHtml += '<div class="time">' + formatTime(message.sendDate) + '</div>';
+                lastMessageTime = currentTime;
+
+                messageHtml += '</div>';
+
+                if (prepend) {
+                    $('#chatMessages').prepend(messageHtml);
+                } else {
+                    $('#chatMessages').append(messageHtml);
+                }
+
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+
+                if (message.roomNum === parseInt($('#currentRoomNum').val(), 10)) {
+                    updateLastMessageInChatList(message.roomNum, message);
+                }
+            } else {
+                console.error('Invalid message format:', message);
+            }
+        }
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/messages', function (message) {
+                    var parsedMessage = JSON.parse(message.body);
+                    showMessage(parsedMessage);
+                });
+            }, function (error) {
+                console.log('STOMP error: ' + error);
+            });
+        }
+
+        $(document).ready(function () {
+            var senderValue = $('#sender').val();
+            var currentUserNum = parseInt(senderValue, 10);
+
+            if (isNaN(currentUserNum)) {
+                console.error('Invalid currentUserNum:', senderValue);
+            }
+
+            connect();
+
+            $('.list-group-item').on('click', function (event) {
+                event.preventDefault();
+                var roomNum = $(this).data('roomnum');
+
+                if (!roomNum) {
+                    console.error('roomNum is undefined');
+                    return;
+                }
+
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active');
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    return;
+                }
+
+                $('.list-group-item.active').removeClass('active');
+                $(this).addClass('active');
+
+                $('#currentRoomNum').val(roomNum);
+
+                $.ajax({
+                    url: '/api/chat/rooms/' + roomNum + '/participants',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (participants) {
+                        if (!participants || participants.length === 0) {
+                            console.error('No participants found for roomNum:', roomNum);
+                            return;
+                        }
+
+                        var otherParticipants = participants.filter(function (participant) {
+                            var userNum = parseInt(participant.user.userNum, 10);
+                            return userNum !== currentUserNum;
+                        });
+
+                        if (otherParticipants.length === 0) {
+                            console.error('No other participants found for currentUserNum:', currentUserNum);
+                            return;
+                        }
+
+                        receiverId = otherParticipants[0].user.userNum;
+                        $('#participant_a').html(
+                            `<img src="${otherParticipants[0].user.profilePictureUrl != null ? otherParticipants[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${otherParticipants[0].user.userName}`
+                        );
+
+                        $.ajax({
+                            url: '/api/chat/rooms/' + roomNum + '/messages',
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function (messages) {
+                                $('#chatMessages').empty();
+                                lastMessageTime = null;
+                                lastMessageDate = null;
+                                loadedMessages.clear(); // 메시지를 로딩할 때마다 Set을 초기화
+                                messages.reverse().forEach(function (message) { // reverse to show latest message at the bottom
+                                    showMessage(message, false);
+                                });
+
+                                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                            },
+                            error: function (err) {
+                                console.error('Failed to fetch messages:', err);
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        console.error('Failed to fetch participants:', err);
+                    }
+                });
+
+                $('#chat-box-a').show();
+                $('#chat-create').hide();
+            });
+
+            $('#sendMessageForm').on('submit', function (event) {
+                event.preventDefault();
+                sendMessage();
+            });
+
+            $('#messageText').on('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    $('#sendMessageForm').submit();
+                }
+            });
+
+            $('#chat-box-a').hide();
+            $('#chat-create').show();
+
+            // 스크롤 이벤트 핸들러 추가
+            $('#chatMessages').on('scroll', function () {
+                if ($(this).scrollTop() === 0) {
+                    loadMoreMessages();
+                }
+            });
+        });
+
+        function sendMessage() {
+            if (!stompClient) {
+                console.error('WebSocket connection not established.');
+                return;
+            }
+
+            var content = $('#messageText').val();
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var sender = parseInt($('#sender').val(), 10);
+
+            if (content.trim() !== "") {
+                const message = {
+                    'roomNum': roomNum,
+                    'sender': sender,
+                    'receiver': receiverId,
+                    'text': escapeHtml(content),
+                    'messageType': 1,
+                    'isRead': 0,
+                    'sendDate': new Date().toISOString()
+                };
+
+                stompClient.send("/app/chat", {}, JSON.stringify(message));
+                $('#messageText').val('');
+                updateLastMessageInChatList(roomNum, message); // 새 메시지를 전송할 때 리스트 업데이트
+            }
+        }
+
+        function loadMoreMessages() {
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var oldestMessageId = Math.min(...Array.from(loadedMessages));
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomNum}/messages`,
+                method: 'GET',
+                data: {
+                    oldestMessageId: oldestMessageId,
+                    limit: 20
+                },
+                dataType: 'json',
+                success: function (messages) {
+                    messages.reverse().forEach(function (message) { // reverse to prepend messages correctly
+                        showMessage(message, true);
+                    });
+                },
+                error: function (err) {
+                    console.error('Failed to fetch more messages:', err);
+                }
+            });
+        }
+
+                                document.addEventListener('DOMContentLoaded', function () {
+                                 var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+                                 var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+                                     popperConfig: function() {
+                                         return {
+                                             placement: 'bottom-start',
+                                             modifiers: [
+                                                 {
+                                                     name: 'computeStyles',
+                                                     options: {
+                                                         adaptive: false,
+                                                         gpuAcceleration: false
+                                                     }
+                                                 },
+                                                 {
+                                                     name: 'offset',
+                                                     options: {
+                                                         offset: [0, 0]
+                                                     }
+                                                 }
+                                             ]
+                                         };
+                                     }
+                                 });
+
+                                 dropdownToggle.addEventListener('click', function () {
+                                     var dropdownMenu = this.nextElementSibling;
+
+                                     // 드롭다운 메뉴가 열릴 때 스타일 설정
+                                     setTimeout(function() {
+                                         dropdownMenu.style.zIndex = '10000000000';
+                                         dropdownMenu.style.position = 'fixed';
+                                         dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                                         dropdownMenu.style.margin = '0px';
+                                         dropdownMenu.style.transform = 'translate(0px, -58px)';
+                                     }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+                                 });
+
+                                 // 드롭다운이 숨겨질 때 위치 초기화
+                                 dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+                                     var dropdownMenu = this.nextElementSibling;
+                                     dropdownMenu.style.position = '';
+                                     dropdownMenu.style.inset = '';
+                                     dropdownMenu.style.margin = '';
+                                     dropdownMenu.style.transform = '';
+                                 });
+                                });
+
+
+
+
+
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Popper.js 추가 (integrity 속성 제거) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS 추가 -->
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/js/sidebars.js}"></script>
+
+</body>
+</html>

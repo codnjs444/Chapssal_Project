@@ -1,0 +1,28 @@
+.login-form {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.login-form .form-group {
+    margin-bottom: 15px;
+}
+
+.login-form label {
+    font-weight: bold;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    height: 38px;
+    padding: 5px 10px;
+}
+
+.login-form button {
+    height: 38px;
+    font-size: 16px;
+    font-weight: bold;
+}
