@@ -33,10 +33,9 @@
         }
 
         .suggestion-item {
-            font-size: 18px; /* 추천 항목의 폰트 크기를 약간 크게 설정 */
+            font-size: 16px; /* 추천 항목의 폰트 크기를 약간 크게 설정 */
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -61,7 +60,6 @@
                             <form th:action="@{/topic/register}" th:object="${topic}" method="post">
                                 <div th:replace="~{form_errors :: formErrorsFragment}"></div>
                                 <div class="mb-3">
-                                    <label for="topic" class="form-label">5월 4주차 토픽을 등록해주세요!</label>
                                     <input type="text" th:field="*{title}" id="topicInput" class="form-control" placeholder="토픽을 입력하세요" maxlength="10" required>
                                     <div id="suggestions" class="list-group"></div>
                                 </div>
@@ -91,6 +89,36 @@
             alert("토픽 등록이 완료되었습니다");
             document.getElementById("topicInput").value = "";
         }
+
+        // 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가
+        $('#topicInput').on('input focus', function() {
+            let query = $(this).val();
+            $.ajax({
+                url: '/topic/inputsuggestions',
+                method: 'GET',
+                data: { query: query },
+                success: function(data) {
+                    $('#suggestions').empty();
+                    data.forEach(function(item) {
+                        $('#suggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.title + '</a>');
+                    });
+                }
+            });
+        });
+
+        // 자동완성 항목 클릭 시 입력창에 해당 값 설정
+        $('#suggestions').on('click', 'a', function(e) {
+            e.preventDefault();
+            $('#topicInput').val($(this).text());
+            $('#suggestions').empty();
+        });
+
+        // 입력창에서 벗어나면 추천 기능 사라지게 하기
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#topicInput, #suggestions').length) {
+                $('#suggestions').empty();
+            }
+        });
     });
 </script>
 

@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.chapssal.DataNotFoundException;
 import com.chapssal.school.School;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -35,10 +35,12 @@ public class UserService {
         user.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
         user.setVote(0); // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정
 
+
         userRepository.save(user);
         return user;
     }
-    
+
+
     public User createSocialUser(String userId, String userName) {
         User user = new User();
         user.setUserId(userId);
@@ -50,21 +52,21 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
-    
+
     public User getUser(String userid) {
-		Optional<User> siteUser = this.userRepository.findByUserId(userid);
-		if(siteUser.isPresent()) {
-			return siteUser.get();
-		} else {
-			throw new DataNotFoundException("siteuser not found");
-		}
-		
-	}
+        Optional<User> siteUser = this.userRepository.findByUserId(userid);
+        if(siteUser.isPresent()) {
+            return siteUser.get();
+        } else {
+            throw new DataNotFoundException("siteuser not found");
+        }
+
+    }
 
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
-    
+
     public User findByUserId(String userId) {
         return userRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -72,48 +74,38 @@ public class UserService {
     public void save(User user) {
         userRepository.save(user);
     }
-    
+
     public User updateUserName(String userId, String newUserName, String bio) {
         User user = userRepository.findByUserId(userId).orElse(new User());
         user.setUserName(newUserName);
         user.setBio(bio);
         return userRepository.save(user);
     }
-    
+
     public String getUserBioByUserId(String userId) {
         return userRepository.findByUserId(userId)
-                             .map(User::getBio)
-                             .orElse("");
+                .map(User::getBio)
+                .orElse("");
     }
-    
+
     public String getSchoolNameByUserId(String userId) {
         return userRepository.findByUserId(userId)
                 .map(User::getSchool)
                 .map(School::getSchoolName)
                 .orElse("학교 정보 없음");
     }
-    
+
     public Integer getUserNumByUserId(String userId) {
         return userRepository.findUserNumByUserId(userId);
     }
-    
+
     public String getUserNameByUserId(String userId) {
         return userRepository.findUserNameByUserId(userId)
-                             .orElse("사용자"); // 사용자 이름이 없을 경우 "사용자"를 반환
+                .orElse("사용자"); // 사용자 이름이 없을 경우 "사용자"를 반환
     }
 
-
-    public Optional<User> findByUserId2(String userId) {
-        return userRepository.findByUserId2(userId);
-    }
-
-    
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
-    }
-    
-    public User updateUser(User user) {
-        return userRepository.save(user);
     }
 
     // 유저 투표시 vote 필드 1 증가
@@ -146,4 +138,15 @@ public class UserService {
         }
         userRepository.saveAll(users);
     }
+
+    public Optional<User> findByUserId2(String userId) {
+        return userRepository.findByUserId2(userId);
+    }
+
+
+
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
 }
