@@ -108,6 +108,17 @@ public class UserService {
     public User updateUser(User user) {
         return userRepository.save(user);
     }
+    
+    // 유저 투표시 vote 필드 1 증가
+    public void incrementVote(User user) {
+        user.setVote(user.getVote() + 1);
+        userRepository.save(user);
+    }
+
+    // 유저가 이번주 최대 투표수에 도달했는지 판별
+    public boolean hasReachedVoteLimit(User user) {
+        return user.getVote() >= 5;
+    }
 //    public Optional<User> findByNum(Integer userNum) {
 //        return userRepository.findById(userNum);
 //    }

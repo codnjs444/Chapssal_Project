@@ -62,6 +62,10 @@ public class User {
     @Column(name = "bio", length = 255)
     private String bio; // 자기소개
 
+    // 주제 등록 횟수, 디폴트 0
+    @Column(name = "topic", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer topic; // 주제 등록 횟수
+
     // 투표권(투표 횟수), 디폴트 0
     @Column(name = "vote", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer vote; // 투표권
