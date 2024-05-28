@@ -376,7 +376,19 @@
 	    <!-- 홈 스크립트 -->
 	    <th:block th:fragment="homeVideoScript">
 	        <script>
+				function styleSpecialChars(text) {
+				    return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
+				               .replace(/@(\S+)/g, '<strong>@$1</strong>');
+				}
+				
 				$(document).ready(function() {
+					// 모든 video.title 요소를 찾아서 스타일 변경
+					$('.video-content p').each(function() {
+					    const originalText = $(this).text();
+					    const styledText = styleSpecialChars(originalText);
+					    $(this).html(styledText);
+					});
+					
 				    let options = {
 				        root: null,
 				        rootMargin: '0px',
@@ -470,7 +482,7 @@
 					const profilePicUrl = $(videoContainer).siblings('.video-content').find('img').attr('src') || '/images/default_profile.png';
 				    $('#modalUploaderProfile').attr('src', profilePicUrl);
 				    $('#modalUploaderName').text(username);
-				    $('#modalTitle').text(title);
+				    $('#modalTitle').html(styleSpecialChars(title)); // 여기서 스타일 적용
 				    $('#videoNum').val(videoNum);
 
 				    $('#modalVideoSource').attr('src', videoUrl);

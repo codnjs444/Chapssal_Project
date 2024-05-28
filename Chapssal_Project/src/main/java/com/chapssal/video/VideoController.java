@@ -1,5 +1,6 @@
 package com.chapssal.video;
 
+import com.chapssal.hashtag.HashtagService;
 import com.chapssal.topic.SelectedTopic;
 import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.topic.Topic;
@@ -36,13 +37,15 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
+    private final HashtagService hashtagService;
 
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, HashtagService hashtagService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
         this.selectedTopicService = selectedTopicService;
+        this.hashtagService = hashtagService;
     }
     
     @ModelAttribute("topicsByVoteCount")
@@ -103,6 +106,9 @@ public class VideoController {
 
             videoService.create(video);
 
+            // 해시태그 처리
+            hashtagService.extractAndSaveHashtags(title);
+            
             // 임시 파일 삭제
             Files.delete(videoTempFilePath);
             Files.delete(thumbnailTempFilePath);
