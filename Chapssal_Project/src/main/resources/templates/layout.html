@@ -608,6 +608,41 @@
             });
         }
     </script>
+
+    <!-- 학교 검색 자동완성 스크립트 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 학교 검색 입력창 자동완성 기능 추가
+            $('#schoolSearchInput').on('input focus', function() {
+                let query = $(this).val();
+                $.ajax({
+                    url: '/school/inputsuggestions',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function(data) {
+                        $('#schoolSearchSuggestions').empty();
+                        data.forEach(function(item) {
+                            $('#schoolSearchSuggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.schoolName + '</a>');
+                        });
+                    }
+                });
+            });
+
+            // 자동완성 항목 클릭 시 검색창에 해당 값 설정
+            $('#schoolSearchSuggestions').on('click', 'a', function(e) {
+                e.preventDefault();
+                $('#schoolSearchInput').val($(this).text());
+                $('#schoolSearchSuggestions').empty();
+            });
+
+            // 입력창에서 벗어나면 추천 기능 사라지게 하기
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#schoolSearchInput, #schoolSearchSuggestions').length) {
+                    $('#schoolSearchSuggestions').empty();
+                }
+            });
+        });
+    </script>
 </div>
 </body>
 </html>

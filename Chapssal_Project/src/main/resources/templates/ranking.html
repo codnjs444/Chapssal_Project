@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+
+<head>
+    <style>
+        .ranking-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px; /* 기존 20px에서 30px로 수정 */
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            background-color: white; /* 카드 배경을 흰색으로 설정 */
+            height: auto; /* 높이를 자동으로 설정 */
+        }
+
+        .ranking-arrow {
+            font-size: 32px; /* 기존 24px에서 32px로 수정 */
+            cursor: pointer;
+        }
+
+        .ranking-content {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .ranking-content h4 {
+            margin: 0;
+        }
+
+        .ranking-content p {
+            margin: 5px 0 0 0;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: flex-end; /* 오른쪽 끝으로 정렬 */
+            margin-top: 20px; /* 위아래 마진을 추가하여 카드와의 간격 조정 */
+            width: 100%;
+        }
+
+        .search-container input[type="text"] {
+            width: 200px; /* 입력 창 크기 줄이기 */
+            padding: 5px;
+            margin-right: 10px; /* 오른쪽 마진 추가 */
+        }
+
+        .search-container button {
+            padding: 5px 10px;
+        }
+
+        #searchSuggestions {
+            margin-top: 10px;
+            margin-bottom: 20px; /* 마진 바텀 추가 */
+            max-height: 200px;
+            overflow-y: auto;
+            width: 90%; /* 너비를 80%로 설정 */
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content" class="container">
+    <div class="container vertical-container">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-12">
+                    <div class="ranking-container">
+                        <span class="ranking-arrow" id="left-arrow">&lt;</span>
+                        <div class="ranking-content">
+                            <h4 th:text="${lastMonth}"></h4>
+                            <p>학교 랭킹</p>
+                        </div>
+                        <span class="ranking-arrow" id="right-arrow">&gt;</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 카드 리스트 추가 영역 -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <!-- 여기에 랭킹 카드들을 추가 -->
+                </div>
+            </div>
+            <!-- 검색창 및 검색 버튼 추가 -->
+            <div class="col-md-12">
+                <div class="search-container">
+                    <input type="text" id="schoolSearchInput" class="form-control" placeholder="학교 검색">
+                    <button type="button" id="schoolSearchButton" class="btn btn-primary">검색</button>
+                </div>
+                <div id="schoolSearchSuggestions" class="list-group"></div> <!-- 자동완성 결과를 표시할 div -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 프래그먼트 삽입 -->
+<div th:replace="~{::editProfileModalFragment}"></div>
+<div th:replace="~{::followersModalFragment}"></div>
+<!-- 외부 스크립트 파일 로드 -->
+<script src="/js/openTab.js" defer></script>
+
+</body>
+</html>
