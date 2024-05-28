@@ -29,4 +29,8 @@ public class VideoService {
     public int countVideosByUserNum(Integer userNum) {
         return videoRepository.countByUser_UserNum(userNum);
     }
+    
+    public List<Video> getVideosByUserNum(Integer userNum) {
+        return videoRepository.findByUser_UserNum(userNum);
+    }
 }

@@ -37,6 +37,7 @@ import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
 import com.chapssal.video.S3Service;
+import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
 
 import jakarta.validation.Valid;
@@ -189,6 +190,9 @@ public class UserController {
         // 수상 정보 추가
         List<Award> awards = awardService.getAwardsByUserNum(userNum);
         model.addAttribute("awards", awards);
+        
+        List<Video> userVideos = videoService.getVideosByUserNum(userNum);
+        model.addAttribute("userVideos", userVideos);
         
         return "profile";
     }

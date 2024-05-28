@@ -78,7 +78,31 @@
 		    object-fit: cover;  /* 이미지가 틀에 맞추어 잘림 없이 표시되도록 설정 */
 		    border-radius: 50%; /* 이미지가 원형 틀에 맞도록 설정 */
 		}
-
+		.video-grid {
+		    display: grid;
+		    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		    gap: 10px;
+		}
+		.video-item {
+		    position: relative;
+		    overflow: hidden;
+		}
+		.video-item img {
+		    width: 100%;
+		    height: auto;
+		    display: block;
+		}
+		.video-item .video-title {
+		    position: absolute;
+		    bottom: 0;
+		    left: 0;
+		    right: 0;
+		    background: rgba(0, 0, 0, 0.5);
+		    color: white;
+		    padding: 5px;
+		    font-size: 0.9rem;
+		    text-align: center;
+		}
     </style>
 </head>
 <body>
@@ -155,6 +179,16 @@
                         <span>좋아요</span>
                     </button>
                 </div>
+				
+				<!-- 동영상 그리드 -->
+				<div class="video-grid">
+				    <div th:each="video : ${userVideos}" class="video-item">
+				        <a th:href="@{'/explore/' + ${video.videoNum}}">
+				            <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
+				            <div class="video-title" th:text="${video.title}">Video Title</div>
+				        </a>
+				    </div>
+				</div>
 
                 <!-- 아이콘 네비게이션에 따른 콘텐츠 -->
                 <div class="tab-content">
