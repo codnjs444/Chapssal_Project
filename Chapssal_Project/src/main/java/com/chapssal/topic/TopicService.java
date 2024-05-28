@@ -56,6 +56,11 @@ public class TopicService {
         return topic.orElse(null);
     }
 
+    // 주제 검색
+    public List<Topic> searchTopics(String keyword) {
+        return topicRepository.findByTitleContainingIgnoreCaseOrderByCountDesc(keyword);
+    }
+
     // 이번 주의 토픽만 가져오는 메서드
     public List<Topic> findThisWeekTopics() {
         LocalDateTime now = LocalDateTime.now();
@@ -79,35 +84,16 @@ public class TopicService {
     }
 
     // 자동완성을 위한 메서드
-    public List<Topic> findTopTopicsThisWeek(String title) {
+    public List<Topic> findTopTopicsThisWeekByTitle(String title) {
         LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
         LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
         return topicRepository.findTop3ByTitleStartingWithIgnoreCaseAndCreateDateBetweenOrderByCountDesc(title, startOfWeek, endOfWeek);
     }
 
-    // 주의 가장 많은 count 순으로 3개 검색
+    // 해당 주의 가장 많은 count 순으로 3개 검색
     public List<Topic> findTopTopicsThisWeek() {
         LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
         LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
         return topicRepository.findTop3ByCreateDateBetweenOrderByCountDesc(startOfWeek, endOfWeek);
-    }
-
-    // 검색 및 투표수를 가져오는 메서드, 이번 주만 가져옴
-    public List<Topic> searchTopicsThisWeek(String query) {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-        return topicRepository.findByTitleContainingAndCreateDateBetween(query, startOfWeek, endOfWeek);
-    }
-
-    public List<TopicDTO> searchTopicsForVoting(String query) {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-        List<Topic> topics = topicRepository.findByTitleContainingAndCreateDateBetween(query, startOfWeek, endOfWeek);
-        Map<Integer, Long> voteCounts = getVoteCountsForTopics();
-
-        return topics.stream()
-                .map(topic -> new TopicDTO(topic.getTopicNum(), topic.getTitle(), voteCounts.getOrDefault(topic.getTopicNum(), 0L)))
-                .sorted((t1, t2) -> Long.compare(t2.getVoteCount(), t1.getVoteCount()))
-                .collect(Collectors.toList());
     }
 }

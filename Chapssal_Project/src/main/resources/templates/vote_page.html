@@ -33,47 +33,41 @@
             border: none; /* 버튼 테두리 제거 */
             border-radius: 10px; /* 모서리를 둥글게 설정 */
         }
-        .suggestion-item {
-            font-size: 16px; /* 추천 항목의 폰트 크기를 약간 크게 설정 */
-        }
     </style>
 
 </head>
 
 <body>
 <div layout:fragment="content" class="container">
-    <div class="container vertical-container">
-        <div class="container mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 th:text="${currentWeek} + ' 영상 토픽 투표'">영상 토픽 투표</h4>
+                        <p>이번주 투표 횟수 : <span th:text="${userVoteCount}">0</span> / 투표 가능 횟수 : <span th:text="${maxVoteCount}">5</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div th:each="topic : ${topics}" class="col-md-4 mb-3">
                     <div class="card">
-                        <div class="card-header">
-                            <h4 th:text="${currentWeek} + ' 영상 토픽 투표'">영상 토픽 투표</h4>
-                            <p>이번주 투표 횟수: <span th:text="${userVoteCount}">0</span> / 투표 가능 횟수: <span th:text="${maxVoteCount}">5</span></p>
-                            <div class="mb-3">
-                                <label for="searchInput" class="form-label">토픽 검색</label>
-                                <input type="text" id="searchInput" class="form-control" placeholder="검색어를 입력하세요">
-                            </div>
-                        </div>
                         <div class="card-body">
-                            <div id="voteCards" class="row">
-                                <!-- 기존의 투표 카드들 -->
-                                <div th:each="topic : ${topics}" class="col-md-4">
-                                    <div class="card mb-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title" th:text="${topic.title}">토픽 제목</h5>
-                                            <button type="button" class="btn btn-primary" th:attr="data-id=${topic.topicNum}" onclick="selectTopic(this)">투표</button>
-                                            <p th:text="'투표받은 횟수: ' + ${voteCounts[topic.topicNum]}"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h5 class="card-title" th:text="${topic.title}">토픽 제목</h5>
+                            <button th:data-id="${topic.topicNum}"
+                                    th:data-voted="${#lists.contains(votedTopicIds, topic.topicNum)}"
+                                    th:text="${#lists.contains(votedTopicIds, topic.topicNum) ? '투표 완료' : '투표'}"
+                                    th:classappend="${#lists.contains(votedTopicIds, topic.topicNum) ? ' voted-button' : ' vote-button'}"
+                                    th:disabled="${#lists.contains(votedTopicIds, topic.topicNum)}"
+                                    data-onclick="selectTopic">투표</button>
+                            <span class="vote-count">투표받은 횟수: <span th:text="${voteCounts[topic.topicNum] != null ? voteCounts[topic.topicNum] : 0}">0</span></span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 

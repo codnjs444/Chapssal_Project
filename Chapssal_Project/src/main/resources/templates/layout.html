@@ -175,7 +175,6 @@
             });
         }
 
-
         // 페이지 로드 시 이미 투표한 버튼 업데이트
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('button[data-voted="true"]').forEach(button => {
@@ -195,7 +194,7 @@
             $('#topicInput').on('input focus', function() {
                 let query = $(this).val();
                 $.ajax({
-                    url: '/topic/inputsuggestions',
+                    url: '/topic/topicsuggestions',
                     method: 'GET',
                     data: { query: query },
                     success: function(data) {
@@ -220,42 +219,8 @@
                     $('#suggestions').empty();
                 }
             });
-
-            // 투표 페이지 검색 기능 추가
-            $('#searchInput').on('input', function() {
-                let query = $(this).val();
-                $.ajax({
-                    url: '/topic/search',
-                    method: 'GET',
-                    data: { query: query },
-                    success: function(data) {
-                        $('#voteCards').empty();
-                        data.forEach(function(item) {
-                            $('#voteCards').append(`
-                                <div class="col-md-4">
-                                    <div class="card mb-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title">${item.title}</h5>
-                                            <button type="button" class="btn btn-primary" data-id="${item.topicNum}" onclick="selectTopic(this)">투표</button>
-                                            <p>투표받은 횟수: ${item.voteCount}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `);
-                        });
-                    }
-                });
-            });
-
         });
-
-
-
     </script>
 </div>
-
-
-
 </body>
-
 </html>
