@@ -59,8 +59,8 @@ public class UserController {
         // 학교 코드가 존재하는지 확인
         School school = schoolRepository.findBySchoolCode(userCreateForm.getSchoolCode()).orElse(null);
         if(school == null) {
-                bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
-                return "signup_form";
+            bindingResult.rejectValue("schoolCode", "schoolCodeNotFound", "유효한 학교 코드가 아닙니다.");
+            return "signup_form";
         }
 
         try {

@@ -1,5 +1,6 @@
 package com.chapssal;
 
+import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
 import org.springframework.stereotype.Controller;
@@ -14,11 +15,16 @@ import java.util.List;
 public class MainController {
 
     private final VideoService videoService;
+    private final SelectedTopicService selectedTopicService;
 
     @GetMapping("/")
     public String showMainPage(Model model) {
-        List<Video> videos = videoService.findAll(); // 인스턴스 메소드 호출
+        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+
+        List<Video> videos = videoService.findAll();
         model.addAttribute("videos", videos);
+
         return "home"; // home.html 파일을 렌더링
     }
 }

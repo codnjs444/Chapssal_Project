@@ -1,7 +1,7 @@
 <div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom"
      xmlns:th="http://www.w3.org/1999/xhtml">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">  찹쌀떡</a>
+        <a class="navbar-brand" href="/"><img th:src="${'/images/chapssal_logo.png'}" style="width: 96px; height: 54px;"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -63,20 +63,19 @@
                         <!-- 비디오 미리보기 -->
                         <div id="previewContainer" class="mt-3 position-relative" style="height: 250px;"> <!-- 높이를 약간 줄임 -->
                             <label for="videoPreview" class="form-label">미리보기</label>
-                            <div id="emptyPreview" class="w-100 h-100 border border-secondary" style="height: 200px;"></div> <!-- 높이를 약간 줄임 -->
+                            <div id="emptyPreview" class="w-100 h-90 border border-secondary" style="height: 200px;"></div> <!-- 높이를 약간 줄임 -->
                             <video id="videoPreview" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none;">
                                 <source id="videoSource" src="" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
                         </div>
                         <div class="mb-3">
-                            <label for="title" class="form-label">제목</label>
+                            <label for="title" class="form-label">내용</label>
                             <input type="text" name="title" class="form-control" id="title" required>
                         </div>
                         <div class="mb-3">
                             <label for="topic" class="form-label">주제</label>
                             <select name="topic" class="form-control" id="topic" required>
-                                <option value="">선택</option>
                                 <option value="1">주제 1</option>
                                 <option value="2">주제 2</option>
                                 <!-- 추가 주제 옵션들 -->
@@ -98,6 +97,7 @@
 <th:block th:fragment="uploadModalScript">
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+			console.log('asd');
             var uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'), {
                 backdrop: true
             });
