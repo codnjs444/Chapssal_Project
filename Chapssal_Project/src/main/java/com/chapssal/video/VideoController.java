@@ -1,5 +1,6 @@
 package com.chapssal.video;
 
+import com.chapssal.follow.FollowService;
 import com.chapssal.topic.SelectedTopic;
 import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.topic.Topic;
@@ -8,6 +9,9 @@ import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +40,13 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
-
+    
+    @Autowired
+    private FollowService followService;
+    
+    @Autowired
+    private VideoLikeService videoLikeService;
+    
     @Autowired
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
         this.videoService = videoService;
@@ -142,15 +152,62 @@ public class VideoController {
     
     @GetMapping("/video/{videoNum}")
     public String getVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
         Optional<Video> videoOptional = videoService.findById(videoNum);
+        
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
         if (!videoOptional.isPresent()) {
             return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
         }
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
         Video video = videoOptional.get();
+
+        // 프로필 페이지의 사용자 정보를 가져옴
+        User user = userService.findByUserNum(userNum);
+        if (user == null) {
+            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
+        }
+        
+        String userName = user.getUserName();
+        String schoolName = user.getSchool().getSchoolName();
+        String profilePictureUrl = user.getProfilePictureUrl(); // 상대방의 프로필 사진 URL을 가져옴
+        
+        model.addAttribute("userName", userName);
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
+        model.addAttribute("userNum", userNum); // 조회된 사용자의 userNum
         model.addAttribute("videoUrl", video.getVideoUrl());
         model.addAttribute("videoTitle", video.getTitle());
         model.addAttribute("videoUser", video.getUser());
+        
+        // 팔로우 상태 추가
+        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
 
+        List<User> followingUsers = followService.getFollowingUsers(userNum);
+        List<User> followerUsers = followService.getFollowerUsers(userNum);
+
+        model.addAttribute("followingUsers", followingUsers);
+        model.addAttribute("followerUsers", followerUsers);
+
+        // 좋아요 상태 확인
+        boolean isLiked = videoLikeService.isLikedByUser(videoNum, currentUserNum);
+        model.addAttribute("isLiked", isLiked);
+
+        // 좋아요 수 카운트
+        int likeCount = videoLikeService.countLikesByVideoId(videoNum);
+        model.addAttribute("likeCount", likeCount);
+        
         // 이전 및 다음 비디오 ID 설정
         int prevVideoNum = videoService.getPrevVideoId(videoNum, userNum);
         int nextVideoNum = videoService.getNextVideoId(videoNum, userNum);
@@ -160,5 +217,7 @@ public class VideoController {
 
         return "video"; // video.html로 이동
     }
+
+
 
 }

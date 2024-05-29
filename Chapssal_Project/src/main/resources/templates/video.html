@@ -4,64 +4,102 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <style>
-        body {
-            background-color: #000;
-            color: #fff;
-            overflow: hidden;
-        }
-        .video-container {
-            display: flex;
-            height: 100vh;
-            position: relative;
-        }
-        .video-section {
-            flex: 3;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .video-section video {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        .info-section {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: #111;
-        }
-        .info-section h5 {
-            margin-bottom: 10px;
-        }
-        .info-section p {
-            margin-bottom: 20px;
-        }
-        .comments-section {
-            margin-top: 20px;
-        }
-        .comments-section h6 {
-            margin-bottom: 10px;
-        }
-        .close-btn, .navigation-btns {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .navigation-btns {
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-        }
-        .navigation-btns button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            display: block;
-            margin: 10px 0;
-        }
+		body {
+		    background-color: #000;
+		    color: #fff;
+		    overflow: hidden;
+		}
+		.video-container {
+		    display: flex;
+		    height: 100vh;
+		    position: relative;
+		}
+		.video-section {
+		    flex: 3;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    position: relative;
+		}
+		.video-section video {
+		    max-width: 100%;
+		    max-height: 100%;
+		}
+		.info-section {
+		    flex: 1;
+		    padding: 20px;
+		    overflow-y: auto;
+		    background-color: #fff;
+		    color: #000;
+		}
+		.profile-section, .comments-section {
+		    background-color: #f9f9f9;
+		    padding: 10px;
+		    border-radius: 10px;
+		    margin-bottom: 20px;
+		}
+		.profile-section .follow-btn {
+		    color: #fff;
+		    background-color: #ff0050;
+		    border: none;
+		    padding: 5px 20px; /* 버튼 길이 조정 */
+		    border-radius: 5px;
+		    margin-left: auto;
+		}
+		.comments-section h6 {
+		    margin-bottom: 10px;
+		}
+		.comment-item {
+		    display: flex;
+		    margin-bottom: 10px;
+		}
+		.comment-item img {
+		    width: 40px;
+		    height: 40px;
+		    border-radius: 50%;
+		    margin-right: 10px;
+		}
+		.comment-item .comment-body {
+		    flex-grow: 1;
+		}
+		.close-btn, .navigation-btns {
+		    position: absolute;
+		    top: 20px;
+		    right: 20px;
+		    z-index: 1000;
+		}
+		.navigation-btns {
+		    top: 50%;
+		    right: 20px;
+		    transform: translateY(-50%);
+		}
+		.navigation-btns button {
+		    background: none;
+		    border: none;
+		    color: white;
+		    font-size: 24px;
+		    display: block;
+		    margin: 10px 0;
+		}
+		.profile-section img {
+		    width: 40px; /* 프로필 사진 크기를 줄입니다 */
+		    height: 40px; /* 프로필 사진 크기를 줄입니다 */
+		}
+		.profile-info-container {
+		    display: flex;
+		    align-items: center;
+		    flex-grow: 1;
+		    margin-left: 10px; /* 이름을 이미지 옆에 가깝게 배치 */
+		}
+		.profile-section h5 {
+		    font-size: 1rem; /* 이름 크기 조절 */
+		    margin-bottom: 0;
+		}
+		.profile-section small {
+		    display: block; /* 학교를 이름 아래에 표시 */
+		    font-size: 0.8rem; /* 학교 이름 크기 조절 */
+		    color: #6c757d; /* 학교 이름 색상 조절 */
+		}
     </style>
 </head>
 <body>
@@ -71,9 +109,9 @@
                 <source th:src="${videoUrl}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            <button class="close-btn btn btn-outline-light" id="closeButton" onclick="history.back();">
-                <i class="bi bi-x"></i>
-            </button>
+			<button class="close-btn btn btn-outline-light" id="closeButton" onclick="navigateToProfile()">
+			    <i class="bi bi-x"></i>
+			</button>
 			<div class="navigation-btns">
 			    <button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${videoUser.userNum} + ')'" th:disabled="${nextVideoNum} == 0">
 			        <i class="bi bi-chevron-up"></i>
@@ -84,11 +122,61 @@
 			</div>
         </div>
         <div class="info-section">
-            <h5 th:text="${videoTitle}">Video Title</h5>
-            <p th:text="${videoDescription}">Video Description</p>
+            <div class="profile-section">
+				<div class="d-flex align-items-center mb-2">
+					<img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진">
+					<div class="profile-info-container">
+					    <div>
+					        <h5 th:text="${userName != null ? userName : '사용자'}"></h5>
+					        <small th:text="${schoolName}"></small>
+					    </div>
+					</div>
+					<button type="button"
+					        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm text-white'"
+					        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
+					    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
+					    <span th:text="${isFollowing} ? '팔로잉' : '팔로우'"></span>
+					</button>
+				</div>
+				<p th:text="${videoTitle}"></p>
+<!--                <a href="#" class="text-muted">자세히</a>-->
+			<div class="d-flex justify-content-around mt-3">
+			    <div class="d-flex align-items-center">
+			        <button type="button" class="btn btn-link" 
+			                th:classappend="${isLiked} ? 'text-danger' : 'text-muted'"
+			                th:attr="onclick=|likeVideo(${videoNum}, ${currentUserNum}, '${isLiked}')|">
+			            <i th:classappend="${isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+			        </button>
+			        <span class="like-count ms-0" th:text="${likeCount}"></span> <!-- 좋아요 수 표시, 더 가까이 위치 -->
+			    </div>
+				<div class="d-flex align-items-center">
+				    <div><i class="bi bi-chat"></i> 47</div>
+				</div>
+				<div class="d-flex align-items-center">
+				    <div><i class="bi bi-share"></i> 593</div>
+				</div>
+			</div>
+			
+            </div>
             <div class="comments-section">
-                <h6>Comments</h6>
-                <!-- 댓글 부분은 추후 추가할 예정 -->
+                <h6>댓글</h6>
+                <div class="comment-item">
+                    <img src="https://via.placeholder.com/40" alt="사용자 사진">
+                    <div class="comment-body">
+                        <strong>기메띠・크리에이터</strong>
+                        <p>아라와 연우 후속 이야기는 무더운 어느 여름날 공개 예정입니다 😎</p>
+                        <small>5-9</small>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <img src="https://via.placeholder.com/40" alt="사용자 사진">
+                    <div class="comment-body">
+                        <strong>키드 스토커</strong>
+                        <p>빨리왔다!</p>
+                        <small>5-9</small>
+                    </div>
+                </div>
+                <!-- 추가 댓글 아이템 -->
             </div>
         </div>
     </div>
@@ -96,6 +184,72 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script th:inline="javascript">
 	    /*<![CDATA[*/
+	    function followUser(currentUserNum, userNum, isFollowing) {
+	        console.log("followUser 함수 호출됨");
+
+	        if (isFollowing === 'true') {
+	            if (!confirm('팔로우를 취소하시겠습니까?')) {
+	                return;
+	            }
+	        }
+
+	        let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+	        let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+
+	        fetch(url, {
+	            method: method,
+	            headers: {
+	                'Content-Type': 'application/json'
+	            },
+	            body: JSON.stringify({
+	                follower: currentUserNum,
+	                following: userNum
+	            })
+	        })
+	        .then(response => response.json())
+	        .then(data => {
+	            if (data.success) {
+	                location.reload();
+	            } else {
+	                alert('작업 실패: ' + data.message);
+	            }
+	        })
+	        .catch(error => {
+	            console.error('Error:', error);
+	            alert('작업 중 오류가 발생했습니다.');
+	        });
+	    }
+
+	    function likeVideo(videoNum, currentUserNum, isLiked) {
+	        console.log("likeVideo 함수 호출됨");
+
+	        let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
+	        let method = isLiked === 'true' ? 'DELETE' : 'POST';
+
+	        fetch(url, {
+	            method: method,
+	            headers: {
+	                'Content-Type': 'application/json'
+	            },
+	            body: JSON.stringify({
+	                video: videoNum,
+	                user: currentUserNum
+	            })
+	        })
+	        .then(response => response.json())
+	        .then(data => {
+	            if (data.success) {
+	                location.reload();
+	            } else {
+	                alert('작업 실패: ' + data.message);
+	            }
+	        })
+	        .catch(error => {
+	            console.error('Error:', error);
+	            alert('작업 중 오류가 발생했습니다.');
+	        });
+	    }
+
 	    function navigateVideo(videoNum, userNum) {
 	        // 이 함수는 주어진 비디오 번호와 사용자 번호로 이동합니다.
 	        if (videoNum === 0) {
@@ -105,20 +259,26 @@
 	        }
 	    }
 
-		document.addEventListener('keydown', function(event) {
-		    if (event.key === 'ArrowUp') {
-		        // 위 방향키를 누르면 이전 비디오로 이동
-		        navigateVideo(/*[[${prevVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
-		    } else if (event.key === 'ArrowDown') {
-		        // 아래 방향키를 누르면 다음 비디오로 이동
-		        navigateVideo(/*[[${nextVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
-		    } else if (event.key === 'Escape') {
-		        // Esc 키를 누르면 프로필 페이지로 이동
-		        history.back();
-		    }
-		});
-		/*]]>*/
+	    function navigateToProfile() {
+	        // 사용자의 프로필 페이지로 이동합니다.
+	        const userNum = /*[[${videoUser.userNum}]]*/;
+	        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+	    }
 
+	    document.addEventListener('keydown', function(event) {
+	        if (event.key === 'ArrowUp') {
+	            // 위 방향키를 누르면 이전 비디오로 이동
+	            navigateVideo(/*[[${prevVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
+	        } else if (event.key === 'ArrowDown') {
+	            // 아래 방향키를 누르면 다음 비디오로 이동
+	            navigateVideo(/*[[${nextVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
+	        } else if (event.key === 'Escape') {
+	            // Esc 키를 누르면 프로필 페이지로 이동
+	            navigateToProfile();
+	        }
+	    });
+	    /*]]>*/
 	</script>
-</body>
-</html>
+
+	</body>
+	</html>
