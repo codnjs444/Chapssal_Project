@@ -8,16 +8,17 @@
         cursor: pointer;
     }
 
-    #hashtagSuggestions {
-        position: absolute;
-        z-index: 1000;
-        background-color: white;
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
+	#hashtagSuggestions,
+	#userSuggestions {
+	    position: absolute;
+	    z-index: 1000;
+	    background-color: white;
+	    width: 100%;
+	    max-height: 200px;
+	    overflow-y: auto;
+	    border: 1px solid #ccc;
+	    border-radius: 5px;
+	}
 </style>
 </head>
 <div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
@@ -30,16 +31,17 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;">
-                <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search">
-                <button class="btn btn-outline-success rounded-pill" type="submit">
-                    <i class="bi bi-search"></i>
-                </button>
+				<input id="searchInput" class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search">
+				<div id="searchSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+				<button class="btn btn-outline-success rounded-pill" type="submit">
+				    <i class="bi bi-search"></i>
+				</button>
             </form>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <div class="upload-container">
+                    <div class="upload-container" data-bs-toggle="modal" data-bs-target="#uploadModal">
                         <span class="upload-text">업로드</span>
-                        <button class="upload-button" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <button class="upload-button">
                             <i class="bi bi-plus"></i>
                         </button>
                     </div>
@@ -68,8 +70,8 @@
 <!-- 모달 컴포넌트를 별도의 프래그먼트로 분리 -->
 <div th:fragment="uploadModalFragment">
     <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="max-height: 80vh;">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered" style="height: 85%;">
+            <div class="modal-content" style="height:85%;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="uploadModalLabel">업로드</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -98,6 +100,7 @@
 						    <label for="title" class="form-label">내용</label>
 						    <input type="text" name="title" class="form-control" id="title" required>
 						    <div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+							<div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
 						</div>
                         <div class="mb-3">
                             <label for="topic" class="form-label">주제</label>
@@ -235,72 +238,113 @@
                 }
                 return true;
             };
-			
-			const titleInput = document.getElementById('title');
-			const hashtagSuggestions = document.getElementById('hashtagSuggestions');
+					
+		    const titleInput = document.getElementById('title');
+		    const hashtagSuggestions = document.getElementById('hashtagSuggestions');
+		    const userSuggestions = document.getElementById('userSuggestions');
 
-			// 제목 입력 시 해시태그 자동완성 기능 추가
-			titleInput.addEventListener('input', function() {
-			    const query = this.value;
-			    const hashtagIndex = query.lastIndexOf('#');
-			    if (hashtagIndex !== -1) {
-			        const hashtagQuery = query.substring(hashtagIndex + 1);
-			        if (hashtagQuery.length > 0) {
-			            $.ajax({
-			                url: '/hashtag/suggestions',
-			                method: 'GET',
-			                data: { query: hashtagQuery },
-			                success: function(data) {
-			                    hashtagSuggestions.innerHTML = '';
-			                    data.forEach(function(item) {
-			                        const suggestionItem = document.createElement('a');
-			                        suggestionItem.href = '#';
-			                        suggestionItem.classList.add('list-group-item', 'list-group-item-action', 'suggestion-item');
-			                        suggestionItem.textContent = `#${item.tag}`;
-			                        hashtagSuggestions.appendChild(suggestionItem);
-			                    });
-			                }
-			            });
-			        } else {
-			            $.ajax({
-			                url: '/hashtag/suggestions',
-			                method: 'GET',
-			                data: { query: '' },
-			                success: function(data) {
-			                    hashtagSuggestions.innerHTML = '';
-			                    data.forEach(function(item) {
-			                        const suggestionItem = document.createElement('a');
-			                        suggestionItem.href = '#';
-			                        suggestionItem.classList.add('list-group-item', 'list-group-item-action', 'suggestion-item');
-			                        suggestionItem.textContent = `#${item.tag}`;
-			                        hashtagSuggestions.appendChild(suggestionItem);
-			                    });
-			                }
-			            });
-			        }
-			    } else {
-			        hashtagSuggestions.innerHTML = '';
-			    }
-			});
+		    // 제목 입력 시 해시태그 및 사용자 이름 자동완성 기능 추가
+		    titleInput.addEventListener('input', function() {
+		        const query = this.value;
+		        const hashtagIndex = query.lastIndexOf('#');
+		        const userIndex = query.lastIndexOf('@');
 
-			// 자동완성 항목 클릭 시 입력창에 해당 값 설정
-			hashtagSuggestions.addEventListener('click', function(e) {
-			    if (e.target.classList.contains('suggestion-item')) {
-			        e.preventDefault();
-			        const query = titleInput.value;
-			        const hashtagIndex = query.lastIndexOf('#');
-			        titleInput.value = query.substring(0, hashtagIndex) + e.target.textContent + ' ';
-			        hashtagSuggestions.innerHTML = '';
-			    }
-			});
+		        // 해시태그 자동완성
+		        if (hashtagIndex !== -1 && (userIndex === -1 || hashtagIndex > userIndex)) {
+		            const hashtagQuery = query.substring(hashtagIndex + 1);
+		            if (hashtagQuery.length > 0) {
+		                $.ajax({
+		                    url: '/hashtag/suggestions',
+		                    method: 'GET',
+		                    data: { query: hashtagQuery },
+		                    success: function(data) {
+		                        hashtagSuggestions.innerHTML = '';
+		                        data.forEach(function(item) {
+		                            const suggestionItem = document.createElement('a');
+		                            suggestionItem.href = '#';
+		                            suggestionItem.classList.add('list-group-item', 'list-group-item-action', 'suggestion-item');
+		                            suggestionItem.textContent = `#${item.tag}`;
+		                            hashtagSuggestions.appendChild(suggestionItem);
+		                        });
+		                    }
+		                });
+		            } else {
+		                $.ajax({
+		                    url: '/hashtag/suggestions',
+		                    method: 'GET',
+		                    data: { query: '' },
+		                    success: function(data) {
+		                        hashtagSuggestions.innerHTML = '';
+		                        data.forEach(function(item) {
+		                            const suggestionItem = document.createElement('a');
+		                            suggestionItem.href = '#';
+		                            suggestionItem.classList.add('list-group-item', 'list-group-item-action', 'suggestion-item');
+		                            suggestionItem.textContent = `#${item.tag}`;
+		                            hashtagSuggestions.appendChild(suggestionItem);
+		                        });
+		                    }
+		                });
+		            }
+		        } else {
+		            hashtagSuggestions.innerHTML = '';
+		        }
 
-			// 입력창에서 벗어나면 추천 기능 사라지게 하기
-			document.addEventListener('click', function(e) {
-			    if (!e.target.closest('#title, #hashtagSuggestions')) {
-			        hashtagSuggestions.innerHTML = '';
-			    }
-			});
-        });
+		        // 사용자 이름 자동완성
+		        if (userIndex !== -1 && (hashtagIndex === -1 || userIndex > hashtagIndex)) {
+		            const userQuery = query.substring(userIndex + 1);
+		            if (userQuery.length > 0) {
+		                $.ajax({
+		                    url: '/user/suggestions',
+		                    method: 'GET',
+		                    data: { query: userQuery },
+		                    success: function(data) {
+		                        userSuggestions.innerHTML = '';
+		                        data.forEach(function(item) {
+		                            const suggestionItem = document.createElement('a');
+		                            suggestionItem.href = '#';
+		                            suggestionItem.classList.add('list-group-item', 'list-group-item-action', 'suggestion-item');
+		                            suggestionItem.textContent = `@${item.userName}`;
+		                            userSuggestions.appendChild(suggestionItem);
+		                        });
+		                    }
+		                });
+		            } else {
+		                userSuggestions.innerHTML = '';
+		            }
+		        } else {
+		            userSuggestions.innerHTML = '';
+		        }
+		    });
+
+		    // 자동완성 항목 클릭 시 입력창에 해당 값 설정
+		    hashtagSuggestions.addEventListener('click', function(e) {
+		        if (e.target.classList.contains('suggestion-item')) {
+		            e.preventDefault();
+		            const query = titleInput.value;
+		            const hashtagIndex = query.lastIndexOf('#');
+		            titleInput.value = query.substring(0, hashtagIndex) + e.target.textContent + ' ';
+		            hashtagSuggestions.innerHTML = '';
+		        }
+		    });
+
+		    userSuggestions.addEventListener('click', function(e) {
+		        if (e.target.classList.contains('suggestion-item')) {
+		            e.preventDefault();
+		            const query = titleInput.value;
+		            const userIndex = query.lastIndexOf('@');
+		            titleInput.value = query.substring(0, userIndex) + e.target.textContent + ' ';
+		            userSuggestions.innerHTML = '';
+		        }
+		    });
+
+		    // 입력창에서 벗어나면 추천 기능 사라지게 하기
+		    document.addEventListener('click', function(e) {
+		        if (!e.target.closest('#title, #searchInput, #hashtagSuggestions, #userSuggestions, #searchSuggestions')) {
+		            hashtagSuggestions.innerHTML = '';
+		            userSuggestions.innerHTML = '';
+		        }
+		    });
+		});
     </script>
 </th:block>
 

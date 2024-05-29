@@ -116,7 +116,7 @@ public class UserService {
 
     // 유저가 이번주 최대 투표수에 도달했는지 판별
     public boolean hasReachedVoteLimit(User user) {
-        return user.getVote() >= 5;
+        return user.getVote() >= 5;	
     }
 
     // 유저 테이블의 topic 컬럼을 0으로 초기화하는 메서드
@@ -149,4 +149,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public List<User> getUserSuggestions(String query) {
+        return userRepository.findByUserNameContaining(query); // 수정된 부분
+    }
 }

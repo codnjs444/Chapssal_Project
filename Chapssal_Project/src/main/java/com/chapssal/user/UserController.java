@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -359,5 +361,29 @@ public class UserController {
     @GetMapping("/test")
     public String testPage() {
         return "test";
+    }
+    
+    @GetMapping("/suggestions")
+    @ResponseBody
+    public List<UserDTO> getUserSuggestions(@RequestParam(name = "query") String query) {
+        return userService.getUserSuggestions(query).stream()
+                .map(user -> new UserDTO(user.getUserName()))
+                .collect(Collectors.toList());
+    }
+
+    static class UserDTO {
+        private String userName;
+
+        public UserDTO(String userName) {
+            this.userName = userName;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
     }
 }

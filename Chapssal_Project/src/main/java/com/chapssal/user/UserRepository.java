@@ -10,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, Integer> {
 	Optional<User> findByUserId(String userId);
 
+    // 수정된 부분: findByUserNameContaining 메서드 추가
+    List<User> findByUserNameContaining(String userName);
+
     @Query("SELECT u FROM User u WHERE u.userId = :userId")
     Optional<User> findByUserId2(@Param("userId") String userId);
 

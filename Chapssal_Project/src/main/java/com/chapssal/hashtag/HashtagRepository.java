@@ -11,6 +11,9 @@ public interface HashtagRepository extends JpaRepository<Hashtag, Integer> {
 
     List<Hashtag> findByTagStartingWith(String query);   
 
+    // 새로운 메서드 추가
+    List<Hashtag> findByTagContaining(String query);
+    
     @Query("SELECT h FROM Hashtag h ORDER BY h.hashtagCount DESC LIMIT 5")
     List<Hashtag> findTop5ByOrderByHashtagCountDesc();
 }

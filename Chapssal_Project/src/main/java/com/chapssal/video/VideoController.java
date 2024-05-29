@@ -107,7 +107,7 @@ public class VideoController {
             videoService.create(video);
 
             // 해시태그 처리
-            hashtagService.extractAndSaveHashtags(title);
+            hashtagService.extractAndSaveHashtags(title, video);
             
             // 임시 파일 삭제
             Files.delete(videoTempFilePath);

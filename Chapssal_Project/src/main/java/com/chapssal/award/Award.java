@@ -2,19 +2,11 @@ package com.chapssal.award;
 
 import com.chapssal.user.User;
 import com.chapssal.video.Video;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.chapssal.topic.Topic;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Award")
@@ -34,17 +26,12 @@ public class Award {
     @JoinColumn(name = "video", referencedColumnName = "videoNum")
     private Video video;
 
-    @ManyToOne
-    @JoinColumn(name = "topic", referencedColumnName = "topicNum")
-    private Topic topic;
-
     @Column(nullable = false)
     private String awardName;
 
     @Column(nullable = false)
-    private String awardType;
+    private int awardType; 
 
     @Column(nullable = false)
-    private String awardDate;
-
+    private LocalDateTime awardDate;  
 }
