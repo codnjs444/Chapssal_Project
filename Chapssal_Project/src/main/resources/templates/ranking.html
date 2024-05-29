@@ -40,6 +40,7 @@
             justify-content: flex-end; /* 오른쪽 끝으로 정렬 */
             margin-top: 20px; /* 위아래 마진을 추가하여 카드와의 간격 조정 */
             width: 100%;
+            position: relative; /* 부모 요소를 기준으로 위치를 설정하기 위해 relative로 변경 */
         }
 
         .search-container input[type="text"] {
@@ -52,12 +53,15 @@
             padding: 5px 10px;
         }
 
-        #searchSuggestions {
-            margin-top: 10px;
-            margin-bottom: 20px; /* 마진 바텀 추가 */
+        #schoolSearchSuggestions {
+            margin-top: 5px;
             max-height: 200px;
             overflow-y: auto;
-            width: 90%; /* 너비를 80%로 설정 */
+            width: 200px;
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            transform: translateX(-33%);
         }
     </style>
 </head>
@@ -89,8 +93,8 @@
                 <div class="search-container">
                     <input type="text" id="schoolSearchInput" class="form-control" placeholder="학교 검색">
                     <button type="button" id="schoolSearchButton" class="btn btn-primary">검색</button>
+                    <div id="schoolSearchSuggestions" class="list-group"></div> <!-- 자동완성 결과를 표시할 div -->
                 </div>
-                <div id="schoolSearchSuggestions" class="list-group"></div> <!-- 자동완성 결과를 표시할 div -->
             </div>
         </div>
     </div>
