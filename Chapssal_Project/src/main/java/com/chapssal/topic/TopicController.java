@@ -209,7 +209,7 @@ public class TopicController {
     // 토픽 입력 자동 추천
     @GetMapping("/topicsuggestions")
     @ResponseBody
-    public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
+    public List<Topic> getSuggestions(@RequestParam(name = "query", required = false) String query) {
         if (query == null || query.isEmpty()) {
             return topicService.findTopTopicsThisWeek();
         } else {
@@ -221,7 +221,7 @@ public class TopicController {
     // 토픽 투표 자동 추천
     @GetMapping("/votesuggestions")
     @ResponseBody
-    public List<Topic> getVoteSuggestions(@RequestParam(required = false) String query) {
+    public List<Topic> getVoteSuggestions(@RequestParam(name = "query",required = false) String query) {
         if (query == null || query.isEmpty()) {
             return topicService.findTopTopicsByVotes();
         } else {
@@ -232,7 +232,7 @@ public class TopicController {
     // 검색 버튼 이벤트 구현 메서드
     @GetMapping("/search")
     @ResponseBody
-    public List<Map<String, Object>> searchTopics(@RequestParam String query) {
+    public List<Map<String, Object>> searchTopics(@RequestParam(name = "query",required = false) String query) {
         List<Topic> topics = topicService.searchTopicsByVotes(query);
         Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
 

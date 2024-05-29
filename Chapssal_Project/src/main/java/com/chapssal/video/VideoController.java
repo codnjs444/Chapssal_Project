@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -138,4 +139,26 @@ public class VideoController {
 
         return "home"; // home.html로 매핑
     }
+    
+    @GetMapping("/video/{videoNum}")
+    public String getVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+        Optional<Video> videoOptional = videoService.findById(videoNum);
+        if (!videoOptional.isPresent()) {
+            return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
+        }
+        Video video = videoOptional.get();
+        model.addAttribute("videoUrl", video.getVideoUrl());
+        model.addAttribute("videoTitle", video.getTitle());
+        model.addAttribute("videoUser", video.getUser());
+
+        // 이전 및 다음 비디오 ID 설정
+        int prevVideoNum = videoService.getPrevVideoId(videoNum, userNum);
+        int nextVideoNum = videoService.getNextVideoId(videoNum, userNum);
+
+        model.addAttribute("prevVideoNum", prevVideoNum);
+        model.addAttribute("nextVideoNum", nextVideoNum);
+
+        return "video"; // video.html로 이동
+    }
+
 }

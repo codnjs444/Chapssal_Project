@@ -335,6 +335,7 @@
     </div>
 </div>
 
+
 <div th:replace="~{navbar :: uploadModalFragment}"></div>
 <!-- 알림 패널과 스크립트 포함 -->
 <div th:replace="navbar :: notificationPanelFragment"></div>
@@ -344,26 +345,24 @@
 <!-- jQuery 먼저 로드 -->
 <!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- 팔로워 및 팔로우 탭 활성화 설정 -->
 
 <!-- Bootstrap Bundle with Popper from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
-<!-- 팔로워 및 팔로우 탭 활성화 설정 -->
-<script>
-    function openTab(tabName) {
-        let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
-        tabTrigger.show();
-    }
-    function changeProfilePicture() {
-        document.getElementById('profilePic').focus();
-    }
-</script>
 <div th:replace="~{navbar :: uploadModalScript}"></div>
 <div th:replace="~{home :: homeVideoScript}"></div>
 <div th:replace="~{explore :: exploreVideoScript}"></div>
+
+
 <!-- 공통 스크립트 정의 -->
 <div th:fragment="commonScripts">
-    <script>
+    <script>	
+		function openTab(tabName) {
+		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+		    tabTrigger.show();
+		}
+		
         // 투표 함수 추가
         function selectTopic(button) {
             var topicId = button.getAttribute("data-id");
@@ -607,7 +606,30 @@
                 alert('프로필 사진 기본 이미지 변경 중 오류가 발생했습니다.');
             });
         }
+		
+		function openVideoModal() {
+		    document.getElementById('videoModal').style.display = 'block';
+		    document.body.classList.add('modal-open');
+		}
+
+		function closeVideoModal() {
+		    document.getElementById('videoModal').style.display = 'none';
+		    document.body.classList.remove('modal-open');
+		}
+
+		
+		// profile.관련 script
+		function openTab(tabName) {
+		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+		    tabTrigger.show();
+		}
+		function changeProfilePicture() {
+		    document.getElementById('profilePic').focus();
+		}
+
     </script>
+	
+
 </div>
 </body>
 </html>

@@ -31,6 +31,16 @@ public class VideoService {
     }
     
     public List<Video> getVideosByUserNum(Integer userNum) {
-        return videoRepository.findByUser_UserNum(userNum);
+        return videoRepository.findByUser_UserNumOrderByUploadDateDesc(userNum);
+    }
+    
+    public int getPrevVideoId(int videoNum, int userNum) {
+        Optional<Video> prevVideo = videoRepository.findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(userNum, videoNum);
+        return prevVideo.map(Video::getVideoNum).orElse(0);
+    }
+
+    public int getNextVideoId(int videoNum, int userNum) {
+        Optional<Video> nextVideo = videoRepository.findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(userNum, videoNum);
+        return nextVideo.map(Video::getVideoNum).orElse(0);
     }
 }

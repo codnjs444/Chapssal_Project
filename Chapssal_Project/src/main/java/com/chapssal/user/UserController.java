@@ -315,6 +315,7 @@ public class UserController {
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("followerCount", followerCount);
         model.addAttribute("videoCount", videoCount); // 게시글 수 모델에 추가
+        
         List<User> followingUsers = followService.getFollowingUsers(userNum);
         List<User> followerUsers = followService.getFollowerUsers(userNum);
         
@@ -328,6 +329,11 @@ public class UserController {
         // 수상 정보 추가
         List<Award> awards = awardService.getAwardsByUserNum(userNum);
         model.addAttribute("awards", awards);
+        
+        // 상대방의 동영상 정보 추가
+        List<Video> userVideos = videoService.getVideosByUserNum(userNum);
+        model.addAttribute("userVideos", userVideos);
+
         return "user_profile";
     }
 
