@@ -124,13 +124,13 @@
         <div class="info-section">
             <div class="profile-section">
 				<div class="d-flex align-items-center mb-2">
-					<img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진">
-					<div class="profile-info-container">
-					    <div>
-					        <h5 th:text="${userName != null ? userName : '사용자'}"></h5>
-					        <small th:text="${schoolName}"></small>
-					    </div>
-					</div>
+				    <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
+				    <div class="profile-info-container" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
+				        <div>
+				            <h5 th:text="${userName != null ? userName : '사용자'}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></h5>
+				            <small th:text="${schoolName}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></small>
+				        </div>
+				    </div>
 					<button type="button"
 					        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm text-white'"
 					        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
@@ -259,19 +259,28 @@
 	        }
 	    }
 
-	    function navigateToProfile() {
-	        // 사용자의 프로필 페이지로 이동합니다.
-	        const userNum = /*[[${videoUser.userNum}]]*/;
-	        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
-	    }
+		function navigateToProfile() {
+		    // 사용자의 프로필 페이지로 이동합니다.
+		    const userNum = /*[[${videoUser.userNum}]]*/ [[${videoUser.userNum}]];
+		    window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		}
+
+		function navigateToProfilePage(userNum, currentUserNum) {
+		    // 사용자의 프로필 페이지로 이동합니다.
+		    if (userNum === currentUserNum) {
+		        window.location.href = 'http://localhost:8080/user/profile';
+		    } else {
+		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    }
+		}
 
 	    document.addEventListener('keydown', function(event) {
 	        if (event.key === 'ArrowUp') {
 	            // 위 방향키를 누르면 이전 비디오로 이동
-	            navigateVideo(/*[[${prevVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
+	            navigateVideo(/*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
 	        } else if (event.key === 'ArrowDown') {
 	            // 아래 방향키를 누르면 다음 비디오로 이동
-	            navigateVideo(/*[[${nextVideoNum}]]*/, /*[[${videoUser.userNum}]]*/);
+	            navigateVideo(/*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
 	        } else if (event.key === 'Escape') {
 	            // Esc 키를 누르면 프로필 페이지로 이동
 	            navigateToProfile();
@@ -279,6 +288,7 @@
 	    });
 	    /*]]>*/
 	</script>
+
 
 	</body>
 	</html>
