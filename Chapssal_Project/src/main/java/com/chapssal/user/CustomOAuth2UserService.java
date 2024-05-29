@@ -43,6 +43,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 newUser.setUserId(providerUserId);
                 newUser.setUserName(username);
                 newUser.setCreateDate(LocalDateTime.now());
+                newUser.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
+                newUser.setVote(0);  // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정
                 log.debug("New User: {}", newUser);
                 return userRepository.save(newUser);
             });
