@@ -414,6 +414,140 @@ margin-left: auto;
     color: #888;
 }
 
+         .notification-panel {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            width: 350px;
+            max-height: 80vh;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 1050;
+            display: none; /* 패널을 처음에는 보이지 않도록 설정 */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .notification-panel.active {
+            display: block; /* 패널을 보이도록 설정 */
+            transform: translateY(0);
+        }
+
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .notification-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .notification-body {
+            padding: 10px;
+            max-height: calc(80vh - 50px);
+            overflow-y: auto;
+        }
+
+        .notification-body ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notification-body ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .notification-body ul li:hover {
+            background-color: #f1f1f1;
+        }
+
+        .notification-body ul li button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .notification-body ul li button:hover {
+            background-color: #0056b3;
+        }
+
+        .notification-body ul li span {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .notification-icon {
+            position: relative;
+        }
+
+        #notificationCount {
+            position: absolute;
+            top: 10px; /* 더 아래로 이동 */
+            right: 10px; /* 약간 왼쪽으로 이동 */
+            transform: translate(50%, -50%);
+            display: inline-block;
+            padding: 0.3em 0.5em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            background-color: #dc3545;
+            border-radius: 0.75rem; /* 둥근 모서리를 더 강조 */
+        }
+
+
+        #searchResults {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-left: 0%;
+        }
+        .user-result {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .user-result img {
+            margin-right: 15px;
+        }
+        .user-result .user-info {
+            flex-grow: 1;
+            min-width: 0; /* 추가: 텍스트 오버플로우 처리 */
+        }
+        .user-result .user-info .user-id,
+        .user-result .user-info .user-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-result button {
+            flex-shrink: 0;
+        }
 
 
     </style>

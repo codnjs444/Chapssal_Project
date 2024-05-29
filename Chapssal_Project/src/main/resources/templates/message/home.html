@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html layout:decorate="~{message/layout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<html layout:decorate="~{message/chatLayout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
 <div layout:fragment="content" class="container-fluid">
     <!-- 컨텐츠 자리 -->
     <div class="row" style="height: 100%">
@@ -13,9 +13,10 @@
                     <div class="user-id" th:text="${currentUserId}">UserId</div>
                     <div class="user-name" th:text="${currentUserName != null ? currentUserName : '닉네임을 설정해주세요.'}">UserName</div>
                 </div>
-                <a href="#" class="btn-outline-primary ms-auto no-hover" style="margin-left: 45%;">
-                    <i class="bi bi-pencil-square"></i> <!-- Bootstrap Icons의 글쓰기 아이콘 -->
+                <a href="#" class="btn-outline-primary ms-auto no-hover" style="margin-left: 45%;" data-bs-toggle="modal" data-bs-target="#chatModal" >
+                    <i class="bi bi-pencil-square" style = "width = 60px; height: 60px;"></i> <!-- Bootstrap Icons의 글쓰기 아이콘 -->
                 </a>
+                <div th:replace="~{message/fragments/createChatModal :: modalfragments}"></div>
             </div>
             <div class="list-group list-group-flush border-bottom scrollarea">
                 <a th:each="chatRoom : ${chatRooms}" href="#" class="list-group-item list-group-item-action py-3 lh-sm" th:data-roomnum="${chatRoom.roomNum}">
@@ -59,13 +60,14 @@
                     <!-- 로고 추가 -->
                     <img th:src="@{/images/chapssenger_logo.jpg}" alt="로고" class="img-fluid mb-3">
                     <p>친구들에게 메시지를 보내보세요.</p>
-                    <button class="btn btn-info rounded-pill" onclick="#">메시지 보내기</button>
+                    <button class="btn btn-info rounded-pill" data-bs-toggle="modal" data-bs-target="#chatModal">메시지 보내기</button>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
+
 
 <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/assets/js/sidebars.js}"></script>

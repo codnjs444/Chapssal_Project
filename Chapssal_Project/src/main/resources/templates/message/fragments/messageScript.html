@@ -1,18 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:layout="http://www.w3.org/1999/xhtml">
-<head th:replace="~{message/fragments/header}">
-    <meta charset="UTF-8">
-    <title>ChapSsenger</title>
-</head>
-
-<body>
-<nav class="navbar" th:replace="~{message/navbar :: navbarFragment}"></nav>
-<nav class="sidebars" th:replace="~{message/fragments/sidebars :: sidebarsFragment}"></nav>
-
-<div layout:fragment="content" class="content" style="weight:100%; height:100%;">
-    <!-- 메인 콘텐츠가 들어갈 부분 -->
-</div>
-
+<div th:fragment="messageScripts" xmlns:th="http://www.w3.org/1999/xhtml">
 <script>
     let lastMessageTime = null;
     let lastMessageDate = null;
@@ -604,54 +590,98 @@ function deleteChatRoom(roomNum) {
     });
 }
 
+<!-- popper.js 막기 -->
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
-            var dropdown = new bootstrap.Dropdown(dropdownToggle, {
-                popperConfig: function() {
-                    return {
-                        placement: 'bottom-start',
-                        modifiers: [
-                            {
-                                name: 'computeStyles',
-                                options: {
-                                    adaptive: false,
-                                    gpuAcceleration: false
-                                }
-                            },
-                            {
-                                name: 'offset',
-                                options: {
-                                    offset: [0, 0]
-                                }
-                            }
-                        ]
-                    };
-                }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+    var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+        popperConfig: function() {
+            return {
+                placement: 'bottom-start',
+                modifiers: [
+                    {
+                        name: 'computeStyles',
+                        options: {
+                            adaptive: false,
+                            gpuAcceleration: false
+                        }
+                    },
+                    {
+                        name: 'offset',
+                        options: {
+                            offset: [0, 0]
+                        }
+                    }
+                ]
+            };
+        }
+    });
+
+    dropdownToggle.addEventListener('click', function () {
+        var dropdownMenu = this.nextElementSibling;
+
+        // 드롭다운 메뉴가 열릴 때 스타일 설정
+        setTimeout(function() {
+            dropdownMenu.style.zIndex = '10000000000';
+            dropdownMenu.style.position = 'fixed';
+            dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+            dropdownMenu.style.margin = '0px';
+            dropdownMenu.style.transform = 'translate(0px, -58px)';
+        }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+    });
+
+    // 드롭다운이 숨겨질 때 위치 초기화
+    dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+        var dropdownMenu = this.nextElementSibling;
+        dropdownMenu.style.position = '';
+        dropdownMenu.style.inset = '';
+        dropdownMenu.style.margin = '';
+        dropdownMenu.style.transform = '';
+    });
+});
+
+
+<!-- 모달 -->
+
+
+async function searchUsers() {
+    var input = document.getElementById('searchInput');
+    var filter = input.value;
+    var resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
+
+    if (filter.trim() === '') {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/chat/rooms/searchUsers?query=${filter}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const users = await response.json();
+        if (Array.isArray(users)) {
+            users.forEach(user => {
+                var userElement = document.createElement('div');
+                userElement.className = 'user-result d-flex align-items-center mb-2';
+                userElement.innerHTML = `
+                    <img src="${user.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="52" height="52" class="rounded-circle me-3">
+                    <div class="user-info flex-grow-1">
+                        <div class="user-id"><strong>${user.userId}</strong></div>
+                        <div class="user-name">${user.userName || '이름없음'}</div>
+                    </div>
+                    <button class="btn btn-primary ms-auto">선택</button>
+                `;
+                resultsContainer.appendChild(userElement);
             });
-
-            dropdownToggle.addEventListener('click', function () {
-                var dropdownMenu = this.nextElementSibling;
-
-                // 드롭다운 메뉴가 열릴 때 스타일 설정
-                setTimeout(function() {
-                    dropdownMenu.style.zIndex = '10000000000';
-                    dropdownMenu.style.position = 'fixed';
-                    dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
-                    dropdownMenu.style.margin = '0px';
-                    dropdownMenu.style.transform = 'translate(0px, -58px)';
-                }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
-            });
-
-            // 드롭다운이 숨겨질 때 위치 초기화
-            dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
-                var dropdownMenu = this.nextElementSibling;
-                dropdownMenu.style.position = '';
-                dropdownMenu.style.inset = '';
-                dropdownMenu.style.margin = '';
-                dropdownMenu.style.transform = '';
-            });
-        });
+        } else {
+            console.error('Unexpected response format:', users);
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
 
 </script>
 
@@ -664,5 +694,4 @@ function deleteChatRoom(roomNum) {
 <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/assets/js/sidebars.js}"></script>
 
-</body>
-</html>
+</div>

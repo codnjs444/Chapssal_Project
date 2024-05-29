@@ -3,6 +3,7 @@ package com.chapssal.message.controller;
 import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
 import com.chapssal.message.model.Participant;
+import com.chapssal.user.User;
 import com.chapssal.message.service.ChatRoomService;
 import com.chapssal.message.service.MessageService;
 import com.chapssal.message.service.ParticipantService;
@@ -88,6 +89,12 @@ public class ChatRoomController {
     public ResponseEntity<Void> leaveChatRoom(@PathVariable Long roomNum, @PathVariable Long userNum) {
         chatRoomService.leaveChatRoom(roomNum, userNum);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/rooms/searchUsers")
+    public List<User> searchUsers(@RequestParam String query) {
+        boolean isEnglish = query.matches("^[a-zA-Z0-9]*$");
+        return participantService.searchUsers(query, isEnglish);
     }
 
 }
