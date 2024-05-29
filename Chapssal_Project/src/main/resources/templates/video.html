@@ -132,6 +132,7 @@
 				        </div>
 				    </div>
 					<button type="button"
+					        th:if="${currentUserNum} != ${userNum}"
 					        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm text-white'"
 					        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
 					    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
@@ -262,8 +263,15 @@
 		function navigateToProfile() {
 		    // 사용자의 프로필 페이지로 이동합니다.
 		    const userNum = /*[[${videoUser.userNum}]]*/ [[${videoUser.userNum}]];
-		    window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    const currentUserNum = /*[[${currentUserNum}]]*/ [[${currentUserNum}]];
+		    
+		    if (userNum === currentUserNum) {
+		        window.location.href = 'http://localhost:8080/user/profile';
+		    } else {
+		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    }
 		}
+
 
 		function navigateToProfilePage(userNum, currentUserNum) {
 		    // 사용자의 프로필 페이지로 이동합니다.
