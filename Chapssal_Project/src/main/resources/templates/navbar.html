@@ -76,7 +76,7 @@
 <div th:fragment="uploadModalFragment">
 	<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-centered">
-			<div class="modal-content pt-0" style="height: 750px; overflow-y: hidden;">
+			<div class="modal-content pt-0" style="max-height: 750px; overflow-y: hidden;">
 				<form id="uploadForm" method="post" action="/video/upload" enctype="multipart/form-data" onsubmit="return prepareThumbnail()">
 					<div class="section1" style="display: block; width: 750px;">
 						<div class="modal-header d-flex justify-content-between align-items-center border-1">
@@ -119,7 +119,7 @@
 								            <source id="videoSource2" src="" type="video/mp4">
 								            Your browser does not support the video tag.
 								        </video>
-										<img id="thumbnailImagePreview" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none;">
+										<img id="thumbnailImagePreview" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
 										<input type="hidden" name="thumbnail" id="thumbnailInput">
 								    </div>
 								</div>
@@ -140,7 +140,15 @@
 							<button type="submit" class="btn text-primary p-0">게시하기</button>
 						</div>
 						<div class="modal-body" style="overflow-y: hidden">
-								
+							<select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
+								<option>(영상 카테고리)</option>
+								<option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
+							</select>
+							<br>
+							<br>
+							<textarea name="title" id="title" class="form-control" placeholder="내용을 입력해주세요." style="resize:none; height: 200px;"></textarea>
+							<div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+							<div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
 						</div>
 					</div>
 				</form>
@@ -233,6 +241,10 @@
 			const removeThumbnailButton = document.getElementById('removeThumbnailButton'); // 썸네일 제거 버튼
 			const thumbnailInputFile = document.getElementById('thumbnailInputFile');
             const videoSource = document.getElementById('videoSource');
+			const modalContent = document.querySelector('.modal-content');
+			const titleInput = document.getElementById('title');
+			const hashtagSuggestions = document.getElementById('hashtagSuggestions');
+			const userSuggestions = document.getElementById('userSuggestions');
 			
             const thumbnailCanvas = document.createElement('canvas'); // 썸네일 캔버스를 동적으로 생성
             const thumbnailInput = document.getElementById('thumbnailInput');
@@ -334,12 +346,14 @@
 			nextButton2.addEventListener('click', function() {
 			    section2.style.display = 'none';
 			    section3.style.display = 'block';
+				modalContent.style.height = '550px'; // 모달 컨텐츠 높이 변경
 			});
 
 			// Prev 버튼 클릭 시 섹션3 숨기고 섹션2 표시
 			prevButton3.addEventListener('click', function() {
 			    section3.style.display = 'none';
 			    section2.style.display = 'block';
+				modalContent.style.height = '750px';
 			});
 			
 			// 슬라이더 최대값을 비디오 길이로 설정
@@ -415,8 +429,6 @@
 			    videoSource2.src = videoSource.src;
 			    videoPreview2.load();
 			}
-					
-		    /*
 
 		    // 제목 입력 시 해시태그 및 사용자 이름 자동완성 기능 추가
 		    titleInput.addEventListener('input', function() {
@@ -518,7 +530,7 @@
 		            hashtagSuggestions.innerHTML = '';
 		            userSuggestions.innerHTML = '';
 		        }
-		    });*/
+		    });
 			
 			const uploadModal = document.getElementById('uploadModal');
 			const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
@@ -537,6 +549,7 @@
 				section2.style.display = 'none';
 				section3.style.display = 'none';
 				nextButton1.disabled = true;
+				modalContent.style.height = '750px';
 			    confirmModal.hide(); // 경고창 닫기
 			    bootstrap.Modal.getInstance(uploadModal).hide(); // 업로드 모달 닫기
 			});
@@ -662,6 +675,5 @@
 		        }
 		    }
 		});
-
     </script>
 </th:block>
