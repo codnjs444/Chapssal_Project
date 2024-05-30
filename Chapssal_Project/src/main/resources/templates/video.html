@@ -31,6 +31,7 @@
 		    overflow-y: auto;
 		    background-color: #fff;
 		    color: #000;
+		    position: relative;
 		}
 		.profile-section, .comments-section {
 		    background-color: #f9f9f9;
@@ -99,6 +100,37 @@
 		    display: block; /* 학교를 이름 아래에 표시 */
 		    font-size: 0.8rem; /* 학교 이름 크기 조절 */
 		    color: #6c757d; /* 학교 이름 색상 조절 */
+		}
+		.comment-input-container {
+		    display: flex;
+		    align-items: center;
+		    padding: 5px;
+		    background-color: #f9f9f9;
+		    border-radius: 10px;
+		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+		    position: absolute;
+		    bottom: 10px;
+		    right: 10px;
+		    width: calc(100% - 40px); /* 전체 너비에서 좌우 마진을 고려한 너비 설정 */
+		}
+
+		.comment-input {
+		    flex-grow: 1;
+		    border: none;
+		    padding: 8px 10px;
+		    border-radius: 10px;
+		    background-color: #e9ecef;
+		    margin-right: 5px;
+		}
+		.comment-input:focus {
+		    outline: none;
+		}
+		.submit-comment-btn {
+		    background-color: transparent;
+		    color: #007bff;
+		    border: none;
+		    cursor: pointer;
+		    padding: 0 10px;
 		}
     </style>
 </head>
@@ -177,14 +209,30 @@
                         <small>5-9</small>
                     </div>
                 </div>
-                <!-- 추가 댓글 아이템 -->
+				<div>
+				      <p>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
+				</div>
             </div>
+			<!-- 추가 댓글 아이템 -->
+			<div class="comment-input-container">
+			    <input type="hidden" name="videoNum" id="videoNum" value="${videoNum}">
+			    <input type="hidden" name="currentUserNum" id="currentUserNum" value="${currentUserNum}">
+			    <input type="text" class="comment-input" name="commentText" id="commentText" placeholder="따뜻한 말 한마디 해주세요...">
+			    <button type="button" class="submit-comment-btn" onclick="submitComment()">게시</button>
+			</div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script th:inline="javascript">
 	    /*<![CDATA[*/
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+		    console.log('Video Number:', videoNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+		});
+		
 	    function followUser(currentUserNum, userNum, isFollowing) {
 	        console.log("followUser 함수 호출됨");
 
@@ -294,6 +342,59 @@
 	            navigateToProfile();
 	        }
 	    });
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+		    const currentUserNum = /*[[${currentUserNum}]]*/ '[[${currentUserNum}]]';
+		    console.log('Video Number:', videoNum);
+		    console.log('Current User Number:', currentUserNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+		    document.getElementById('videoNum').value = videoNum;
+		    document.getElementById('currentUserNum').value = currentUserNum;
+		});
+
+		function submitComment() {
+		    const commentText = document.getElementById('commentText').value;
+		    const videoNum = document.getElementById('videoNum').value;
+		    const currentUserNum = document.getElementById('currentUserNum').value;
+
+		    if (commentText.trim() === "") {
+		        alert("댓글을 입력하세요.");
+		        return;
+		    }
+
+		    const comment = {
+		        text: commentText,
+		        video: { videoNum: parseInt(videoNum, 10) },
+		        user: { userNum: parseInt(currentUserNum, 10) }
+		    };
+
+		    console.log('Sending comment:', comment);
+
+		    fetch('/comment/add', {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify(comment)
+		    })
+		    .then(response => response.text()) // 응답을 텍스트로 처리
+		    .then(text => {
+		        console.log('Response text:', text);
+		        if (text.trim() === 'success') {
+		            location.reload();
+		        } else {
+		            alert('댓글 등록 실패: ' + text);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('댓글 등록 중 오류가 발생했습니다.');
+		    });
+		}
+
+
+
 	    /*]]>*/
 	</script>
 

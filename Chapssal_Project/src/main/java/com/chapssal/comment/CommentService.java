@@ -20,4 +20,6 @@ public class CommentService {
     public List<Comment> findByVideoId(int videoId) {
         return commentRepository.findByVideoVideoNum(videoId);
     }
+    
+    
 }
