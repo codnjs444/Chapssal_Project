@@ -21,5 +21,12 @@ public class CommentService {
         return commentRepository.findByVideoVideoNum(videoId);
     }
     
+    public List<Comment> findByVideoNum(int videoNum) {
+        return commentRepository.findByVideo_VideoNum(videoNum);
+    }
     
+    public int countCommentsByVideoNum(int videoNum) {
+        return commentRepository.countByVideoVideoNum(videoNum);
+    }
+
 }

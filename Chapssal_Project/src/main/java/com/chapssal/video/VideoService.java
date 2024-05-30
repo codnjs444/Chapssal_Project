@@ -43,4 +43,8 @@ public class VideoService {
         Optional<Video> nextVideo = videoRepository.findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(userNum, videoNum);
         return nextVideo.map(Video::getVideoNum).orElse(0);
     }
+    
+    public void delete(int videoNum) {
+        videoRepository.deleteById(videoNum);
+    }
 }

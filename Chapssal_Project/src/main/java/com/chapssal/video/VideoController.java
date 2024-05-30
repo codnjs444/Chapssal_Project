@@ -1,5 +1,7 @@
 package com.chapssal.video;
 
+import com.chapssal.comment.Comment;
+import com.chapssal.comment.CommentService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.topic.SelectedTopic;
 import com.chapssal.topic.SelectedTopicService;
@@ -8,16 +10,19 @@ import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.File;
@@ -28,7 +33,9 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,6 +53,9 @@ public class VideoController {
     
     @Autowired
     private VideoLikeService videoLikeService;
+    
+    @Autowired
+    private CommentService commentService;
     
     @Autowired
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
@@ -208,6 +218,14 @@ public class VideoController {
         int likeCount = videoLikeService.countLikesByVideoId(videoNum);
         model.addAttribute("likeCount", likeCount);
         
+        // 댓글 목록을 모델에 추가
+        List<Comment> comments = commentService.findByVideoNum(videoNum);
+        model.addAttribute("comments", comments);
+        
+        // 댓글 수 추가
+        int commentCount = commentService.countCommentsByVideoNum(videoNum);
+        model.addAttribute("commentCount", commentCount);
+        
         // 이전 및 다음 비디오 ID 설정
         int prevVideoNum = videoService.getPrevVideoId(videoNum, userNum);
         int nextVideoNum = videoService.getNextVideoId(videoNum, userNum);
@@ -218,6 +236,18 @@ public class VideoController {
         return "video"; // video.html로 이동
     }
 
-
+    @DeleteMapping("/video/delete/{videoNum}")
+    @ResponseBody
+    public Map<String, Object> deleteVideo(@PathVariable("videoNum") int videoNum) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            videoService.delete(videoNum);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
 
 }
