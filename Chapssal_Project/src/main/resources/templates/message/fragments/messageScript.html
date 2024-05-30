@@ -631,44 +631,106 @@
         <!-- 모달 -->
 
 
-        async function searchUsers() {
-            var input = document.getElementById('searchInput');
-            var filter = input.value;
-            var resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '';
+async function searchUsers() {
+    var input = document.getElementById('searchInput');
+    var filter = input.value;
+    var resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
 
-            if (filter.trim() === '') {
-                return;
-            }
+    if (filter.trim() === '') {
+        return;
+    }
 
-            try {
-                const response = await fetch(`/api/chat/rooms/searchUsers?query=${filter}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const users = await response.json();
-                if (Array.isArray(users)) {
-                    users.forEach(user => {
-                        var userElement = document.createElement('div');
-                        userElement.className = 'user-result d-flex align-items-center mb-2';
-                        userElement.innerHTML = `
-                            <img src="${user.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="52" height="52" class="rounded-circle me-3">
-                            <div class="user-info flex-grow-1">
-                                <div class="user-id"><strong>${user.userId}</strong></div>
-                                <div class="user-name">${user.userName || '이름없음'}</div>
-                            </div>
-                            <button class="btn btn-primary ms-auto">선택</button>
-                        `;
-                        resultsContainer.appendChild(userElement);
-                    });
-                } else {
-                    console.error('Unexpected response format:', users);
-                }
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            }
+    try {
+        const response = await fetch(`/api/chat/rooms/searchUsers?query=${filter}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const users = await response.json();
+        const currentUserNum = parseInt(document.getElementById('sender').value, 10);
 
+        if (Array.isArray(users)) {
+            users
+                .filter(user => user.userNum !== currentUserNum)
+                .forEach(user => {
+                    var userElement = document.createElement('div');
+                    userElement.className = 'user-result d-flex align-items-center mb-2';
+                    userElement.innerHTML = `
+                        <img src="${user.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="52" height="52" class="rounded-circle me-3">
+                        <div class="user-info flex-grow-1">
+                            <div class="user-id"><strong>${user.userId}</strong></div>
+                            <div class="user-name">${user.userName || '이름없음'}</div>
+                        </div>
+                        <button class="btn btn-primary ms-auto" onclick="selectUser(${user.userNum})">선택</button>
+                    `;
+                    resultsContainer.appendChild(userElement);
+                });
+        } else {
+            console.error('Unexpected response format:', users);
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+async function selectUser(selectedUserNum) {
+    const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+
+    try {
+        // 기존 채팅방이 있는지 확인
+        const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const chatRoom = await response.json();
+
+        if (chatRoom) {
+            // 기존 채팅방이 있는 경우
+            openChatRoom(chatRoom.roomNum);
+            $('#chatModal').modal('hide');
+        } else {
+            // 새로운 채팅방 생성
+            const createRoomResponse = await fetch('/api/chat/rooms/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ participants: [currentUserNum, selectedUserNum] })
+            });
+
+            if (!createRoomResponse.ok) {
+                throw new Error(`HTTP error! status: ${createRoomResponse.status}`);
+            }
+
+            const newChatRoom = await createRoomResponse.json();
+            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
+            $('#chatModal').modal('hide');
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error selecting user:', error);
+    }
+}
+
+function openChatRoom(roomNum) {
+    // 기존 채팅방이 이미 열려있는지 확인
+    const existingChatRoom = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+    if (existingChatRoom.hasClass('active')) {
+        // 이미 열려있는 경우 아무 작업도 하지 않음
+        return;
+    }
+    // 채팅방 열기
+    existingChatRoom.trigger('click');
+}
+
+// 페이지 로드 후 방금 생성한 채팅방을 열기
+$(document).ready(function () {
+    const openChatRoomNum = localStorage.getItem('openChatRoomNum');
+    if (openChatRoomNum) {
+        openChatRoom(openChatRoomNum);
+        localStorage.removeItem('openChatRoomNum');
+    }
+});
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
