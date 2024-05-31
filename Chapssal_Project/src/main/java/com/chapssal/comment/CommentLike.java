@@ -31,4 +31,8 @@ public class CommentLike {
     private User user;
 
     private LocalDateTime likeDate;
-}
+    
+	/*
+	 * @Version private int version; // Optimistic Locking을 위한 버전 필드 추가
+	 */
+    }

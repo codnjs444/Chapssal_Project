@@ -313,12 +313,12 @@
 				        <p th:text="${comment.text}">댓글 내용</p>
 				        <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
 				    </div>
-				    <div class="comment-actions">
-						<button th:attr="onclick=|likeComment(${comment.commentNum}, ${currentUserNum})|">
-						    <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
-						</button>
-						<span th:text="${comment.likeCount}"></span> <!-- 좋아요 수 표시 -->
-				    </div>
+					<div class="comment-actions">
+					    <button th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
+					        <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
+					    </button>
+					    <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
+					</div>
 				</div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
 			</div>
@@ -605,6 +605,50 @@
 		                likeIcon.classList.remove('bi-heart');
 		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
 		            }
+		        } else {
+		            alert('좋아요 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('좋아요 등록 중 오류가 발생했습니다.');
+		    });
+		}
+		function toggleCommentLike(commentNum, currentUserNum, isLiked) {
+		    const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+		    const likeIcon = commentElement.querySelector('.bi');
+		    const likeCountSpan = commentElement.querySelector('.like-count');
+
+		    const url = isLiked ? '/comment/unlike' : '/comment/like';
+		    const method = isLiked ? 'DELETE' : 'POST';
+
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            commentNum: commentNum,
+		            currentUserNum: currentUserNum,
+		            likeDate: new Date().toISOString()
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.likeCount !== undefined) {
+		            const newLikeCount = data.likeCount;
+		            likeCountSpan.textContent = newLikeCount;
+
+		            if (isLiked) {
+		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+		                likeIcon.classList.add('bi-heart');
+		            } else {
+		                likeIcon.classList.remove('bi-heart');
+		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+		            }
+
+		            // 상태를 토글하여 업데이트
+		            likeIcon.setAttribute('onclick', `toggleCommentLike(${commentNum}, ${currentUserNum}, ${!isLiked})`);
 		        } else {
 		            alert('좋아요 등록 실패: ' + data.message);
 		        }

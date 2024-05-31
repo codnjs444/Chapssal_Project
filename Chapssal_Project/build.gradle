@@ -61,6 +61,7 @@ dependencies {
 	implementation 'org.springframework:spring-messaging'
 	implementation 'org.springframework:spring-websocket'
 
+implementation 'javax.persistence:javax.persistence-api:2.2'
 }
 
 tasks.named('test') {

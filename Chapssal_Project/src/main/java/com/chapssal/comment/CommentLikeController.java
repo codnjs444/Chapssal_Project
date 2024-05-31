@@ -21,9 +21,22 @@ public class CommentLikeController {
         try {
             LocalDateTime likeDate = LocalDateTime.parse(request.getLikeDate(), DateTimeFormatter.ISO_DATE_TIME);
             commentLikeService.likeComment(request.getCommentNum(), request.getCurrentUserNum(), likeDate);
-            return ResponseEntity.ok().body(Collections.singletonMap("success", true));
+            int likeCount = commentLikeService.countByCommentNum(request.getCommentNum());
+            return ResponseEntity.ok().body(Collections.singletonMap("likeCount", likeCount));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/unlike")
+    public ResponseEntity<?> unlikeComment(@RequestBody CommentLikeRequest request) {
+        try {
+            commentLikeService.unlikeComment(request.getCommentNum(), request.getCurrentUserNum());
+            int likeCount = commentLikeService.countByCommentNum(request.getCommentNum());
+            return ResponseEntity.ok().body(Collections.singletonMap("likeCount", likeCount));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("message", e.getMessage()));
         }
     }
 }
+
