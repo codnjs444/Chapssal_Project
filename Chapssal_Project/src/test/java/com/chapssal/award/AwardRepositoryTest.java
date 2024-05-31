@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Random;
 
 @SpringBootTest
@@ -30,7 +29,7 @@ public class AwardRepositoryTest {
 
         // 해당 유저들 중 랜덤으로 id 삽입
         int[] userIds = {32, 62, 49, 61, 45, 26, 30, 43, 52, 1};
-        List<Video> videos = videoRepository.findAll();
+        int[] videoIds = {1, 2, 3, 5, 11, 12, 13, 14};
 
         for (int i = 0; i < 30; i++) {
             Award award = new Award();
@@ -40,7 +39,7 @@ public class AwardRepositoryTest {
             award.setUser(user);
 
             // 임의의 비디오 설정
-            Video video = videos.get(random.nextInt(videos.size()));
+            Video video = videoRepository.findById(videoIds[random.nextInt(videoIds.length)]).orElseThrow(() -> new RuntimeException("Video not found"));
             award.setVideo(video);
 
             award.setAwardName("Award " + (i + 1));

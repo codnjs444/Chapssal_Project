@@ -61,13 +61,21 @@ public class RankingService {
         }
 
         // 학교별 랭킹 정보를 SchoolRanking 객체로 변환하여 반환
-        return schoolRankings.entrySet().stream()
-                .sorted((e1, e2) -> e2.getValue().getScore() - e1.getValue().getScore())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
+        List<SchoolRanking> sortedRankings = schoolRankings.values().stream()
+                .sorted((sr1, sr2) -> sr2.getScore() - sr1.getScore())
+                .collect(Collectors.toList());
+
+        for (int i = 0; i < sortedRankings.size(); i++) {
+            sortedRankings.get(i).setRank(i + 1);
+        }
+
+        return sortedRankings.stream().collect(
+                Collectors.toMap(
+                        SchoolRanking::getSchoolName,
+                        sr -> sr,
                         (e1, e2) -> e1,
                         LinkedHashMap::new
-                ));
+                )
+        );
     }
 }

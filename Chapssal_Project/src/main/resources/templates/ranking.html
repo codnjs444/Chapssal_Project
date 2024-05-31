@@ -55,7 +55,7 @@
 
         .school-info {
             flex: 1;
-            margin-right: 20px; /* 추가된 부분 */
+            margin-right: 20px;
         }
 
         .school-info h4 {
@@ -68,10 +68,16 @@
             margin-top: 10px;
         }
 
-        .school-info .score {
+        .score {
             margin-left: auto;
             text-align: right;
             font-weight: bold;
+        }
+
+        .details {
+            text-align: right;
+            font-size: 14px;
+            margin-top: 5px;
         }
 
         .medal-container {
@@ -108,7 +114,7 @@
             width: 150px;
             height: 150px;
             border-radius: 10px;
-            margin-right: 20px; /* 수정된 부분 */
+            margin-right: 20px;
         }
 
         #schoolSearchSuggestions {
@@ -157,7 +163,7 @@
                         <img th:src="${entry.value.schoolPictureUrl}" alt="School Image" class="school-image"/>
                         <div class="ranking-content">
                             <div class="school-info">
-                                <h4 th:text="${entry.value.schoolName}"></h4>
+                                <h4 th:text="${entry.value.rank} + '위. ' + ${entry.value.schoolName}"></h4>
                                 <div class="medal-container">
                                     <span th:if="${entry.value.goldCount > 0}" th:each="i : ${#numbers.sequence(1, entry.value.goldCount)}">
                                         <img th:src="@{/images/rank_gold.jpg}" alt="Gold Medal"/>
@@ -171,7 +177,12 @@
                                 </div>
                             </div>
                             <div class="score">
-                                <p th:text="${entry.value.score} + '찹쌀'"></p>
+                                <p th:text="${entry.value.score} + ' 찹쌀'"></p>
+                                <div class="details">
+                                    <p th:text="'업로드한 영상 수: ' + 0"></p>
+                                    <p th:text="'누적 조회 수: ' + 0"></p>
+                                    <p th:text="'누적 좋아요 수: ' + 0"></p>
+                                </div>
                             </div>
                         </div>
                     </div>
