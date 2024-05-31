@@ -19,7 +19,7 @@ public class TopicAndVoteResetScheduler {
 
     // cron 표현식 초 / 분 / 시 / 일 / 월 / 요일
     // 해당 시간에 스케줄링된 작업을 처리 : userService의 resetAllvotes 메서드 실행
-    // 추가적으로 selectdtopic 테이블 초기화
+    // 추가적으로 selectedtopic 테이블 초기화
     @Scheduled(cron = "0 20 17 * * FRI")
     @Transactional
     public void resetVotes() {

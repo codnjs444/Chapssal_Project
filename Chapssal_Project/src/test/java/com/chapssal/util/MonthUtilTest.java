@@ -15,6 +15,7 @@ public class MonthUtilTest {
         LocalDate date3 = LocalDate.of(2024, 6, 3);
         LocalDate date4 = LocalDate.of(2024, 2, 4);
         LocalDate date5 = LocalDate.of(2024, 2, 5);
+        LocalDate date6 = LocalDate.of(2024, 4, 1);
 
         // 기대 결과
         String expectedWeek1 = "24년 4월";
@@ -22,6 +23,8 @@ public class MonthUtilTest {
         String expectedWeek3 = "24년 5월";
         String expectedWeek4 = "23년 12월";
         String expectedWeek5 = "24년 1월";
+        String expectedWeek6 = "24년 3월";
+
 
         // 실제 결과
         String actualWeek1 = MonthUtil.getPreviousMonthFormatted(date1);
@@ -29,6 +32,7 @@ public class MonthUtilTest {
         String actualWeek3 = MonthUtil.getPreviousMonthFormatted(date3);
         String actualWeek4 = MonthUtil.getPreviousMonthFormatted(date4);
         String actualWeek5 = MonthUtil.getPreviousMonthFormatted(date5);
+        String actualWeek6 = MonthUtil.getPreviousMonthFormatted(date6);
 
         // 콘솔 출력
         System.out.println("Date: " + date1 + " - Expected: " + expectedWeek1 + ", Actual: " + actualWeek1);
@@ -36,6 +40,7 @@ public class MonthUtilTest {
         System.out.println("Date: " + date3 + " - Expected: " + expectedWeek3 + ", Actual: " + actualWeek3);
         System.out.println("Date: " + date4 + " - Expected: " + expectedWeek4 + ", Actual: " + actualWeek4);
         System.out.println("Date: " + date5 + " - Expected: " + expectedWeek5 + ", Actual: " + actualWeek5);
+        System.out.println("Date: " + date6 + " - Expected: " + expectedWeek6 + ", Actual: " + actualWeek6);
 
         // 결과 확인
         assertEquals(expectedWeek1, actualWeek1);
@@ -43,6 +48,7 @@ public class MonthUtilTest {
         assertEquals(expectedWeek3, actualWeek3);
         assertEquals(expectedWeek4, actualWeek4);
         assertEquals(expectedWeek5, actualWeek5);
+        assertEquals(expectedWeek6, actualWeek6);
     }
 
     @Test

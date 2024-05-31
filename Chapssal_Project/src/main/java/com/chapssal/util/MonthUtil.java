@@ -19,11 +19,11 @@ public class MonthUtil {
         // 첫 주의 경우 전전달을 반환
         if (firstDayOfWeek.isBefore(firstDayOfMonth)) {
             LocalDate previousMonth = date.minusMonths(2); // 전전달
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy년 M월");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
             return previousMonth.format(formatter);
         } else {
             LocalDate lastMonth = date.minusMonths(1); // 이전 달
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy년 M월");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
             return lastMonth.format(formatter);
         }
     }
