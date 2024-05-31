@@ -1,0 +1,766 @@
+<div th:fragment="messageScripts" xmlns:th="http://www.w3.org/1999/xhtml">
+    <script>
+        let lastMessageTime = null;
+        let lastMessageDate = null;
+        let loadedMessages = new Set(); // 이미 로딩된 메시지를 추적하기 위한 Set
+        let isLoading = false; // 메시지 로딩 상태를 추적
+        let currentRoomNum = null; // 현재 열린 채팅방 번호
+        let unreadCounts = {}; // 채팅방별 unreadCount 저장
+
+        function escapeHtml(text) {
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+        }
+
+        function formatRelativeDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Date';
+            }
+
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return '오늘';
+            } else if (diffDays === 1) {
+                return '어제';
+            } else if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                if (diffWeeks < 4) {
+                    return `${diffWeeks}주 전`;
+                } else {
+                    const diffMonths = Math.floor(diffDays / 30);
+                    if (diffMonths < 12) {
+                        return `${diffMonths}달 전`;
+                    } else {
+                        const diffYears = Math.floor(diffDays / 365);
+                        return `${diffYears}년 전`;
+                    }
+                }
+            }
+        }
+
+        function formatListDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Date';
+            }
+
+            const now = new Date();
+
+            // 오늘 날짜 기준 비교
+            if (now.toLocaleDateString() === date.toLocaleDateString()) {
+                return '오늘';
+            }
+
+            // 어제 날짜 기준 비교
+            now.setDate(now.getDate() - 1);
+            if (now.toLocaleDateString() === date.toLocaleDateString()) {
+                return '어제';
+            }
+
+            const diffTime = Math.abs(new Date() - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                if (diffWeeks < 4) {
+                    return `${diffWeeks}주 전`;
+                } else {
+                    const diffMonths = Math.floor(diffDays / 30);
+                    if (diffMonths < 12) {
+                        return `${diffMonths}달 전`;
+                    } else {
+                        const diffYears = Math.floor(diffDays / 365);
+                        return `${diffYears}년 전`;
+                    }
+                }
+            }
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Time';
+            }
+            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateElements = document.querySelectorAll('.recent-message-date');
+
+            dateElements.forEach(function (element) {
+                const dateStr = element.getAttribute('data-date');
+                const formattedDate = formatListDate(dateStr);
+                element.textContent = formattedDate;
+            });
+        });
+
+        function updateLastMessageInChatList(roomNum, message) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            chatRoomElement.find('.small.text-muted').text(message.text);
+
+            if (message.sendDate) {
+                chatRoomElement.find('.recent-message-date').text(formatListDate(message.sendDate));
+            } else {
+                console.error('Message sendDate is undefined:', message);
+            }
+        }
+
+        function showMessage(message, prepend = false) {
+            var currentUserNum = parseInt($('#sender').val(), 10);
+
+            if (typeof message.sender !== 'undefined') {
+                // 이미 로딩된 메시지인지 확인
+                if (loadedMessages.has(message.messageNum)) {
+                    return;
+                }
+
+                // 새로운 메시지이면 Set에 추가
+                loadedMessages.add(message.messageNum);
+
+                var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
+                var currentTime = new Date(message.sendDate);
+                var currentDate = currentTime.toLocaleDateString();
+
+                var messageHtml = '';
+
+                // 날짜 경계선 추가 논리
+                if (prepend) {
+                    if (!lastMessageDate || lastMessageDate !== currentDate) {
+                        messageHtml += '<div class="date-separator">' + currentDate + '</div>';
+                        lastMessageDate = currentDate;
+                    }
+                } else {
+                    if (!lastMessageDate || lastMessageDate !== currentDate) {
+                        $('#chatMessages').append('<div class="date-separator">' + currentDate + '</div>');
+                        lastMessageDate = currentDate;
+                    }
+                }
+
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += escapeHtml(message.text);  // 메시지 텍스트를 escapeHtml을 사용하여 안전하게 처리
+                messageHtml += '</div>';
+
+                if (prepend) {
+                    $('#chatMessages').prepend(messageHtml);
+                } else {
+                    $('#chatMessages').append(messageHtml);
+                    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                }
+
+                  const messageElement = $('#chatMessages').find('.' + alignment).last();
+                  messageElement.text(message.text);  // 메시지 텍스트를 textContent로 설정하여 HTML이 파싱되지 않도록 함
+
+                if (message.roomNum === currentRoomNum) {
+                    updateLastMessageInChatList(message.roomNum, message);
+                } else {
+                    // 채팅방 리스트 업데이트
+                    updateChatRoomList(message.roomNum, message);
+                    // unreadCount 증가
+                    updateUnreadCountFromDB(message.roomNum);
+                }
+
+                updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
+            } else {
+                console.error('Invalid message format:', message);
+            }
+        }
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/messages', function (message) {
+                    var parsedMessage = JSON.parse(message.body);
+                    if (parsedMessage.roomNum === currentRoomNum) {
+                        showMessage(parsedMessage);
+                        // 채팅방이 열려 있는 경우 메시지를 읽음으로 표시
+                        markMessagesAsRead(parsedMessage.roomNum);
+                    } else {
+                        // 채팅방 리스트 업데이트
+                        updateChatRoomList(parsedMessage.roomNum, parsedMessage);
+                        // unreadCount 증가
+                        updateUnreadCountFromDB(parsedMessage.roomNum);
+                    }
+                });
+            }, function (error) {
+                console.log('STOMP error: ' + error);
+            });
+        }
+
+        $(document).ready(function () {
+            var senderValue = $('#sender').val();
+            var currentUserNum = parseInt(senderValue, 10);
+
+            if (isNaN(currentUserNum)) {
+                console.error('Invalid currentUserNum:', senderValue);
+            }
+
+            connect();
+
+            $('.list-group-item').on('click', function (event) {
+                event.preventDefault();
+                var roomNum = $(this).data('roomnum');
+
+                if (!roomNum) {
+                    console.error('roomNum is undefined');
+                    return;
+                }
+
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active');
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    currentRoomNum = null; // 채팅방 닫기
+                    return;
+                }
+
+                $('.list-group-item.active').removeClass('active');
+                $(this).addClass('active');
+
+                currentRoomNum = roomNum;
+
+                $('#currentRoomNum').val(roomNum);
+
+                // 메시지를 새로 불러오기 전에 기존 메시지를 모두 지우기
+                $('#chatMessages').empty();
+                lastMessageTime = null;
+                lastMessageDate = null;
+                loadedMessages.clear();
+
+                $.ajax({
+                    url: '/api/chat/rooms/' + roomNum + '/participants',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (participants) {
+                        if (!participants || participants.length === 0) {
+                            console.error('No participants found for roomNum:', roomNum);
+                            return;
+                        }
+
+                        var otherParticipants = participants.filter(function (participant) {
+                            var userNum = parseInt(participant.user.userNum, 10);
+                            return userNum !== currentUserNum;
+                        });
+
+                        if (otherParticipants.length === 0) {
+                            console.error('No other participants found for currentUserNum:', currentUserNum);
+                            return;
+                        }
+
+                        var otherParticipant = otherParticipants[0].user;
+                        var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
+                        var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+
+                        receiverId = otherParticipant.userNum;
+                        $('#participant_a').html(
+                            `<img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userName}`
+                        );
+
+                        $.ajax({
+                            url: '/api/chat/rooms/' + roomNum + '/messages',
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function (messages) {
+                                messages.reverse().forEach(function (message) { // 최신 메시지가 하단에 오도록 역순으로 표시
+                                    showMessage(message, false);
+                                });
+
+                                // 스크롤을 가장 하단으로 이동
+                                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                                updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
+                                // 스크롤 이벤트 핸들러 재설정
+                                $('#chatMessages').off('scroll').on('scroll', function () {
+                                    if ($(this).scrollTop() === 0 && !isLoading) {
+                                        loadMoreMessages();
+                                    }
+                                });
+                            },
+                            error: function (err) {
+                                console.error('Failed to fetch messages:', err);
+                            }
+                        });
+
+                        // Load unread message count
+                        updateUnreadCountFromDB(roomNum);
+
+                        // Mark messages as read
+                        markMessagesAsRead(roomNum);
+                    },
+                    error: function (err) {
+                        console.error('Failed to fetch participants:', err);
+                    }
+                });
+
+                $('#chat-box-a').show();
+                $('#chat-create').hide();
+            });
+
+            $('#sendMessageForm').on('submit', function (event) {
+                event.preventDefault();
+                sendMessage();
+            });
+
+            $('#messageText').on('keydown', function (event) {
+                if ((event.key === 'Enter' && !event.shiftKey && !event.altKey) || event.key === 'NumpadEnter') {
+                    event.preventDefault();
+                    $('#sendMessageForm').submit();
+                } else if ((event.key === 'Enter' && event.shiftKey) || (event.key === 'Enter' && event.altKey)) {
+                    event.preventDefault();
+                    insertNewLine($(this));
+                }
+            });
+
+            $('#chat-box-a').hide();
+            $('#chat-create').show();
+
+            // 스크롤 이벤트 핸들러 추가
+            $('#chatMessages').on('scroll', function () {
+                if ($(this).scrollTop() === 0 && !isLoading) {
+                    loadMoreMessages();
+                }
+            });
+
+            loadChatRooms(currentUserNum);
+        });
+
+        function loadChatRooms(currentUserNum) {
+            $('.list-group-item').each(function () {
+                var roomNum = $(this).data('roomnum');
+                updateUnreadCountFromDB(roomNum);
+            });
+        }
+
+        function updateUnreadCount(roomNum, count) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            const unreadCountElement = chatRoomElement.find('.unread-count');
+            if (count > 0) {
+                unreadCountElement.text(count);
+                unreadCountElement.show();
+            } else {
+                unreadCountElement.text(0);
+                unreadCountElement.hide();
+            }
+        }
+
+        function updateUnreadCountFromDB(roomNum) {
+            var currentUserNum = parseInt($('#sender').val(), 10);
+            $.ajax({
+                url: '/api/chat/rooms/' + roomNum + '/unreadCount',
+                method: 'GET',
+                data: { userNum: currentUserNum },
+                success: function (unreadCount) {
+                    updateUnreadCount(roomNum, unreadCount);
+                },
+                error: function (err) {
+                    console.error('Failed to fetch unread message count:', err);
+                }
+            });
+        }
+
+        function insertNewLine(textArea) {
+            var cursorPos = textArea.prop('selectionStart');
+            var text = textArea.val();
+            var before = text.substring(0, cursorPos);
+            var after = text.substring(cursorPos, text.length);
+            textArea.val(before + "\n" + after);
+            textArea.prop('selectionStart', cursorPos + 1);
+            textArea.prop('selectionEnd', cursorPos + 1);
+        }
+
+        function sendMessage() {
+            if (!stompClient) {
+                console.error('WebSocket connection not established.');
+                return;
+            }
+
+            var content = $('#messageText').val();
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var sender = parseInt($('#sender').val(), 10);
+
+            if (content.trim() !== "") {
+                const message = {
+                    'roomNum': roomNum,
+                    'sender': sender,
+                    'receiver': receiverId,
+                    'text': content,
+                    'messageType': 1,
+                    'isRead': 0,
+                    'sendDate': new Date().toISOString()
+                };
+
+                stompClient.send("/app/chat", {}, JSON.stringify(message));
+                $('#messageText').val('');
+                updateLastMessageInChatList(roomNum, message); // 새 메시지를 전송할 때 리스트 업데이트
+                updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
+            }
+        }
+
+        function loadMoreMessages() {
+            if (isLoading) return; // 중복 로딩 방지
+
+            isLoading = true; // 로딩 시작
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var oldestMessageId = Math.min(...Array.from(loadedMessages)) || null;
+
+            // 현재 스크롤 위치와 메시지 창의 높이를 기록
+            var currentScrollHeight = $('#chatMessages')[0].scrollHeight;
+            var currentScrollTop = $('#chatMessages').scrollTop();
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomNum}/messages`,
+                method: 'GET',
+                data: {
+                    oldestMessageId: oldestMessageId === Infinity ? null : oldestMessageId,
+                    limit: 30
+                },
+                dataType: 'json',
+                success: function (messages) {
+                    if (messages.length > 0) {
+                        messages.forEach(function (message) {
+                            showMessage(message, true);
+                        });
+
+                        // 날짜 경계선 및 시간 업데이트
+                        updateDateAndTimeSeparators();
+
+                        // 새 메시지가 추가된 후 스크롤 위치 복원
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight - currentScrollHeight + currentScrollTop);
+                    }
+
+                    if (messages.length < 30) {
+                        // 남은 메시지가 limit보다 적으면 더 이상 로딩할 데이터가 없는 것으로 간주
+                        $('#chatMessages').off('scroll');
+                    }
+
+                    isLoading = false; // 로딩 완료
+                },
+                error: function (err) {
+                    console.error('Failed to fetch more messages:', err);
+                    isLoading = false; // 로딩 실패
+                }
+            });
+        }
+
+        function updateDateAndTimeSeparators() {
+            const messages = $('#chatMessages .message');
+            let lastDate = null;
+            let lastTime = null;
+            let lastMessageElement = null;
+
+            // 모든 날짜 및 시간 표시 제거
+            $('#chatMessages .date-separator').remove();
+            $('#chatMessages .time').remove();
+
+            messages.each(function (index) {
+                const message = $(this);
+                const date = new Date(message.data('date'));
+                const time = formatTime(message.data('date'));
+
+                const currentDate = date.toLocaleDateString();
+
+                // 날짜 경계선 추가
+                if (!lastDate || lastDate !== currentDate) {
+                    message.before('<div class="date-separator">' + currentDate + '</div>');
+                    lastDate = currentDate;
+                    lastTime = null; // 새로운 날짜가 시작되면 lastTime 초기화
+                }
+
+                // 시간 표시 로직
+                if (!lastTime || date.getMinutes() !== new Date(lastTime).getMinutes() || lastDate !== currentDate || message.data('sender') !== lastMessageElement.data('sender')) {
+                    message.append('<div class="time">' + time + '</div>');
+                    lastTime = date;
+                } else {
+                    if (lastMessageElement) {
+                        lastMessageElement.find('.time').remove();
+                    }
+                    message.append('<div class="time">' + time + '</div>');
+                }
+                lastMessageElement = message;
+            });
+
+            // 마지막 메시지에 시간 표시
+            if (lastMessageElement) {
+                lastMessageElement.append('<div class="time">' + formatTime(lastTime) + '</div>');
+            }
+        }
+
+        function markMessagesAsRead(roomNum) {
+            $.ajax({
+                url: '/api/chat/rooms/' + roomNum + '/markAsRead',
+                method: 'POST',
+                data: { userNum: $('#sender').val() },
+                success: function () {
+                    console.log('Messages marked as read');
+                    updateUnreadCount(roomNum, 0);
+                },
+                error: function (err) {
+                    console.error('Failed to mark messages as read:', err);
+                }
+            });
+        }
+
+        function updateChatRoomList(roomNum, message) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            chatRoomElement.find('.small.text-muted').text(message.text);
+
+            if (message.sendDate) {
+                chatRoomElement.find('.recent-message-date').text(formatListDate(message.sendDate));
+            } else {
+                console.error('Message sendDate is undefined:', message);
+            }
+        }
+
+        $(document).ready(function () {
+            let longPressTimer;
+            let isDeleteButtonVisible = false;
+
+            $('.list-group-item').on('mousedown', function(event) {
+                longPressTimer = setTimeout(() => {
+                    if (!isDeleteButtonVisible) {
+                        showDeleteButton($(this));
+                        isDeleteButtonVisible = true;
+                    } else {
+                        hideDeleteButton($(this));
+                        isDeleteButtonVisible = false;
+                    }
+                }, 1000); // 1초 이상 길게 누를 시 동작
+            }).on('mouseup mouseleave', function(event) {
+                clearTimeout(longPressTimer);
+            });
+
+            // 삭제 버튼 클릭 이벤트 등록
+            $(document).on('click', '.delete-btn', function () {
+                const roomNum = $(this).closest('.list-group-item').data('roomnum');
+                deleteChatRoom(roomNum);
+            });
+        });
+
+        function showDeleteButton(element) {
+            const deleteButton = element.find('.delete-btn');
+            // 삭제 버튼 표시 로직
+            element.css('background-color', '#f8d7da'); // 연한 색으로 변경
+            element.append('<button class="delete-btn btn btn-danger btn-sm" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">나가기</button>');
+        }
+
+        function hideDeleteButton(element) {
+            const deleteButton = element.find('.delete-btn');
+            // 삭제 버튼 숨기기 로직
+            element.css('background-color', ''); // 배경색 원래대로
+            deleteButton.remove(); // 삭제 버튼 제거
+        }
+
+        function deleteChatRoom(roomNum) {
+            const userId = $('#sender').val(); // 현재 사용자 번호 가져오기
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomNum}/participants/${userId}`,
+                type: 'DELETE',
+                success: function(result) {
+                    // 채팅방 목록에서 해당 항목을 제거
+                    $(`.list-group-item[data-roomnum="${roomNum}"]`).remove();
+                 // 채팅방이 열려 있는 경우 닫기
+                if (currentRoomNum === roomNum) {
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    currentRoomNum = null; // 현재 열린 채팅방 초기화
+            }
+                },
+                error: function(err) {
+                    console.error('Failed to leave chat room:', err);
+                }
+            });
+        }
+
+        <!-- popper.js 막기 -->
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+            var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+                popperConfig: function() {
+                    return {
+                        placement: 'bottom-start',
+                        modifiers: [
+                            {
+                                name: 'computeStyles',
+                                options: {
+                                    adaptive: false,
+                                    gpuAcceleration: false
+                                }
+                            },
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 0]
+                                }
+                            }
+                        ]
+                    };
+                }
+            });
+
+            dropdownToggle.addEventListener('click', function () {
+                var dropdownMenu = this.nextElementSibling;
+
+                // 드롭다운 메뉴가 열릴 때 스타일 설정
+                setTimeout(function() {
+                    dropdownMenu.style.zIndex = '10000000000';
+                    dropdownMenu.style.position = 'fixed';
+                    dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                    dropdownMenu.style.margin = '0px';
+                    dropdownMenu.style.transform = 'translate(0px, -58px)';
+                }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+            });
+
+            // 드롭다운이 숨겨질 때 위치 초기화
+            dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+                var dropdownMenu = this.nextElementSibling;
+                dropdownMenu.style.position = '';
+                dropdownMenu.style.inset = '';
+                dropdownMenu.style.margin = '';
+                dropdownMenu.style.transform = '';
+            });
+        });
+
+
+        <!-- 모달 -->
+
+
+async function searchUsers() {
+    var input = document.getElementById('searchInput');
+    var filter = input.value;
+    var resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = '';
+
+    if (filter.trim() === '') {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/chat/rooms/searchUsers?query=${filter}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const users = await response.json();
+        const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+
+        if (Array.isArray(users)) {
+            users
+                .filter(user => user.userNum !== currentUserNum)
+                .forEach(user => {
+                    var userElement = document.createElement('div');
+                    userElement.className = 'user-result d-flex align-items-center mb-2';
+                    userElement.innerHTML = `
+                        <img src="${user.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="52" height="52" class="rounded-circle me-3">
+                        <div class="user-info flex-grow-1">
+                            <div class="user-id"><strong>${user.userId}</strong></div>
+                            <div class="user-name">${user.userName || '이름없음'}</div>
+                        </div>
+                        <button class="btn btn-primary ms-auto" onclick="selectUser(${user.userNum})">선택</button>
+                    `;
+                    resultsContainer.appendChild(userElement);
+                });
+        } else {
+            console.error('Unexpected response format:', users);
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+async function selectUser(selectedUserNum) {
+    const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+
+    try {
+        // 기존 채팅방이 있는지 확인
+        const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
+        if (response.ok) {
+            const chatRoom = await response.json();
+            // 기존 채팅방이 있는 경우
+            if (response.status === 202) {
+                // isLeave가 true인 경우
+                await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userNum: currentUserNum })
+                });
+                $('#chatModal').modal('hide'); // 모달 닫기
+                localStorage.setItem('openChatRoomNum', chatRoom.roomNum); // 채팅방 번호 저장
+                 location.reload(); // 페이지 리로드
+            } else {
+                openChatRoom(chatRoom.roomNum);
+                $('#chatModal').modal('hide'); // 모달 닫기
+            }
+        } else if (response.status === 404) {
+            // 새로운 채팅방 생성
+            const createRoomResponse = await fetch('/api/chat/rooms/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ participants: [currentUserNum, selectedUserNum] })
+            });
+
+            if (!createRoomResponse.ok) {
+                throw new Error(`HTTP error! status: ${createRoomResponse.status}`);
+            }
+
+            const newChatRoom = await createRoomResponse.json();
+            $('#chatModal').modal('hide'); // 모달 닫기
+            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum); // 생성된 채팅방 번호 저장
+            location.reload(); // 페이지 리로드
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error selecting user:', error);
+    }
+}
+
+function openChatRoom(roomNum) {
+    // 기존 채팅방이 이미 열려있는지 확인
+    const existingChatRoom = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+    if (existingChatRoom.hasClass('active')) {
+        // 이미 열려있는 경우 아무 작업도 하지 않음
+        return;
+    }
+    // 채팅방 열기
+    existingChatRoom.trigger('click');
+}
+
+// 페이지 로드 후 방금 생성한 채팅방을 열기
+$(document).ready(function () {
+    const openChatRoomNum = localStorage.getItem('openChatRoomNum');
+    if (openChatRoomNum) {
+        openChatRoom(openChatRoomNum);
+        localStorage.removeItem('openChatRoomNum');
+    }
+});
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Popper.js 추가 (integrity 속성 제거) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS 추가 -->
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/js/sidebars.js}"></script>
+
+</div>
