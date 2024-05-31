@@ -151,7 +151,7 @@
                 }
 
                 messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                messageHtml += escapeHtml(message.text);
+                messageHtml += escapeHtml(message.text);  // 메시지 텍스트를 escapeHtml을 사용하여 안전하게 처리
                 messageHtml += '</div>';
 
                 if (prepend) {
@@ -160,6 +160,9 @@
                     $('#chatMessages').append(messageHtml);
                     $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
                 }
+
+                  const messageElement = $('#chatMessages').find('.' + alignment).last();
+                  messageElement.text(message.text);  // 메시지 텍스트를 textContent로 설정하여 HTML이 파싱되지 않도록 함
 
                 if (message.roomNum === currentRoomNum) {
                     updateLastMessageInChatList(message.roomNum, message);
@@ -393,7 +396,7 @@
                     'roomNum': roomNum,
                     'sender': sender,
                     'receiver': receiverId,
-                    'text': escapeHtml(content),
+                    'text': content,
                     'messageType': 1,
                     'isRead': 0,
                     'sendDate': new Date().toISOString()
@@ -569,6 +572,12 @@
                 success: function(result) {
                     // 채팅방 목록에서 해당 항목을 제거
                     $(`.list-group-item[data-roomnum="${roomNum}"]`).remove();
+                 // 채팅방이 열려 있는 경우 닫기
+                if (currentRoomNum === roomNum) {
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    currentRoomNum = null; // 현재 열린 채팅방 초기화
+            }
                 },
                 error: function(err) {
                     console.error('Failed to leave chat room:', err);
@@ -679,16 +688,26 @@ async function selectUser(selectedUserNum) {
     try {
         // 기존 채팅방이 있는지 확인
         const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const chatRoom = await response.json();
-
-        if (chatRoom) {
+        if (response.ok) {
+            const chatRoom = await response.json();
             // 기존 채팅방이 있는 경우
-            openChatRoom(chatRoom.roomNum);
-            $('#chatModal').modal('hide');
-        } else {
+            if (response.status === 202) {
+                // isLeave가 true인 경우
+                await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userNum: currentUserNum })
+                });
+                $('#chatModal').modal('hide'); // 모달 닫기
+                localStorage.setItem('openChatRoomNum', chatRoom.roomNum); // 채팅방 번호 저장
+                 location.reload(); // 페이지 리로드
+            } else {
+                openChatRoom(chatRoom.roomNum);
+                $('#chatModal').modal('hide'); // 모달 닫기
+            }
+        } else if (response.status === 404) {
             // 새로운 채팅방 생성
             const createRoomResponse = await fetch('/api/chat/rooms/create', {
                 method: 'POST',
@@ -703,9 +722,11 @@ async function selectUser(selectedUserNum) {
             }
 
             const newChatRoom = await createRoomResponse.json();
-            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
-            $('#chatModal').modal('hide');
-            location.reload();
+            $('#chatModal').modal('hide'); // 모달 닫기
+            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum); // 생성된 채팅방 번호 저장
+            location.reload(); // 페이지 리로드
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
     } catch (error) {
         console.error('Error selecting user:', error);

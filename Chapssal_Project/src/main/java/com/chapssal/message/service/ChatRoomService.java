@@ -162,6 +162,17 @@ public class ChatRoomService {
         participantRepository.save(participant);
     }
 
+    public void updateParticipantIsLeaveToFalse(int roomNum, int userNum) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomNum)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid room number"));
+        User user = userRepository.findById(userNum)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user number"));
 
+        Participant participant = participantRepository.findByRoomAndUser(chatRoom, user)
+                .orElseThrow(() -> new IllegalArgumentException("Participant not found"));
+        participant.setIsLeave(false);
+        participant.setJoinDate(LocalDateTime.now());
+        participantRepository.save(participant);
+    }
 
 }

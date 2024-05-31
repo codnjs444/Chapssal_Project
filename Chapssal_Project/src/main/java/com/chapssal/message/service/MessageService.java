@@ -2,8 +2,10 @@ package com.chapssal.message.service;
 
 import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
+import com.chapssal.message.model.Participant;
 import com.chapssal.message.repository.ChatRoomRepository;
 import com.chapssal.message.repository.MessageRepository;
+import com.chapssal.message.repository.ParticipantRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,9 @@ public class MessageService {
     @Autowired
     private ChatRoomRepository chatRoomRepository;
 
+    @Autowired
+    private ParticipantRepository participantRepository;
+
     public List<Message> getAllMessages() {
         return messageRepository.findAll();
     }
@@ -31,6 +36,17 @@ public class MessageService {
         message.setSendDate(LocalDateTime.now());
         message.setMessageType((byte) 1); // or appropriate value
         message.setIsRead((byte) 0); // or appropriate value
+
+        // 참여자들의 isLeave 상태를 false로 업데이트
+        List<Participant> participants = participantRepository.findByRoom(chatRoom);
+        for (Participant participant : participants) {
+            if (participant.getIsLeave() != null && participant.getIsLeave()) {
+                participant.setIsLeave(false);
+                participant.setJoinDate(LocalDateTime.now());
+                participantRepository.save(participant);
+            }
+        }
+
         return messageRepository.save(message);
     }
 
@@ -50,11 +66,7 @@ public class MessageService {
     }
 
     public Message saveMessage(Message message) {
-        ChatRoom chatRoom = chatRoomRepository.findById(message.getRoomNum())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid room number"));
-        message.setChatRoom(chatRoom);
-        message.setSendDate(LocalDateTime.now());
-        return messageRepository.save(message);
+            return addMessage(message);
     }
 
     public long countUnreadMessages(int roomNum, int currentUserNum) {

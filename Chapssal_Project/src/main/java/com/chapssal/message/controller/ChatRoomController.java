@@ -114,7 +114,14 @@ public class ChatRoomController {
     public ResponseEntity<ChatRoom> checkExistingChatRoom(@RequestParam int userNum1, @RequestParam int userNum2) {
         Optional<ChatRoom> existingChatRoom = chatRoomService.findChatRoomByParticipants(userNum1, userNum2);
         if (existingChatRoom.isPresent()) {
-            return ResponseEntity.ok(existingChatRoom.get());
+            ChatRoom chatRoom = existingChatRoom.get();
+            List<Participant> participants = participantRepository.findByRoomAndIsLeave(chatRoom, false);
+            boolean isCurrentUserInRoom = participants.stream().anyMatch(p -> p.getUser().getUserNum() == userNum1);
+            if (isCurrentUserInRoom) {
+                return ResponseEntity.ok(chatRoom);
+            } else {
+                return ResponseEntity.status(202).body(chatRoom); // isLeave가 true인 경우
+            }
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -130,4 +137,12 @@ public class ChatRoomController {
         ChatRoom newChatRoom = chatRoomService.createOrJoinChatRoom(participants);
         return ResponseEntity.ok(newChatRoom);
     }
+
+    @PostMapping("/rooms/{roomNum}/updateIsLeaveToFalse")
+    public ResponseEntity<Void> updateIsLeaveToFalse(@PathVariable int roomNum, @RequestBody Map<String, Integer> request) {
+        int userNum = request.get("userNum");
+        chatRoomService.updateParticipantIsLeaveToFalse(roomNum, userNum);
+        return ResponseEntity.ok().build();
+    }
+
 }
