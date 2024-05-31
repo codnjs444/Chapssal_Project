@@ -317,6 +317,7 @@
 						<button th:attr="onclick=|likeComment(${comment.commentNum}, ${currentUserNum})|">
 						    <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
 						</button>
+						<span th:text="${comment.likeCount}"></span> <!-- 좋아요 수 표시 -->
 				    </div>
 				</div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>

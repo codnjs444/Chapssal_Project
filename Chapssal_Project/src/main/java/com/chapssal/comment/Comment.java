@@ -44,8 +44,15 @@ public class Comment {
     
     @Transient
     private boolean isLiked;
-    
-    @Transient
-    private boolean liked;  // liked 속성 추가
 
+    @Transient
+    private int likeCount; // 좋아요 수를 저장할 필드
+
+    public void setLiked(boolean isLiked) {
+        this.isLiked = isLiked;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+    }
 }
