@@ -1,6 +1,7 @@
 package com.chapssal.video;
 
 import com.chapssal.comment.Comment;
+import com.chapssal.comment.CommentLikeService;
 import com.chapssal.comment.CommentService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.topic.SelectedTopic;
@@ -47,6 +48,7 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
+    private final CommentLikeService commentLikeService;
     
     @Autowired
     private FollowService followService;
@@ -58,11 +60,12 @@ public class VideoController {
     private CommentService commentService;
     
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, CommentLikeService commentLikeService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
         this.selectedTopicService = selectedTopicService;
+        this.commentLikeService = commentLikeService;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -220,6 +223,10 @@ public class VideoController {
         
         // 댓글 목록을 모델에 추가
         List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+        }
         model.addAttribute("comments", comments);
         
         // 댓글 수 추가

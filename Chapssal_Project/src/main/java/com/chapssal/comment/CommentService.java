@@ -20,13 +20,16 @@ public class CommentService {
     public List<Comment> findByVideoId(int videoId) {
         return commentRepository.findByVideoVideoNum(videoId);
     }
-    
+
     public List<Comment> findByVideoNum(int videoNum) {
         return commentRepository.findByVideo_VideoNum(videoNum);
     }
-    
+
     public int countCommentsByVideoNum(int videoNum) {
         return commentRepository.countByVideoVideoNum(videoNum);
     }
 
+    public List<Comment> getCommentsByVideoNum(int videoNum) {
+        return commentRepository.findByVideo_VideoNum(videoNum);
+    }
 }

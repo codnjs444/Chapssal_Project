@@ -17,19 +17,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentLike {
- 
- @Id
- @GeneratedValue(strategy = GenerationType.IDENTITY)
- private int likeNum;
- 
- @ManyToOne
- @JoinColumn(name = "comment_id")
- private Comment comment;
- 
- @ManyToOne
- @JoinColumn(name = "user_id")
- private User user;
- 
- private LocalDateTime likeDate;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int likeNum;
+
+    @ManyToOne
+    @JoinColumn(name = "comment")
+    private Comment comment;
+
+    @ManyToOne
+    @JoinColumn(name = "user")
+    private User user;
+
+    private LocalDateTime likeDate;
 }

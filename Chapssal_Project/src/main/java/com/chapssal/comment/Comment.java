@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,4 +41,11 @@ public class Comment {
 
     @Column(name = "date")
     private LocalDateTime date;
+    
+    @Transient
+    private boolean isLiked;
+    
+    @Transient
+    private boolean liked;  // liked 속성 추가
+
 }
