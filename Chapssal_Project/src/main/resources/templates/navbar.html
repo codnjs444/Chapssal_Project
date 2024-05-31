@@ -111,7 +111,7 @@
 							<h5 class="modal-title" id="uploadModalLabel">커버 사진</h5>
 							<button type="button" class="btn text-primary">Next</button>
 						</div>
-						<div class="modal-body" style="overflow-y: hidden">
+						<div class="modal-body" style="overflow-y: hidden;">
 							<div class="row">
 								<div class="col-8">
 								    <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
@@ -133,13 +133,13 @@
 							</div>
 						</div>
 					</div>
-					<div class="section3" style="display: none; width: 750px;">
+					<div class="section3" style="display: none; width: 750px; height: 630px;">
 						<div class="modal-header d-flex justify-content-between align-items-center border-1">
 							<button type="button" class="btn text-primary">Prev</button>
 							<h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
 							<button type="submit" class="btn text-primary p-0">게시하기</button>
 						</div>
-						<div class="modal-body" style="overflow-y: hidden">
+						<div class="modal-body" style="overflow-y: hidden; height: 590px;">
 							<select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
 								<option>(영상 카테고리)</option>
 								<option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
@@ -176,57 +176,6 @@
 	</div>
 </div>
 
-
-<!-- 모달 컴포넌트를 별도의 프래그먼트로 분리 -->
-<!--<div th:fragment="uploadModalFragment">
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="height: 85%;">
-            <div class="modal-content" style="height:85%;">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="uploadModalLabel">업로드</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="overflow-y: auto;">
-                    <form id="uploadForm" method="post" action="/video/upload" enctype="multipart/form-data" onsubmit="return prepareThumbnail()">
-                        <div class="mb-3">
-                            <label for="file" class="form-label">파일 업로드</label>
-                            <div id="dropZone" class="border border-secondary p-3 text-center">
-                                파일을 여기에 드래그 앤 드롭 하세요
-                            </div>
-                            <input type="file" name="file" class="form-control d-none" id="fileInput" accept="video/*" required>
-                        </div>
-                        <div id="previewContainer" class="mt-3 position-relative" style="height: 250px;">
-                            <label for="videoPreview" class="form-label">미리보기</label>
-                            <div id="emptyPreview" class="w-100 h-90 border border-secondary" style="height: 200px;"></div>
-                            <video id="videoPreview" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none;">
-                                <source id="videoSource" src="" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-						<div class="mb-3">
-						    <label for="title" class="form-label">내용</label>
-						    <input type="text" name="title" class="form-control" id="title" required>
-						    <div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-							<div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-						</div>
-                        <div class="mb-3">
-                            <label for="topic" class="form-label">주제</label>
-                            <select name="topic" class="form-control" id="topic" required>
-								<option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
-                            </select>
-                        </div>
-                        <input type="hidden" name="thumbnail" id="thumbnailInput">
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                            <button type="submit" class="btn btn-primary">업로드</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>-->
-
 <!-- 스크립트를 별도의 프래그먼트로 분리 -->
 <th:block th:fragment="uploadModalScript">
     <script>
@@ -256,8 +205,17 @@
 			const prevButton2 = document.querySelector('.section2 .btn.text-primary:nth-child(1)');
 			const nextButton2 = document.querySelector('.section2 .btn.text-primary:nth-child(3)');
 			const prevButton3 = document.querySelector('.section3 .btn.text-primary:nth-child(1)');
-			
 
+			// 슬라이더 비활성화 함수
+			function disableThumbnailSlider() {
+			    thumbnailSlider.disabled = true;
+			}
+
+			// 슬라이더 활성화 함수
+			function enableThumbnailSlider() {
+			    thumbnailSlider.disabled = false;
+			}
+			
 			// 모달이 숨겨질 때 초기화
 			document.getElementById('uploadModal').addEventListener('hidden.bs.modal', function () {
 				fileInput.value = ''; // 파일 입력 초기화
@@ -271,6 +229,7 @@
 				thumbnailInput.value = ''; // 썸네일 입력 초기화
 				thumbnailImagePreview.src = ''; // 썸네일 이미지 초기화
 				removeThumbnailButton.style.display = 'none'; // 썸네일 제거 버튼 숨기기
+				enableThumbnailSlider(); // 슬라이더 활성화
 			});
 
             // 전체 문서에서 드래그 앤 드롭 이벤트 기본 동작 및 전파 막기
@@ -346,7 +305,7 @@
 			nextButton2.addEventListener('click', function() {
 			    section2.style.display = 'none';
 			    section3.style.display = 'block';
-				modalContent.style.height = '550px'; // 모달 컨텐츠 높이 변경
+				modalContent.style.height = '650px'; // 모달 컨텐츠 높이 변경
 			});
 
 			// Prev 버튼 클릭 시 섹션3 숨기고 섹션2 표시
@@ -384,6 +343,7 @@
 			                thumbnailImagePreview.style.display = 'block';
 			                videoPreview2.style.display = 'none';
 							removeThumbnailButton.style.display = 'block'; // 썸네일 제거 버튼 표시
+							disableThumbnailSlider(); // 슬라이더 비활성화
 			            } else {
 			                console.error('thumbnailInput 요소를 찾을 수 없습니다.');
 			            }
@@ -399,6 +359,8 @@
 			    thumbnailImagePreview.style.display = 'none'; // 썸네일 이미지 숨기기
 			    videoPreview2.style.display = 'block'; // 비디오 미리보기 표시
 			    removeThumbnailButton.style.display = 'none'; // 썸네일 제거 버튼 숨기기
+				enableThumbnailSlider(); // 슬라이더 활성화
+				captureThumbnailFromSlider(); // 슬라이더 위치에서 썸네일을 다시 캡처하여 업데이트
 			});
 
 
@@ -453,6 +415,7 @@
 		                            suggestionItem.textContent = `#${item.tag}`;
 		                            hashtagSuggestions.appendChild(suggestionItem);
 		                        });
+								modalContent.style.height = '750px';
 		                    }
 		                });
 		            } else {
@@ -469,11 +432,13 @@
 		                            suggestionItem.textContent = `#${item.tag}`;
 		                            hashtagSuggestions.appendChild(suggestionItem);
 		                        });
+								modalContent.style.height = '750px';
 		                    }
 		                });
 		            }
 		        } else {
 		            hashtagSuggestions.innerHTML = '';
+					modalContent.style.height = '550px';
 		        }
 
 		        // 사용자 이름 자동완성
@@ -493,13 +458,16 @@
 		                            suggestionItem.textContent = `@${item.userName}`;
 		                            userSuggestions.appendChild(suggestionItem);
 		                        });
+								modalContent.style.height = '750px';
 		                    }
 		                });
 		            } else {
 		                userSuggestions.innerHTML = '';
+						modalContent.style.height = '550px';
 		            }
 		        } else {
 		            userSuggestions.innerHTML = '';
+					modalContent.style.height = '550px';
 		        }
 		    });
 
@@ -511,6 +479,7 @@
 		            const hashtagIndex = query.lastIndexOf('#');
 		            titleInput.value = query.substring(0, hashtagIndex) + e.target.textContent + ' ';
 		            hashtagSuggestions.innerHTML = '';
+					modalContent.style.height = '550px';
 		        }
 		    });
 
@@ -521,6 +490,7 @@
 		            const userIndex = query.lastIndexOf('@');
 		            titleInput.value = query.substring(0, userIndex) + e.target.textContent + ' ';
 		            userSuggestions.innerHTML = '';
+					modalContent.style.height = '550px';
 		        }
 		    });
 
@@ -529,6 +499,7 @@
 		        if (!e.target.closest('#title, #searchInput, #hashtagSuggestions, #userSuggestions, #searchSuggestions')) {
 		            hashtagSuggestions.innerHTML = '';
 		            userSuggestions.innerHTML = '';
+					modalContent.style.height = '550px';
 		        }
 		    });
 			

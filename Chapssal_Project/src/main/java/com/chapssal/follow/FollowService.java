@@ -12,6 +12,8 @@ import com.chapssal.notification.NotificationService;
 import com.chapssal.notification.NotificationType;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
+import com.chapssal.video.Video;
+import com.chapssal.video.VideoRepository;
 
 @Service
 public class FollowService {
@@ -19,6 +21,8 @@ public class FollowService {
     private FollowRepository followRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private VideoRepository videoRepository;
     @Autowired
     private NotificationService notificationService;
 
@@ -44,6 +48,11 @@ public class FollowService {
                         .map(follow -> userRepository.findById(follow.getFollower()).orElse(null))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
+    }
+
+    public List<Video> getFollowingUsersVideos(Integer userNum) {
+        List<User> followingUsers = getFollowingUsers(userNum);
+        return videoRepository.findByUserInOrderByVideoNumAsc(followingUsers);
     }
 
     public boolean isFollowing(Integer follower, Integer following) {

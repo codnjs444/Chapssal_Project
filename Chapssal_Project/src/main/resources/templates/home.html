@@ -230,14 +230,21 @@
 			body.modal-open {
 			    overflow: hidden;
 			}
+			
+			.nav-center {
+			    display: flex;
+			    justify-content: center;
+			    align-items: center;
+			}
 	    </style>
 	</head>
 	<body>
 		<div layout:fragment="content" class="container">
-		    <nav class="container">
+		    <nav class="container nav-center">
 		        <div class="nav nav-pills center" id="nav-tab" role="tablist">
 		            <button class="nav-link active" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-		            <button class="nav-link" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button></div>
+		            <button class="nav-link" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
+				</div>
 		    </nav>
 			<br>
 			<br>
@@ -388,6 +395,18 @@
 					    const styledText = styleSpecialChars(originalText);
 					    $(this).html(styledText);
 					});
+
+					/*// 저장된 탭 정보를 로드하고 해당 탭을 활성화
+					let savedTabId = localStorage.getItem('selectedTab');
+					if (savedTabId) {
+					    $('#' + savedTabId).tab('show');
+					}
+
+					// 탭 클릭 시 로컬 스토리지에 탭 ID 저장
+					$('#nav-tab button').on('click', function() {
+					    let selectedTabId = $(this).attr('id');
+					    localStorage.setItem('selectedTab', selectedTabId);
+					});*/
 					
 				    let options = {
 				        root: null,

@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,4 +41,18 @@ public class Comment {
 
     @Column(name = "date")
     private LocalDateTime date;
+    
+    @Transient
+    private boolean isLiked;
+
+    @Transient
+    private int likeCount; // 좋아요 수를 저장할 필드
+
+    public void setLiked(boolean isLiked) {
+        this.isLiked = isLiked;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+    }
 }

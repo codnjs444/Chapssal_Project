@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class MainController {
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
         List<Video> videos = videoService.findAll();
+        Collections.shuffle(videos);
         model.addAttribute("videos", videos);
 
         return "home"; // home.html 파일을 렌더링

@@ -204,7 +204,7 @@
 <nav th:replace="~{navbar :: navbarFragment}"></nav>
 <nav th:replace="~{sidebar :: sidebarFragment}"></nav>
 
-<div layout:fragment="content" class="content" style="margin-left: 10%; padding: 20px;">
+<div layout:fragment="content" class="content" style="margin-left: 15%; padding: 20px;">
     <!-- 메인 콘텐츠가 들어갈 부분 -->
 </div>
 
@@ -348,22 +348,13 @@
 <!-- Bootstrap Bundle with Popper from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
-<!-- 팔로워 및 팔로우 탭 활성화 설정 -->
-<script>
-    function openTab(tabName) {
-        let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
-        tabTrigger.show();
-    }
-    function changeProfilePicture() {
-        document.getElementById('profilePic').focus();
-    }
-</script>
 <div th:replace="~{navbar :: uploadModalScript}"></div>
 <div th:replace="~{home :: homeVideoScript}"></div>
 <div th:replace="~{explore :: exploreVideoScript}"></div>
 <!-- 공통 스크립트 정의 -->
 <div th:fragment="commonScripts">
     <script>
+		
         // 투표 함수 추가
         function selectTopic(button) {
             var topicId = button.getAttribute("data-id");
@@ -502,60 +493,61 @@
             alert("버튼이 눌려졌다");
         }
 
-        function followUser(currentUserNum, userNum, isFollowing) {
-            console.log("followUser 함수 호출됨");
+		// follow 요청 script
+		function followUser(currentUserNum, userNum, isFollowing) {
+		    console.log("followUser 함수 호출됨");
 
-            if (isFollowing === 'true') {
-                if (!confirm(`팔로우를 취소하시겠습니까?`)) {
-                    return;
-                }
-            }
+		    if (isFollowing === 'true') {
+		        if (!confirm(`팔로우를 취소하시겠습니까?`)) {
+		            return;
+		        }
+		    }
 
-            let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
-            let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+		    let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+		    let method = isFollowing === 'true' ? 'DELETE' : 'POST';
 
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    follower: currentUserNum,
-                    following: userNum
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('작업 실패: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('작업 중 오류가 발생했습니다.');
-            });
-        }
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            follower: currentUserNum,
+		            following: userNum
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            location.reload();
+		        } else {
+		            alert('작업 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('작업 중 오류가 발생했습니다.');
+		    });
+		}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-                return new bootstrap.Popover(popoverTriggerEl, {
-                    html: true,
-                    sanitize: false
-                });
-            });
-        });
+		document.addEventListener('DOMContentLoaded', function() {
+		    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+		    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+		        return new bootstrap.Popover(popoverTriggerEl, {
+		            html: true,
+		            sanitize: false
+		        });
+		    });
+		});
 
-        function previewImage(event) {
-            var reader = new FileReader();
-            reader.onload = function(){
-                var output = document.querySelector('.rounded-circle');
-                output.src = reader.result;
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
+		function previewImage(event) {
+		    var reader = new FileReader();
+		    reader.onload = function(){
+		        var output = document.querySelector('.rounded-circle');
+		        output.src = reader.result;
+		    };
+		    reader.readAsDataURL(event.target.files[0]);
+		}
 
         function uploadAndPreviewImage(event) {
             var file = event.target.files[0];
@@ -619,6 +611,26 @@
                 }
             });
         });
+
+		function openVideoModal() {
+		    document.getElementById('videoModal').style.display = 'block';
+		    document.body.classList.add('modal-open');
+		}
+
+		function closeVideoModal() {
+		    document.getElementById('videoModal').style.display = 'none';
+		    document.body.classList.remove('modal-open');
+		}
+
+
+		// profile.관련 script
+		function openTab(tabName) {
+		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+		    tabTrigger.show();
+		}
+		function changeProfilePicture() {
+		    document.getElementById('profilePic').focus();
+		}
     </script>
 </div>
 </body>

@@ -6,6 +6,7 @@ import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -17,14 +18,16 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+    private final CommentLikeService commentLikeService;
     private final VideoService videoService;
     private final UserService userService;
 
     @Autowired
-    public CommentController(CommentService commentService, VideoService videoService, UserService userService) {
+    public CommentController(CommentService commentService, VideoService videoService, UserService userService, CommentLikeService commentLikeService) {
         this.commentService = commentService;
         this.videoService = videoService;
         this.userService = userService;
+        this.commentLikeService = commentLikeService;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,8 +45,19 @@ public class CommentController {
         return "success";
     }
 
-    @GetMapping("/video/{videoNum}")
-    public List<Comment> getCommentsByVideo(@PathVariable("videoNum") int videoNum) {
-        return commentService.findByVideoId(videoNum);
+    @GetMapping("/video/{videoNum}/comments")
+    public String getVideoComments(@PathVariable int videoNum, @RequestParam int currentUserNum, Model model) {
+        List<Comment> comments = commentService.getCommentsByVideoNum(videoNum);
+
+        for (Comment comment : comments) {
+            boolean isLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isLiked);
+        }
+
+        model.addAttribute("comments", comments);
+        model.addAttribute("videoNum", videoNum);
+        model.addAttribute("currentUserNum", currentUserNum);
+
+        return "video";
     }
 }

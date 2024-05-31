@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.chapssal.hashtag.HashtagService;
+import com.chapssal.user.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,5 +33,27 @@ public class VideoService {
     
     public int countVideosByUserNum(Integer userNum) {
         return videoRepository.countByUser_UserNum(userNum);
+    }
+    
+    public List<Video> getVideosByUserNum(Integer userNum) {
+        return videoRepository.findByUser_UserNumOrderByUploadDateDesc(userNum);
+    }
+    
+    public int getPrevVideoId(int videoNum, int userNum) {
+        Optional<Video> prevVideo = videoRepository.findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(userNum, videoNum);
+        return prevVideo.map(Video::getVideoNum).orElse(0);
+    }
+
+    public int getNextVideoId(int videoNum, int userNum) {
+        Optional<Video> nextVideo = videoRepository.findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(userNum, videoNum);
+        return nextVideo.map(Video::getVideoNum).orElse(0);
+    }
+    
+    public void delete(int videoNum) {
+        videoRepository.deleteById(videoNum);
+    }
+    
+    public List<Video> findVideosByUsers(List<User> users) {
+        return videoRepository.findByUserInOrderByVideoNumAsc(users);
     }
 }
