@@ -314,9 +314,10 @@
 			            <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
 			        </div>
 			        <div class="comment-actions">
-			            <button th:attr="onclick=|likeComment(${comment.commentNum}, ${currentUserNum})|">
-			                <i class="bi bi-heart"></i>
-			            </button>
+						<button th:classappend="${comment.likedByCurrentUser} ? 'text-danger' : 'text-muted'"
+						        th:attr="onclick=|likeComment(${comment.commentNum}, ${currentUserNum}, '${comment.likedByCurrentUser}')|">
+						    <i th:classappend="${comment.likedByCurrentUser} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+						</button>
 			        </div>
 			    </div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
@@ -572,6 +573,37 @@
 		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
 		    }
 		}
+		
+		function likeComment(commentNum, currentUserNum, isLiked) {
+		    console.log("likeComment 함수 호출됨");
+
+		    let url = isLiked === 'true' ? '/comment/unlike' : '/comment/like';
+		    let method = isLiked === 'true' ? 'DELETE' : 'POST';
+
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            comment: commentNum,
+		            user: currentUserNum
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            location.reload();
+		        } else {
+		            alert('작업 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('작업 중 오류가 발생했습니다.');
+		    });
+		}
+
 	    /*]]>*/
 	</script>
 
