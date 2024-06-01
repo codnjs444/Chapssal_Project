@@ -6,8 +6,10 @@ import java.util.List;
 import com.chapssal.user.User;
 import com.chapssal.video.Video;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -72,7 +74,9 @@ public class Comment {
     public boolean isHasReplies() {
         return hasReplies;
     }
-
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RComment> rComments;
+    
     public void setHasReplies(boolean hasReplies) {
         this.hasReplies = hasReplies;
     }

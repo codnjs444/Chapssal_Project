@@ -2,25 +2,31 @@ package com.chapssal.comment;
 
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-
+import java.util.List;
+import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rcomment")
 public class RCommentController {
     private final RCommentService rCommentService;
     private final CommentService commentService;
     private final UserService userService;
-
+    private final RCommentRepository rCommentRepository;
+    
     @Autowired
-    public RCommentController(RCommentService rCommentService, CommentService commentService, UserService userService) {
+    public RCommentController(RCommentService rCommentService, CommentService commentService, UserService userService, RCommentRepository rCommentRepository) {
         this.rCommentService = rCommentService;
         this.commentService = commentService;
         this.userService = userService;
+        this.rCommentRepository = rCommentRepository;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -37,5 +43,22 @@ public class RCommentController {
         rCommentService.create(rComment);
 
         return "success";
+    }
+    
+    @Transactional
+    public RComment create(RComment rComment) {
+        return rCommentRepository.save(rComment);
+    }
+
+    @GetMapping("/list")
+    public List<RCommentDTO> getRComments(@RequestParam("commentNum") int commentNum) {
+        List<RComment> rComments = rCommentService.findByCommentNum(commentNum);
+        return rComments.stream()
+                .map(RCommentDTO::new)
+                .collect(Collectors.toList());
+    }
+    
+    public List<RComment> findByCommentNum(int commentNum) {
+        return rCommentRepository.findByCommentCommentNum(commentNum);
     }
 }

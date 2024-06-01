@@ -251,8 +251,12 @@
 		}
 
 		.replies-container {
-		    margin-top: 10px;
+		    display: none; /* 초기에는 숨김 */
+		    margin-top: 10px; /* 댓글과 답글 사이에 약간의 여백 추가 */
+		    min-height: 50px; /* 최소 높이 설정하여 빈 공간 표시 */
 		}
+
+
 
 		.reply-item {
 		    display: flex;
@@ -339,7 +343,7 @@
 			</div>
 			
             </div>
-			<!-- 댓글 섹션 HTML -->
+			
 			<div class="comments-section">
 			    <h6>댓글</h6>
 			    <div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
@@ -349,16 +353,17 @@
 			        <div class="comment-body">
 			            <strong th:text="${comment.user.userName}">사용자 이름</strong>
 			            <p th:text="${comment.text}">댓글 내용</p>
-						<div class="comment-meta">
-						    <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
-						    <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
-						</div>
-						<div class="comment-meta">
-						    <!-- 답글 보기 링크 추가 -->
-							<a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">
-							    답글 보기 (<span th:text="${comment.replies.size()}"></span>)
-							</a>
-						</div>
+			            <div class="comment-meta">
+			                <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+			                <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+			            </div>
+			            <div class="comment-meta">
+			                <!-- 답글 보기 링크 추가 -->
+			                <a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">
+			                    답글 보기 (<span th:text="${comment.replies.size()}"></span>)
+			                </a>
+			            </div>
+						<div class="replies-container" id="replies-1"></div> <!-- 빈 공간이 표시될 컨테이너 -->
 			        </div>
 			        <div class="comment-actions">
 			            <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
@@ -366,16 +371,8 @@
 			            </button>
 			            <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
 			        </div>
-			        <!-- 답글 목록 표시 -->
-			        <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;">
-			            <div th:each="reply : ${comment.replies}" class="reply-item">
-			                <div class="reply-body">
-			                    <strong th:text="${reply.user.userName}">답글 사용자 이름</strong>
-			                    <p th:text="${reply.text}">답글 내용</p>
-			                    <small th:text="${#temporals.format(reply.date, 'yyyy-MM-dd HH:mm:ss')}">답글 날짜</small>
-			                </div>
-			            </div>
-			        </div>
+			        <!-- 답글 컨테이너 추가 -->
+			        <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;"></div>
 			    </div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
 			</div>
@@ -546,26 +543,37 @@
 		    document.getElementById('videoNum').value = videoNum;
 		    document.getElementById('currentUserNum').value = currentUserNum;
 		});
-
+		
 		function submitComment() {
-		    const commentText = document.getElementById('commentText').value;
+		    let commentText = document.getElementById('commentText').value;
 		    const videoNum = document.getElementById('videoNum').value;
 		    const currentUserNum = document.getElementById('currentUserNum').value;
+		    const parentCommentNum = document.getElementById('parentCommentNum').value;
 
 		    if (commentText.trim() === "") {
 		        alert("댓글을 입력하세요.");
 		        return;
 		    }
 
+		    // commentText에서 @사용자이름 부분 제거 (정규식 사용)
+		    console.log('Original commentText:', commentText);
+		    commentText = commentText.replace(/^@\S+\s*/, '');
+		    console.log('Processed commentText:', commentText);
+
+		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
 		    const comment = {
 		        text: commentText,
 		        video: { videoNum: parseInt(videoNum, 10) },
 		        user: { userNum: parseInt(currentUserNum, 10) }
 		    };
 
+		    if (parentCommentNum) {
+		        comment.comment = { commentNum: parseInt(parentCommentNum, 10) };
+		    }
+
 		    console.log('Sending comment:', comment);
 
-		    fetch('/comment/add', {
+		    fetch(url, {
 		        method: 'POST',
 		        headers: {
 		            'Content-Type': 'application/json'
@@ -586,6 +594,9 @@
 		        alert('댓글 등록 중 오류가 발생했습니다.');
 		    });
 		}
+
+
+
 		function toggleOptions() {
 		    const optionsDropdown = document.querySelector('.options-dropdown');
 		    optionsDropdown.style.display = optionsDropdown.style.display === 'block' ? 'none' : 'block';
@@ -740,17 +751,22 @@
 		    });
 		}
 
+		let mentionedUserName = '';
+
 		function toggleReplyForm(event, commentNum, userName) {
 		    event.stopPropagation(); // 이벤트 전파 중지
 		    const commentText = document.getElementById('commentText');
 		    const parentCommentNum = document.getElementById('parentCommentNum');
-		    commentText.value = `@${userName} `; // 댓글 입력란에 사용자 이름 채우기
-		    parentCommentNum.value = commentNum; // 부모 댓글 번호 설정
+		    
+		    // @사용자이름 부분을 입력란에 표시하고 임시 변수에 저장
+		    mentionedUserName = `@${userName} `;
+		    commentText.value = mentionedUserName; 
+		    parentCommentNum.value = commentNum; 
 		    commentText.focus(); // 입력란에 포커스 맞추기
 		}
 
 		function submitComment() {
-		    const commentText = document.getElementById('commentText').value;
+		    let commentText = document.getElementById('commentText').value;
 		    const videoNum = document.getElementById('videoNum').value;
 		    const currentUserNum = document.getElementById('currentUserNum').value;
 		    const parentCommentNum = document.getElementById('parentCommentNum').value;
@@ -759,6 +775,13 @@
 		        alert("댓글을 입력하세요.");
 		        return;
 		    }
+
+		    // commentText에서 @사용자이름 부분 제거
+		    console.log('Original commentText:', commentText);
+		    if (mentionedUserName && commentText.startsWith(mentionedUserName)) {
+		        commentText = commentText.slice(mentionedUserName.length);
+		    }
+		    console.log('Processed commentText:', commentText);
 
 		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
 		    const comment = {
@@ -796,16 +819,62 @@
 		}
 
 
-		// JavaScript 부분
-		function toggleReplies(commentNum) {
-		    const repliesContainer = document.getElementById(`replies-${commentNum}`);
-		    if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
-		        repliesContainer.style.display = 'block';
-		    } else {
-		        repliesContainer.style.display = 'none';
-		    }
-		}
 
+		function toggleReplies(commentNum) {
+		          const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+		          let repliesContainer = commentElement.querySelector('.replies-container');
+
+		          if (!repliesContainer) {
+		              repliesContainer = document.createElement('div');
+		              repliesContainer.id = `replies-${commentNum}`;
+		              repliesContainer.className = 'replies-container';
+		              commentElement.appendChild(repliesContainer);
+		          }
+
+		          if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+		              repliesContainer.style.display = 'block';
+		              fetchReplies(commentNum, repliesContainer);
+		          } else {
+		              repliesContainer.style.display = 'none';
+		              repliesContainer.innerHTML = '';
+		          }
+		      }
+
+			  function fetchReplies(commentNum, container) {
+			      fetch(`/rcomment/list?commentNum=${commentNum}`)
+			          .then(response => response.json())
+			          .then(data => {
+			              container.innerHTML = ''; // Clear the container
+			              if (data.length === 0) {
+			                  container.innerHTML = '<p>No replies yet.</p>';
+			                  return;
+			              }
+			              data.forEach(reply => {
+			                  const replyElement = document.createElement('div');
+			                  replyElement.className = 'reply-item';
+			                  replyElement.innerHTML = `
+			                      <div class="reply-body">
+			                          <strong>${reply.userName}</strong>
+			                          <p>${reply.text}</p>
+			                          <div class="comment-meta">
+			                              <small class="comment-date">${formatDate(reply.date)}</small>
+			                          </div>
+			                      </div>
+			                  `;
+			                  container.appendChild(replyElement);
+			              });
+			          })
+			          .catch(error => {
+			              console.error('Error fetching replies:', error);
+			              container.innerHTML = '<p>Error loading replies.</p>';
+			          });
+			  }
+
+
+			  function formatDate(dateString) {
+			      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+			      return new Date(dateString).toLocaleDateString(undefined, options);
+			  }
 
 	    /*]]>*/
 	</script>

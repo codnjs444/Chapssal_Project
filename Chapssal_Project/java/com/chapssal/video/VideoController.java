@@ -3,6 +3,8 @@ package com.chapssal.video;
 import com.chapssal.comment.Comment;
 import com.chapssal.comment.CommentLikeService;
 import com.chapssal.comment.CommentService;
+import com.chapssal.comment.RComment;
+import com.chapssal.comment.RCommentService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.topic.SelectedTopic;
 import com.chapssal.topic.SelectedTopicService;
@@ -59,6 +61,8 @@ public class VideoController {
     @Autowired
     private CommentService commentService;
     
+    @Autowired
+    private RCommentService rCommentService;
     @Autowired
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, CommentLikeService commentLikeService) {
         this.videoService = videoService;
@@ -247,6 +251,7 @@ public class VideoController {
 
         return "video"; // video.html로 이동
     }
+
 
     @DeleteMapping("/video/delete/{videoNum}")
     @ResponseBody

@@ -1,5 +1,7 @@
 package com.chapssal.comment;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,5 +15,10 @@ public class RCommentService {
     @Transactional
     public RComment create(RComment rComment) {
         return rCommentRepository.save(rComment);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<RComment> findByCommentNum(int commentNum) {
+        return rCommentRepository.findByCommentCommentNum(commentNum);
     }
 }
