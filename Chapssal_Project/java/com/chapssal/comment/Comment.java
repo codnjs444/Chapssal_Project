@@ -1,6 +1,7 @@
 package com.chapssal.comment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.chapssal.user.User;
 import com.chapssal.video.Video;
@@ -12,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Getter;
@@ -54,5 +56,24 @@ public class Comment {
 
     public void setLikeCount(int likeCount) {
         this.likeCount = likeCount;
+    }
+    
+    
+    ///////////////////////
+    @OneToMany(mappedBy = "comment")
+    private List<RComment> replies; // 답글 목록
+
+    @Transient
+    private boolean hasReplies; // 답글 여부
+
+    // 기존 필드와 메서드들
+
+    // Getter와 Setter 추가
+    public boolean isHasReplies() {
+        return hasReplies;
+    }
+
+    public void setHasReplies(boolean hasReplies) {
+        this.hasReplies = hasReplies;
     }
 }

@@ -242,59 +242,33 @@
 		    color: #6c757d;
 		    margin-left: 5px;
 		}
+		.comment-meta .view-replies-link {
+		    font-size: 10px;
+		    color: #000; /* 답글 보기 링크를 검정색으로 설정 */
+		    cursor: pointer;
+		    margin-left: 0; /* 왼쪽 마진을 제거하여 더 왼쪽으로 이동 */
+		    text-decoration: none; /* 밑줄 제거 */
+		}
 
-		.reply-form-container {
-		    display: none;
-		    position: absolute; /* position을 relative로 설정 */
-		    top: 0; /* 부모 요소의 하단에 위치 */
-		    left: 0;
-		    width: 100%;
+		.replies-container {
+		    margin-top: 10px;
+		}
+
+		.reply-item {
+		    display: flex;
+		    align-items: flex-start;
+		    margin-bottom: 10px;
+		    margin-left: 20px; /* 답글을 약간 들여쓰기 */
+		    position: relative;
+		    flex-direction: column; /* 수정: 답글을 세로로 정렬 */
+		    border-left: 2px solid #ccc; /* 수정: 답글 들여쓰기 부분에 선 추가 */
+		    padding-left: 10px; /* 수정: 답글 텍스트와 선 사이의 여백 추가 */
+		}
+
+		.reply-body {
 		    background-color: #f9f9f9;
 		    padding: 10px;
-		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 		    border-radius: 10px;
-		    z-index: 1000; /* z-index를 높여서 다른 요소 위에 표시되도록 설정 */
-		}
-
-
-		.reply-input-container {
-		    display: flex;
-		    align-items: center;
-		    background-color: #f9f9f9;
-		    padding: 5px;
-		    border-radius: 10px;
-		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-		    width: 100%;
-		}
-
-		.reply-input {
-		    flex-grow: 1;
-		    border: none;
-		    padding: 8px 10px;
-		    border-radius: 10px;
-		    background-color: #e9ecef;
-		    margin-right: 5px;
-		}
-
-		.reply-input:focus {
-		    outline: none;
-		}
-
-		.reply-submit-btn,
-		.reply-cancel-btn {
-		    background-color: transparent;
-		    color: #007bff;
-		    border: none;
-		    cursor: pointer;
-		    padding: 0 10px;
-		}
-
-		.reply-cancel-btn {
-		    color: #dc3545; /* 취소 버튼 색상 빨간색으로 설정 */
-		}
-
-		.reply-submit-btn {
-		    color: #007bff; /* 게시 버튼 색상 파란색으로 설정 */
 		}
 
 	   	 </style>
@@ -375,16 +349,30 @@
 			        <div class="comment-body">
 			            <strong th:text="${comment.user.userName}">사용자 이름</strong>
 			            <p th:text="${comment.text}">댓글 내용</p>
-			            <div class="comment-meta">
-			                <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
-			                <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
-			            </div>
+						<div class="comment-meta">
+						    <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+						    <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+						</div>
+						<div class="comment-meta">
+						    <!-- 답글 보기 링크 추가 -->
+						    <a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">답글 보기</a>
+						</div>
 			        </div>
 			        <div class="comment-actions">
 			            <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
 			                <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
 			            </button>
 			            <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
+			        </div>
+			        <!-- 답글 목록 표시 -->
+			        <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;">
+			            <div th:each="reply : ${comment.replies}" class="reply-item">
+			                <div class="reply-body">
+			                    <strong th:text="${reply.user.userName}">답글 사용자 이름</strong>
+			                    <p th:text="${reply.text}">답글 내용</p>
+			                    <small th:text="${#temporals.format(reply.date, 'yyyy-MM-dd HH:mm:ss')}">답글 날짜</small>
+			                </div>
+			            </div>
 			        </div>
 			    </div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
@@ -806,7 +794,15 @@
 		}
 
 
-
+		// JavaScript 부분
+		function toggleReplies(commentNum) {
+		    const repliesContainer = document.getElementById(`replies-${commentNum}`);
+		    if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+		        repliesContainer.style.display = 'block';
+		    } else {
+		        repliesContainer.style.display = 'none';
+		    }
+		}
 
 
 	    /*]]>*/

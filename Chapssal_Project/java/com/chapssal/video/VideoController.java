@@ -226,6 +226,10 @@ public class VideoController {
         for (Comment comment : comments) {
             boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
             comment.setLiked(isCommentLiked);
+
+            // 댓글에 답글이 있는지 확인하여 모델에 추가
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
         }
         commentService.setLikeCountsForComments(comments);
         model.addAttribute("comments", comments);

@@ -13,6 +13,7 @@ import java.util.Optional;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final RCommentRepository rCommentRepository;
     
     @Transactional
     public Comment create(Comment comment) {
@@ -43,5 +44,9 @@ public class CommentService {
     }
     public Optional<Comment> findById(int commentNum) {
         return commentRepository.findById(commentNum);
+    }
+    // 특정 댓글에 답글이 있는지 확인하는 메서드 추가
+    public boolean hasReplies(int commentNum) {
+        return rCommentRepository.countByCommentCommentNum(commentNum) > 0;
     }
 }
