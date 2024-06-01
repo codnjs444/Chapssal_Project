@@ -9,6 +9,7 @@ import com.chapssal.message.repository.ParticipantRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,10 +26,14 @@ public class MessageService {
     @Autowired
     private ParticipantRepository participantRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     public List<Message> getAllMessages() {
         return messageRepository.findAll();
     }
 
+    @Transactional
     public Message addMessage(Message message) {
         ChatRoom chatRoom = chatRoomRepository.findById(message.getRoomNum())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid room number"));
@@ -44,6 +49,10 @@ public class MessageService {
                 participant.setIsLeave(false);
                 participant.setJoinDate(LocalDateTime.now());
                 participantRepository.save(participant);
+
+                // WebSocket 메시지 발송
+                ChatRoomDTO chatRoomDTO = new ChatRoomDTO(chatRoom);
+                messagingTemplate.convertAndSend("/topic/chatRoomUpdate/" + participant.getUser().getUserNum(), chatRoomDTO);
             }
         }
 

@@ -4,13 +4,12 @@ import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
 import com.chapssal.message.model.Participant;
 import com.chapssal.message.repository.ParticipantRepository;
+import com.chapssal.message.service.*;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
-import com.chapssal.message.service.ChatRoomService;
-import com.chapssal.message.service.MessageService;
-import com.chapssal.message.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +34,9 @@ public class ChatRoomController {
 
     @Autowired
     private ParticipantRepository participantRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/rooms")
     public List<ChatRoom> getAllChatRooms() {
@@ -125,15 +127,22 @@ public class ChatRoomController {
         }
     }
 
-    @PostMapping("/rooms/create")
-    public ResponseEntity<ChatRoom> createChatRoom(@RequestBody Map<String, List<Integer>> participantsMap) {
+    @PostMapping("rooms/create")
+    public ResponseEntity<ChatRoomDTO> createChatRoom(@RequestBody Map<String, List<Integer>> participantsMap) {
         List<Integer> participants = participantsMap.get("participants");
         if (participants == null || participants.size() != 2) {
             return ResponseEntity.badRequest().build();
         }
 
         ChatRoom newChatRoom = chatRoomService.createOrJoinChatRoom(participants);
-        return ResponseEntity.ok(newChatRoom);
+
+        // WebSocket 메시지 전송
+        participants.forEach(participant ->
+                messagingTemplate.convertAndSend("/topic/chatRoomUpdate/" + participant, new ChatRoomDTO(newChatRoom))
+        );
+
+        // 새로 생성된 채팅방 정보 반환
+        return ResponseEntity.ok(new ChatRoomDTO(newChatRoom));
     }
 
     @PostMapping("/rooms/{roomNum}/updateIsLeaveToFalse")
@@ -142,4 +151,13 @@ public class ChatRoomController {
         chatRoomService.updateParticipantIsLeaveToFalse(roomNum, userNum);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("rooms/user/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable("id") int id) {
+        User user = userRepository.findByUserNum(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + id));
+        UserDTO userDTO = new UserDTO(user);
+        return ResponseEntity.ok(userDTO);
+    }
+
 }
