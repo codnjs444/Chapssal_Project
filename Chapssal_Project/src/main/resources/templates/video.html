@@ -355,7 +355,9 @@
 						</div>
 						<div class="comment-meta">
 						    <!-- 답글 보기 링크 추가 -->
-						    <a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">답글 보기</a>
+							<a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">
+							    답글 보기 (<span th:text="${comment.replies.size()}"></span>)
+							</a>
 						</div>
 			        </div>
 			        <div class="comment-actions">
