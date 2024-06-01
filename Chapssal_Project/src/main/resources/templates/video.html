@@ -185,55 +185,119 @@
 		    margin-top: 5px;
 		}
 		.comment-item {
-		       display: flex;
-		       align-items: center;
-		       margin-bottom: 15px; /* 댓글 간의 간격을 넓힘 */
-		       justify-content: space-between; /* 아이템을 양쪽 끝으로 배치 */
-		   }
-		   .comment-item img {
-		       width: 40px;
-		       height: 40px;
-		       border-radius: 50%;
-		       margin-right: 10px;
-		       cursor: pointer; /* 프로필 사진 클릭 가능하도록 커서 변경 */
-		   }
-		   .comment-item .comment-body {
-		       flex-grow: 1;
-		       display: flex;
-		       flex-direction: column;
-		       justify-content: center;
-		       cursor: pointer; /* 프로필 사진 클릭 가능하도록 커서 변경 */
-		   }
-		   .comment-item .comment-actions {
-		       display: flex;
-		       align-items: center;
-		   }
-		   .comment-item .comment-actions button {
-		       background: none;
-		       border: none;
-		       color: #000;
-		       cursor: pointer;
-		       font-size: 14px;
-		       margin-left: 10px;
-		   }
-		   .comment-item .comment-actions span {
-		       font-size: 12px;
-		       color: #6c757d;
-		       margin-left: 5px;
-		   }
-		   .comment-item strong {
-		       font-size: 13px; /* 사용자 이름 폰트 크기 */
-		   }
-		   .comment-item p {
-		       font-size: 12px; /* 댓글 내용 폰트 크기 */
-		       margin: 0px 0; /* 댓글 내용과 날짜 사이의 간격 줄임 */
-		   }
-		   .comment-item small {
-		       font-size: 10px; /* 날짜 폰트 크기 */
-		       color: #6c757d; /* 날짜 색상 */
-		       margin-top: 2px; /* 날짜와 텍스트 간의 간격 줄임 */
-		   }
-	 </style>
+		    display: flex;
+		    align-items: flex-start;
+		    margin-bottom: 15px;
+		    position: relative; /* position을 relative로 설정 */
+		}
+
+		.comment-item img {
+		    width: 40px;
+		    height: 40px;
+		    border-radius: 50%;
+		    margin-right: 10px;
+		    cursor: pointer;
+		}
+
+		.comment-body {
+		    flex-grow: 1;
+		    display: flex;
+		    flex-direction: column;
+		}
+
+		.comment-meta {
+		    display: flex;
+		    align-items: center;
+		    margin-top: 5px;
+		}
+
+		.comment-meta .comment-date,
+		.comment-meta .reply-link {
+		    font-size: 10px;
+		    color: #6c757d;
+		}
+
+		.comment-meta .reply-link {
+		    margin-left: 10px;
+		    cursor: pointer;
+		}
+
+		.comment-actions {
+		    display: flex;
+		    align-items: center;
+		    margin-top: 5px;
+		}
+
+		.comment-actions .like-button {
+		    background: none;
+		    border: none;
+		    color: #000;
+		    cursor: pointer;
+		    font-size: 14px;
+		    margin-left: 10px;
+		}
+
+		.comment-actions .like-count {
+		    font-size: 12px;
+		    color: #6c757d;
+		    margin-left: 5px;
+		}
+
+		.reply-form-container {
+		    display: none;
+		    position: absolute; /* position을 relative로 설정 */
+		    top: 0; /* 부모 요소의 하단에 위치 */
+		    left: 0;
+		    width: 100%;
+		    background-color: #f9f9f9;
+		    padding: 10px;
+		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+		    border-radius: 10px;
+		    z-index: 1000; /* z-index를 높여서 다른 요소 위에 표시되도록 설정 */
+		}
+
+
+		.reply-input-container {
+		    display: flex;
+		    align-items: center;
+		    background-color: #f9f9f9;
+		    padding: 5px;
+		    border-radius: 10px;
+		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+		    width: 100%;
+		}
+
+		.reply-input {
+		    flex-grow: 1;
+		    border: none;
+		    padding: 8px 10px;
+		    border-radius: 10px;
+		    background-color: #e9ecef;
+		    margin-right: 5px;
+		}
+
+		.reply-input:focus {
+		    outline: none;
+		}
+
+		.reply-submit-btn,
+		.reply-cancel-btn {
+		    background-color: transparent;
+		    color: #007bff;
+		    border: none;
+		    cursor: pointer;
+		    padding: 0 10px;
+		}
+
+		.reply-cancel-btn {
+		    color: #dc3545; /* 취소 버튼 색상 빨간색으로 설정 */
+		}
+
+		.reply-submit-btn {
+		    color: #007bff; /* 게시 버튼 색상 파란색으로 설정 */
+		}
+
+	   	 </style>
 </head>
 <body>
     <div class="video-container">
@@ -304,15 +368,25 @@
 			<!-- 댓글 섹션 HTML -->
 			<div class="comments-section">
 			    <h6>댓글</h6>
-				<h6>댓글</h6>
 				<div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
 				    <img th:src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
 				         alt="사용자 사진" 
 				         th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
-				    <div class="comment-body" th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
+				    <div class="comment-body">
 				        <strong th:text="${comment.user.userName}">사용자 이름</strong>
 				        <p th:text="${comment.text}">댓글 내용</p>
-				        <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+				        <div class="comment-meta">
+				            <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+				            <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+				        </div>
+				        <!-- 답글 입력 양식 -->
+				        <div class="reply-form-container" id="reply-form-[[${comment.commentNum}]]">
+				            <div class="reply-input-container">
+				                <input type="text" class="form-control reply-input" placeholder="답글을 입력하세요...">
+				                <button class="btn btn-link reply-cancel-btn" onclick="cancelReply('[[${comment.commentNum}]]')"><i class="bi bi-x"></i></button>
+				                <button class="btn btn-link reply-submit-btn" onclick="submitReply('[[${comment.commentNum}]]', '[[${currentUserNum}]]')">게시</button>
+				            </div>
+				        </div>
 				    </div>
 				    <div class="comment-actions">
 				        <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
@@ -321,7 +395,7 @@
 				        <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
 				    </div>
 				</div>
-				<p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
+			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
 			</div>
 			<!-- 추가 댓글 아이템 -->
 			<div class="comment-input-container">
@@ -684,6 +758,26 @@
 		        }, 8000);
 		    });
 		}
+
+		function toggleReplyForm(event, commentNum, userName) {
+		    event.stopPropagation(); // 이벤트 전파 중지
+		    const commentText = document.getElementById('commentText');
+		    commentText.value = `@${userName} `; // 댓글 입력란에 사용자 이름 채우기
+		    commentText.focus(); // 입력란에 포커스 맞추기
+		}
+
+		function hideAllReplyForms() {
+		    const replyForms = document.querySelectorAll('.reply-form-container');
+		    replyForms.forEach(form => {
+		        form.style.display = "none";
+		    });
+		}
+
+		function cancelReply(commentNum) {
+		    const replyForm = document.getElementById("reply-form-" + commentNum);
+		    replyForm.style.display = "none"; // 답글 양식 숨김
+		}
+
 
 
 
