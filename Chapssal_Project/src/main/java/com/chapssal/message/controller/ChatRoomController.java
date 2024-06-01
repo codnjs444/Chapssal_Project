@@ -4,15 +4,24 @@ import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
 import com.chapssal.message.model.Participant;
 import com.chapssal.message.repository.ParticipantRepository;
+import com.chapssal.message.service.*;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
-import com.chapssal.message.service.ChatRoomService;
-import com.chapssal.message.service.MessageService;
-import com.chapssal.message.service.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,6 +44,12 @@ public class ChatRoomController {
 
     @Autowired
     private ParticipantRepository participantRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @GetMapping("/rooms")
     public List<ChatRoom> getAllChatRooms() {
@@ -125,15 +140,22 @@ public class ChatRoomController {
         }
     }
 
-    @PostMapping("/rooms/create")
-    public ResponseEntity<ChatRoom> createChatRoom(@RequestBody Map<String, List<Integer>> participantsMap) {
+    @PostMapping("rooms/create")
+    public ResponseEntity<ChatRoomDTO> createChatRoom(@RequestBody Map<String, List<Integer>> participantsMap) {
         List<Integer> participants = participantsMap.get("participants");
         if (participants == null || participants.size() != 2) {
             return ResponseEntity.badRequest().build();
         }
 
         ChatRoom newChatRoom = chatRoomService.createOrJoinChatRoom(participants);
-        return ResponseEntity.ok(newChatRoom);
+
+        // WebSocket 메시지 전송
+        participants.forEach(participant ->
+                messagingTemplate.convertAndSend("/topic/chatRoomUpdate/" + participant, new ChatRoomDTO(newChatRoom))
+        );
+
+        // 새로 생성된 채팅방 정보 반환
+        return ResponseEntity.ok(new ChatRoomDTO(newChatRoom));
     }
 
     @PostMapping("/rooms/{roomNum}/updateIsLeaveToFalse")
@@ -142,4 +164,37 @@ public class ChatRoomController {
         chatRoomService.updateParticipantIsLeaveToFalse(roomNum, userNum);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("rooms/user/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable("id") int id) {
+        User user = userRepository.findByUserNum(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + id));
+        UserDTO userDTO = new UserDTO(user);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @PostMapping("rooms/{roomNum}/upload")
+    public ResponseEntity<?> uploadFile(@PathVariable("roomNum") Long roomNum,
+                                        @RequestParam("file") MultipartFile file) {
+        try {
+            String roomUploadDir = uploadDir + File.separator + roomNum;
+            Path uploadPath = Paths.get(roomUploadDir);
+
+            // 디렉토리가 존재하지 않으면 생성
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String fileName = System.currentTimeMillis() + "__" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            file.transferTo(filePath.toFile());
+
+            return ResponseEntity.ok().body(Map.of("filePath", "/uploads/" + roomNum + "/" + fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
+        }
+    }
+
+
 }

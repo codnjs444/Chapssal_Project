@@ -550,5 +550,25 @@ margin-left: auto;
         }
 
 
+        .participant {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .empty-box {
+            width: 200px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid #ccc;
+            position: absolute;
+            bottom: 150%; /* 빈 창을 위로 위치시킴 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 1002;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
     </style>
 </head>
