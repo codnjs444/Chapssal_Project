@@ -368,44 +368,35 @@
 			<!-- 댓글 섹션 HTML -->
 			<div class="comments-section">
 			    <h6>댓글</h6>
-				<div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
-				    <img th:src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
-				         alt="사용자 사진" 
-				         th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
-				    <div class="comment-body">
-				        <strong th:text="${comment.user.userName}">사용자 이름</strong>
-				        <p th:text="${comment.text}">댓글 내용</p>
-				        <div class="comment-meta">
-				            <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
-				            <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
-				        </div>
-				        <!-- 답글 입력 양식 -->
-				        <div class="reply-form-container" id="reply-form-[[${comment.commentNum}]]">
-				            <div class="reply-input-container">
-				                <input type="text" class="form-control reply-input" placeholder="답글을 입력하세요...">
-				                <button class="btn btn-link reply-cancel-btn" onclick="cancelReply('[[${comment.commentNum}]]')"><i class="bi bi-x"></i></button>
-				                <button class="btn btn-link reply-submit-btn" onclick="submitReply('[[${comment.commentNum}]]', '[[${currentUserNum}]]')">게시</button>
-				            </div>
-				        </div>
-				    </div>
-				    <div class="comment-actions">
-				        <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
-				            <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
-				        </button>
-				        <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
-				    </div>
-				</div>
+			    <div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
+			        <img th:src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
+			             alt="사용자 사진" 
+			             th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
+			        <div class="comment-body">
+			            <strong th:text="${comment.user.userName}">사용자 이름</strong>
+			            <p th:text="${comment.text}">댓글 내용</p>
+			            <div class="comment-meta">
+			                <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+			                <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+			            </div>
+			        </div>
+			        <div class="comment-actions">
+			            <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
+			                <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
+			            </button>
+			            <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
+			        </div>
+			    </div>
 			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
 			</div>
 			<!-- 추가 댓글 아이템 -->
 			<div class="comment-input-container">
 			    <input type="hidden" name="videoNum" id="videoNum" value="${videoNum}">
 			    <input type="hidden" name="currentUserNum" id="currentUserNum" value="${currentUserNum}">
+			    <input type="hidden" name="parentCommentNum" id="parentCommentNum" value="">
 			    <input type="text" class="comment-input" name="commentText" id="commentText" placeholder="따뜻한 말 한마디 해주세요...">
 			    <button type="button" class="submit-comment-btn" onclick="submitComment()">게시</button>
 			</div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 	<script th:inline="javascript">
@@ -762,21 +753,58 @@
 		function toggleReplyForm(event, commentNum, userName) {
 		    event.stopPropagation(); // 이벤트 전파 중지
 		    const commentText = document.getElementById('commentText');
+		    const parentCommentNum = document.getElementById('parentCommentNum');
 		    commentText.value = `@${userName} `; // 댓글 입력란에 사용자 이름 채우기
+		    parentCommentNum.value = commentNum; // 부모 댓글 번호 설정
 		    commentText.focus(); // 입력란에 포커스 맞추기
 		}
 
-		function hideAllReplyForms() {
-		    const replyForms = document.querySelectorAll('.reply-form-container');
-		    replyForms.forEach(form => {
-		        form.style.display = "none";
+		function submitComment() {
+		    const commentText = document.getElementById('commentText').value;
+		    const videoNum = document.getElementById('videoNum').value;
+		    const currentUserNum = document.getElementById('currentUserNum').value;
+		    const parentCommentNum = document.getElementById('parentCommentNum').value;
+
+		    if (commentText.trim() === "") {
+		        alert("댓글을 입력하세요.");
+		        return;
+		    }
+
+		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
+		    const comment = {
+		        text: commentText,
+		        video: { videoNum: parseInt(videoNum, 10) },
+		        user: { userNum: parseInt(currentUserNum, 10) }
+		    };
+
+		    if (parentCommentNum) {
+		        comment.comment = { commentNum: parseInt(parentCommentNum, 10) };
+		    }
+
+		    console.log('Sending comment:', comment);
+
+		    fetch(url, {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify(comment)
+		    })
+		    .then(response => response.text()) // 응답을 텍스트로 처리
+		    .then(text => {
+		        console.log('Response text:', text);
+		        if (text.trim() === 'success') {
+		            location.reload();
+		        } else {
+		            alert('댓글 등록 실패: ' + text);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('댓글 등록 중 오류가 발생했습니다.');
 		    });
 		}
 
-		function cancelReply(commentNum) {
-		    const replyForm = document.getElementById("reply-form-" + commentNum);
-		    replyForm.style.display = "none"; // 답글 양식 숨김
-		}
 
 
 

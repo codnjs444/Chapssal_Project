@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -39,5 +40,8 @@ public class CommentService {
             int likeCount = commentLikeRepository.countByCommentNum(comment.getCommentNum());
             comment.setLikeCount(likeCount);
         }
+    }
+    public Optional<Comment> findById(int commentNum) {
+        return commentRepository.findById(commentNum);
     }
 }

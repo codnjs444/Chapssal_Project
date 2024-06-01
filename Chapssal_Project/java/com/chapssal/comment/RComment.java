@@ -1,7 +1,5 @@
 package com.chapssal.comment;
 
-import java.time.LocalDateTime;
-
 import com.chapssal.user.User;
 
 import jakarta.persistence.Column;
@@ -11,29 +9,29 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rComment")
+@Getter
+@Setter
 public class RComment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer rcommentNum;
-
+    private int rcommentNum;
+    
     @ManyToOne
-    @JoinColumn(name = "comment")
+    @JoinColumn(name = "comment", referencedColumnName = "commentNum")
     private Comment comment;
 
     @ManyToOne
-    @JoinColumn(name = "user")
+    @JoinColumn(name = "user", referencedColumnName = "userNum")
     private User user;
 
-    @Column(name = "text", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String text;
 
-    @Column(name = "date", nullable = false)
     private LocalDateTime date;
-
-    // Getters and Setters
 }
