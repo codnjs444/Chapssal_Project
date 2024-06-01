@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,8 +33,16 @@ public class CommentLike {
     private User user;
 
     private LocalDateTime likeDate;
+
+    private LocalDateTime lastUpdated;
     
-	/*
-	 * @Version private int version; // Optimistic Locking을 위한 버전 필드 추가
-	 */
+    @PrePersist
+    protected void onCreate() {
+        lastUpdated = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        lastUpdated = LocalDateTime.now();
+    }
     }

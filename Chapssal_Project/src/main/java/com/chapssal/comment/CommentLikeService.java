@@ -59,4 +59,21 @@ public class CommentLikeService {
     public int countByCommentNum(int commentNum) {
         return commentLikeRepository.countByComment_CommentNum(commentNum);
     }
+    
+    @Transactional
+    public void updateCommentLike(CommentLike commentLike) {
+        // 데이터베이스에서 엔터티를 조회합니다.
+        CommentLike existingCommentLike = commentLikeRepository.findById(commentLike.getLikeNum())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid like number"));
+
+        // 필요한 필드를 업데이트합니다.
+        existingCommentLike.setComment(commentLike.getComment());
+        existingCommentLike.setUser(commentLike.getUser());
+        existingCommentLike.setLikeDate(commentLike.getLikeDate());
+        
+        // lastUpdated는 @PreUpdate에 의해 자동으로 설정됩니다.
+
+        // 변경사항을 저장합니다.
+        commentLikeRepository.save(existingCommentLike);
+    }
 }
