@@ -1,16 +1,21 @@
 package com.chapssal.video;
 
+import com.chapssal.topic.SelectedTopic;
+import com.chapssal.topic.SelectedTopicService;
+import com.chapssal.topic.Topic;
+import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,22 +24,24 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
 public class VideoController {
 
     private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
-
     private final VideoService videoService;
     private final S3Service s3Service;
     private final UserService userService;
+    private final SelectedTopicService selectedTopicService;
 
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService) {
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
+        this.selectedTopicService = selectedTopicService;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -80,7 +87,7 @@ public class VideoController {
 
             // Video 객체 생성 및 저장
             Video video = new Video();
-            video.setUser(user.getUserNum());
+            video.setUser(user);
             video.setTitle(title);
             video.setTopic(topic);
             video.setUploadDate(LocalDateTime.now());
@@ -103,5 +110,32 @@ public class VideoController {
         }
 
         return "redirect:/";
+    }
+
+    @GetMapping("/explore/{videoNum}")
+    public String viewVideo(@PathVariable("videoNum") int videoNum, Model model) {
+        Video video = videoService.findById(videoNum).orElseThrow(() -> new RuntimeException("Video not found"));
+        User user = video.getUser();
+
+        model.addAttribute("video", video);    
+        model.addAttribute("uploader", user);
+        return "explore"; // 여기서 home.html을 explore.html로 변경했습니다.
+    }
+    
+    @GetMapping("/explore")
+    public String viewExplorePage(Model model) {
+        model.addAttribute("videos", videoService.findAll()); // 모든 비디오를 모델에 추가
+        return "explore"; // explore.html 템플릿을 렌더링
+    }
+
+    @GetMapping("/home")
+    public String viewHomePage(Model model) {
+        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+
+        List<Video> videos = videoService.findAll();
+        model.addAttribute("videos", videos);
+
+        return "home"; // home.html로 매핑
     }
 }

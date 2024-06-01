@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Layout</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            border: 2px solid red; /* 전체 웹사이트 경계 */
+        }
+        .navbar {
+            height: 7%; /* navbar 높이 */
+            background-color: yellow;
+            border-bottom: 2px solid orange; /* 노란색 영역 */
+        }
+        .main {
+            display: flex;
+            flex: 1;
+        }
+        .sidebar {
+            width: 5%; /* sidebar 너비 */
+            background-color: pink;
+            border-right: 2px solid purple; /* 분홍색 영역 */
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+        }
+        .list-group {
+            width: 20%; /* list-group 너비 */
+            background-color: lightgreen;
+            border-right: 2px solid green; /* 연두색 영역 */
+            display: flex;
+            flex-direction: column;
+        }
+        .extra-space {
+            height: 10%; /* 추가 공간 높이 */
+            background-color: lightgreen;
+            border-bottom: 2px solid green; /* 초록색 영역 */
+        }
+        .chat-section {
+            flex: 2;
+            background-color: lightblue;
+            border-left: 2px solid blue; /* 남색 영역 */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="navbar">NavBar</div>
+    <div class="main">
+        <div class="sidebar">
+            SideBar
+        </div>
+        <div class="content">
+            <div class="list-group">
+                <div class="extra-space">Extra Space</div>
+                <div>List Group</div>
+            </div>
+            <div class="chat-section">Chat Section</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -6,10 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
-import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 
 import java.time.LocalDate;
@@ -33,7 +33,8 @@ public class TopicController {
     }
 
     // 현재 년/월/주차를 계산해서 모델에 추가하는 메서드
-    private void addCurrentWeekToModel(Model model) {
+    // 테스트 클래스에서 사용하기 위해 접근 제한자를 private에서 protected로 변경
+    protected void addCurrentWeekToModel(Model model) {
         LocalDate now = LocalDate.now();
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
         int year = now.getYear();
@@ -79,7 +80,7 @@ public class TopicController {
 
         // 사용자가 널이 아니면 토픽 저장
         if (user != null) {
-              // 테이블 구조 변경으로 토픽 등록 메서드 수정
+            // 테이블 구조 변경으로 토픽 등록 메서드 수정
 //            // 이번주 토픽을 이미 등록했는지 확인
 //            if (topicService.hasRegisteredThisWeek(user)) {
 //                model.addAttribute("errorMessage", "이미 이번 주 토픽을 등록하셨습니다.");
@@ -150,34 +151,42 @@ public class TopicController {
     // 투표 버튼 클릭 메서드
     @PostMapping("/select")
     @ResponseBody
-    public String selectTopic(@RequestParam Integer topicId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userService.findByUserId(username);
+    public ResponseEntity<String> selectTopic(@RequestParam(name = "topicId") Integer topicId) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            User user = userService.findByUserId(username);
 
-        if (user != null) {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
             if (userService.hasReachedVoteLimit(user)) {
-                return "이번주 투표 가능한 횟수 5회를 모두 사용하셨습니다.";
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("이번주 투표 가능한 횟수 5회를 모두 사용하셨습니다.");
             }
 
             Topic topic = topicService.findById(topicId);
-            if (topic != null) {
-                SelectedTopic selectedTopic = new SelectedTopic();
-                selectedTopic.setTopic(topic);
-                selectedTopic.setUser(user);
-                selectedTopicRepository.save(selectedTopic);
-
-                // 투표 횟수 증가
-                userService.incrementVote(user);
-
-                return "투표가 완료되었습니다.";
-            } else {
-                return "유효하지 않은 토픽입니다.";
+            if (topic == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 토픽입니다.");
             }
-        } else {
-            return "사용자를 찾을 수 없습니다.";
+
+            SelectedTopic selectedTopic = new SelectedTopic();
+            selectedTopic.setTopic(topic);
+            selectedTopic.setUser(user);
+            selectedTopic.setCreateDate(LocalDateTime.now()); // 현재 시간으로 등록
+            selectedTopicRepository.save(selectedTopic);
+
+            // 투표 횟수 증가
+            userService.incrementVote(user);
+
+            return ResponseEntity.ok("투표가 완료되었습니다.");
+        } catch (Exception e) {
+            // 예외를 잡아서 로그에 기록
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 오류가 발생했습니다.");
         }
     }
+
 
     // 결과 페이지 리턴 메서드
     @GetMapping("/results")
@@ -198,13 +207,51 @@ public class TopicController {
     }
 
     // AJAX 요청을 처리하는 메서드
-    @GetMapping("/suggestions")
+    // 토픽 입력 자동 추천
+    @GetMapping("/topicsuggestions")
     @ResponseBody
     public List<Topic> getSuggestions(@RequestParam(required = false) String query) {
         if (query == null || query.isEmpty()) {
             return topicService.findTopTopicsThisWeek();
         } else {
-            return topicService.findTopTopicsThisWeek(query);
+            return topicService.findTopTopicsThisWeekByTitle(query);
         }
+    }
+
+    // AJAX 요청을 처리하는 메서드
+    // 토픽 투표 자동 추천
+    @GetMapping("/votesuggestions")
+    @ResponseBody
+    public List<Topic> getVoteSuggestions(@RequestParam(required = false) String query) {
+        if (query == null || query.isEmpty()) {
+            return topicService.findTopTopicsByVotes();
+        } else {
+            return topicService.findTopTopicsByVotes(query);
+        }
+    }
+
+    // 검색 버튼 이벤트 구현 메서드
+    @GetMapping("/search")
+    @ResponseBody
+    public List<Map<String, Object>> searchTopics(@RequestParam String query) {
+        List<Topic> topics = topicService.searchTopicsByVotes(query);
+        Map<Integer, Long> voteCounts = topicService.getVoteCountsForTopics();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUserId(username);
+
+        Set<Integer> votedTopicIds = selectedTopicRepository.findByUser(user).stream()
+                .map(selectedTopic -> selectedTopic.getTopic().getTopicNum())
+                .collect(Collectors.toSet());
+
+        return topics.stream().map(topic -> {
+            Map<String, Object> result = new HashMap<>();
+            result.put("topicNum", topic.getTopicNum());
+            result.put("title", topic.getTitle());
+            result.put("voteCount", voteCounts.getOrDefault(topic.getTopicNum(), 0L));
+            result.put("voted", votedTopicIds.contains(topic.getTopicNum()));
+            return result;
+        }).collect(Collectors.toList());
     }
 }
