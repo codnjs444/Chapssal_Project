@@ -2,13 +2,12 @@
     <script>
         let lastMessageTime = null;
         let lastMessageDate = null;
-        let loadedMessages = new Set(); // 이미 로딩된 메시지를 추적하기 위한 Set
-        let isLoading = false; // 메시지 로딩 상태를 추적
-        let currentRoomNum = null; // 현재 열린 채팅방 번호
-        let unreadCounts = {}; // 채팅방별 unreadCount 저장
-
-        let currentUserNum = null;  // 전역 변수로 선언
-        let receiverId = null;  // 전역 변수로 선언
+        let loadedMessages = new Set();
+        let isLoading = false;
+        let currentRoomNum = null;
+        let unreadCounts = {};
+        let currentUserNum = null;
+        let receiverId = null;
 
         function escapeHtml(text) {
             var map = {
@@ -60,13 +59,9 @@
             }
 
             const now = new Date();
-
-            // 오늘 날짜 기준 비교
             if (now.toLocaleDateString() === date.toLocaleDateString()) {
                 return '오늘';
             }
-
-            // 어제 날짜 기준 비교
             now.setDate(now.getDate() - 1);
             if (now.toLocaleDateString() === date.toLocaleDateString()) {
                 return '어제';
@@ -103,7 +98,6 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             const dateElements = document.querySelectorAll('.recent-message-date');
-
             dateElements.forEach(function (element) {
                 const dateStr = element.getAttribute('data-date');
                 const formattedDate = formatListDate(dateStr);
@@ -126,12 +120,9 @@
             var currentUserNum = parseInt($('#sender').val(), 10);
 
             if (typeof message.sender !== 'undefined') {
-                // 이미 로딩된 메시지인지 확인
                 if (loadedMessages.has(message.messageNum)) {
                     return;
                 }
-
-                // 새로운 메시지이면 Set에 추가
                 loadedMessages.add(message.messageNum);
 
                 var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
@@ -140,7 +131,6 @@
 
                 var messageHtml = '';
 
-                // 날짜 경계선 추가 논리
                 if (prepend) {
                     if (!lastMessageDate || lastMessageDate !== currentDate) {
                         messageHtml += '<div class="date-separator">' + currentDate + '</div>';
@@ -153,31 +143,26 @@
                     }
                 }
 
-                // 메시지 유형에 따라 메시지 내용 처리
                 if (message.messageType === 1 && message.filePath) {
                     var fileName = message.filePath.split('/').pop();
                     var fileExtension = fileName.split('.').pop().toLowerCase();
 
                     if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                        // 이미지 파일
                         messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
                         messageHtml += '<img src="' + escapeHtml(message.filePath) + '" alt="Image" style="max-width: 100%;">';
                         messageHtml += '</div>';
                     } else if (['mp4', 'mov', 'avi'].includes(fileExtension)) {
-                        // 비디오 파일
                         messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
                         messageHtml += '<video controls style="max-width: 100%;"><source src="' + escapeHtml(message.filePath) + '" type="video/' + fileExtension + '">Your browser does not support the video tag.</video>';
                         messageHtml += '</div>';
                     } else {
-                        // 기타 파일
                         messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
                         messageHtml += '<a href="' + escapeHtml(message.filePath) + '" download>' + escapeHtml(fileName) + '</a>';
                         messageHtml += '</div>';
                     }
                 } else {
-                    // 텍스트 메시지
                     messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                    messageHtml += escapeHtml(message.text);  // 메시지 텍스트를 escapeHtml을 사용하여 안전하게 처리
+                    messageHtml += escapeHtml(message.text);
                     messageHtml += '</div>';
                 }
 
@@ -189,293 +174,252 @@
                 }
 
                 const messageElement = $('#chatMessages').find('.' + alignment).last();
-                messageElement.text(message.text);  // 메시지 텍스트를 textContent로 설정하여 HTML이 파싱되지 않도록 함
+                messageElement.text(message.text);
 
                 if (message.roomNum === currentRoomNum) {
                     updateLastMessageInChatList(message.roomNum, message);
                 } else {
-                    // 채팅방 리스트 업데이트
                     updateChatRoomList(message.roomNum, message);
-                    // unreadCount 증가
                     updateUnreadCountFromDB(message.roomNum);
                 }
 
-                updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
-
-
-<!--                // sender 정보를 기반으로 사용자 프로필 조회 및 업데이트-->
-<!--                fetch(`/api/chat/rooms/user/${message.sender}`)-->
-<!--                    .then(response => response.json())-->
-<!--                    .then(user => {-->
-<!--                        updateChatRoomProfile(message.roomNum, user);-->
-<!--                    })-->
-<!--                    .catch(error => console.error('Error fetching user profile:', error));-->
-
+                updateDateAndTimeSeparators();
             } else {
                 console.error('Invalid message format:', message);
             }
         }
 
-function connect() {
-    var socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
-        stompClient.subscribe('/topic/messages', function (message) {
-            var parsedMessage = JSON.parse(message.body);
-            if (parsedMessage.roomNum === currentRoomNum) {
-                showMessage(parsedMessage);
-                // 채팅방이 열려 있는 경우 메시지를 읽음으로 표시
-                markMessagesAsRead(parsedMessage.roomNum);
-            } else {
-                // 채팅방 리스트 업데이트
-                updateChatRoomList(parsedMessage.roomNum, parsedMessage);
-                // unreadCount 증가
-                updateUnreadCountFromDB(parsedMessage.roomNum);
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/messages', function (message) {
+                    var parsedMessage = JSON.parse(message.body);
+                    if (parsedMessage.roomNum === currentRoomNum) {
+                        showMessage(parsedMessage);
+                        markMessagesAsRead(parsedMessage.roomNum);
+                    } else {
+                        updateChatRoomList(parsedMessage.roomNum, parsedMessage);
+                        updateUnreadCountFromDB(parsedMessage.roomNum);
+                    }
+                });
+
+                stompClient.subscribe('/topic/chatRoomUpdate/' + currentUserNum, function (message) {
+                    const chatRoom = JSON.parse(message.body);
+                    console.log('Received chat room update:', chatRoom);
+                    updateChatRoomList2(chatRoom);
+                });
+            }, function (error) {
+                console.log('STOMP error: ' + error);
+            });
+        }
+
+        $(document).ready(function () {
+            var senderValue = $('#sender').val();
+            currentUserNum = parseInt(senderValue, 10);
+
+            if (isNaN(currentUserNum)) {
+                console.error('Invalid currentUserNum:', senderValue);
             }
-        });
 
-        // 방 업데이트 구독
-        stompClient.subscribe('/topic/chatRoomUpdate/' + currentUserNum, function (message) {
-            const chatRoom = JSON.parse(message.body);
-            console.log('Received chat room update:', chatRoom); // 채팅방 업데이트 수신 로그
-            updateChatRoomList2(chatRoom);
-        });
+            connect();
 
-    }, function (error) {
-        console.log('STOMP error: ' + error);
-    });
-}
+            $('[data-bs-toggle="popover"]').popover({
+                html: true,
+                content: 'Loading...',
+                trigger: 'click'
+            });
 
-    $(document).ready(function () {
-    var senderValue = $('#sender').val();
-    currentUserNum = parseInt(senderValue, 10);
+            $('.list-group-item').on('click', function (event) {
+                event.preventDefault();
+                var roomNum = $(this).data('roomnum');
 
-    if (isNaN(currentUserNum)) {
-        console.error('Invalid currentUserNum:', senderValue);
-    }
-
-    connect();
-
-    // 팝오버 초기화
-    $('[data-bs-toggle="popover"]').popover({
-        html: true,
-        content: 'Loading...',
-        trigger: 'click'
-    });
-
-    $('.list-group-item').on('click', function (event) {
-        event.preventDefault();
-        var roomNum = $(this).data('roomnum');
-    $('.list-group-item').on('click', function (event) {
-        event.preventDefault();
-        var roomNum = $(this).data('roomnum');
-
-        if (!roomNum) {
-            console.error('roomNum is undefined');
-            return;
-        }
-
-        if ($(this).hasClass('active')) {
-            $(this).removeClass('active');
-            $('#chat-box-a').hide();
-            $('#chat-create').show();
-            currentRoomNum = null; // 채팅방 닫기
-            return;
-        }
-
-        $('.list-group-item.active').removeClass('active');
-        $(this).addClass('active');
-
-        currentRoomNum = roomNum;
-
-        $('#currentRoomNum').val(roomNum);
-
-        // 메시지를 새로 불러오기 전에 기존 메시지를 모두 지우기
-        $('#chatMessages').empty();
-        lastMessageTime = null;
-        lastMessageDate = null;
-        loadedMessages.clear();
-
-        $.ajax({
-            url: '/api/chat/rooms/' + roomNum + '/participants',
-            method: 'GET',
-            dataType: 'json',
-            success: function (participants) {
-                if (!participants || participants.length === 0) {
-                    console.error('No participants found for roomNum:', roomNum);
+                if (!roomNum) {
+                    console.error('roomNum is undefined');
                     return;
                 }
 
-                var otherParticipants = participants.filter(function (participant) {
-                    var userNum = parseInt(participant.user.userNum, 10);
-                    return userNum !== currentUserNum;
-                });
-
-                if (otherParticipants.length === 0) {
-                    console.error('No other participants found for currentUserNum:', currentUserNum);
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active');
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    currentRoomNum = null;
                     return;
                 }
 
+                $('.list-group-item.active').removeClass('active');
+                $(this).addClass('active');
 
-                var userId = otherParticipant.userId;
-                var userProfileUrl = '/profile/' + otherParticipant.userNum; // 상대방 프로필 URL
-                var otherParticipant = otherParticipants[0].user;
-                var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
-                var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+                currentRoomNum = roomNum;
+                $('#currentRoomNum').val(roomNum);
 
-                receiverId = otherParticipant.userNum;  // receiverId 설정
-                $('#participant_a').html(
-                    `<img src="${profilePictureUrl}" alt="프로필 이미지" width="32" height="32" class="rounded-circle"> ${userName}`
-                );
-
-                // 팝오버 내용 업데이트
-                var popoverContent = `
-                    <div>
-                        <img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userId}
-                       <strong id="popoverUserName" style="cursor:pointer; color: #007bff;">유저 프로필 보기</strong> <br>
-                    </div>
-                `;
-
-                $('#participant_a').attr('data-bs-content', popoverContent).popover('hide').popover('dispose').popover({
-                    html: true,
-                    content: popoverContent,
-                    trigger: 'click'
-                });
-
-                // 팝오버 내용이 표시된 후에 클릭 이벤트 추가
-                $('#participant_a').on('shown.bs.popover', function () {
-                    $('#popoverUserName').on('click', function () {
-                        window.location.href = userProfileUrl;
-                    });
-                });
+                $('#chatMessages').empty();
+                lastMessageTime = null;
+                lastMessageDate = null;
+                loadedMessages.clear();
 
                 $.ajax({
-                    url: '/api/chat/rooms/' + roomNum + '/messages',
+                    url: '/api/chat/rooms/' + roomNum + '/participants',
                     method: 'GET',
                     dataType: 'json',
-                    success: function (messages) {
-                        messages.reverse().forEach(function (message) { // 최신 메시지가 하단에 오도록 역순으로 표시
-                            showMessage(message, false);
+                    success: function (participants) {
+                        if (!participants || participants.length === 0) {
+                            console.error('No participants found for roomNum:', roomNum);
+                            return;
+                        }
+
+                        var otherParticipants = participants.filter(function (participant) {
+                            var userNum = parseInt(participant.user.userNum, 10);
+                            return userNum !== currentUserNum;
                         });
 
-                        // 스크롤을 가장 하단으로 이동
-                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-                        updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
-                        // 스크롤 이벤트 핸들러 재설정
-                        $('#chatMessages').off('scroll').on('scroll', function () {
-                            if ($(this).scrollTop() === 0 && !isLoading) {
-                                loadMoreMessages();
+                        if (otherParticipants.length === 0) {
+                            console.error('No other participants found for currentUserNum:', currentUserNum);
+                            return;
+                        }
+
+                        var otherParticipant = otherParticipants[0].user;
+                        var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
+                        var userId = otherParticipant.userId;
+                        var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+                        var userProfileUrl = '/profile/' + otherParticipant.userNum;
+
+                        receiverId = otherParticipant.userNum;
+                        $('#participant_a').html(
+                            `<img src="${profilePictureUrl}" alt="프로필 이미지" width="32" height="32" class="rounded-circle"> ${userName}`
+                        );
+
+                        var popoverContent = `
+                            <div>
+                                <img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userId}
+                                <strong id="popoverUserName" style="cursor:pointer; color: #007bff;">유저 프로필 보기</strong> <br>
+                            </div>
+                        `;
+
+                        $('#participant_a').attr('data-bs-content', popoverContent).popover('hide').popover('dispose').popover({
+                            html: true,
+                            content: popoverContent,
+                            trigger: 'click'
+                        });
+
+                        $('#participant_a').on('shown.bs.popover', function () {
+                            $('#popoverUserName').on('click', function () {
+                                window.location.href = userProfileUrl;
+                            });
+                        });
+
+                        $.ajax({
+                            url: '/api/chat/rooms/' + roomNum + '/messages',
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function (messages) {
+                                messages.reverse().forEach(function (message) {
+                                    showMessage(message, false);
+                                });
+
+                                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                                updateDateAndTimeSeparators();
+                                $('#chatMessages').off('scroll').on('scroll', function () {
+                                    if ($(this).scrollTop() === 0 && !isLoading) {
+                                        loadMoreMessages();
+                                    }
+                                });
+                                $('#participant_a').popover();
+                            },
+                            error: function (err) {
+                                console.error('Failed to fetch messages:', err);
                             }
                         });
 
-                      // 동적으로 생성된 팝오버 초기화
-                        $('#participant_a').popover();
-
+                        updateUnreadCountFromDB(roomNum);
+                        markMessagesAsRead(roomNum);
                     },
                     error: function (err) {
-                        console.error('Failed to fetch messages:', err);
+                        console.error('Failed to fetch participants:', err);
                     }
                 });
 
-                // Load unread message count
-                updateUnreadCountFromDB(roomNum);
+                $('#chat-box-a').show();
+                $('#chat-create').hide();
+            });
 
-                // Mark messages as read
-                markMessagesAsRead(roomNum);
-            },
-            error: function (err) {
-                console.error('Failed to fetch participants:', err);
-            }
-        });
+            $('#sendMessageForm').on('submit', function (event) {
+                event.preventDefault();
+                sendMessage();
+            });
 
-        $('#chat-box-a').show();
-        $('#chat-create').hide();
-    });
-
-    $('#sendMessageForm').on('submit', function (event) {
-        event.preventDefault();
-        sendMessage();
-    });
-
-    $('#messageText').on('keydown', function (event) {
-        if ((event.key === 'Enter' && !event.shiftKey && !event.altKey) || (event.key === 'NumpadEnter')) {
-            event.preventDefault();
-            $('#sendMessageForm').submit();
-        } else if ((event.key === 'Enter' && event.shiftKey) || (event.key === 'Enter' && event.altKey)) {
-            event.preventDefault();
-            insertNewLine($(this));
-        }
-    });
-
-    $('#chat-box-a').hide();
-    $('#chat-create').show();
-
-    // 스크롤 이벤트 핸들러 추가
-    $('#chatMessages').on('scroll', function () {
-        if ($(this).scrollTop() === 0 && !isLoading) {
-            loadMoreMessages();
-        }
-    });
-
-    loadChatRooms(currentUserNum);
-
-    // 파일 첨부 버튼 이벤트
-    $('#attachIcon').on('click', function () {
-        $('#fileInput').click();
-    });
-
-
-    // 파일 첨부 시 메시지 전송
-    $('#fileInput').on('change', function (event) {
-        var file = event.target.files[0];
-        if (file) {
-            var formData = new FormData();
-            formData.append('file', file);
-            formData.append('roomNum', currentRoomNum);
-            formData.append('sender', currentUserNum);
-
-            $.ajax({
-                url: '/api/chat/rooms/' + currentRoomNum + '/upload',
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    var message = {
-                        roomNum: currentRoomNum,
-                        sender: currentUserNum,
-                        receiver: receiverId,
-                        text: '',
-                        messageType: 1,
-                        filePath: response.filePath,
-                        isRead: 0,
-                        sendDate: new Date().toISOString()
-                    };
-                    stompClient.send("/app/chat", {}, JSON.stringify(message));
-                    updateLastMessageInChatList(currentRoomNum, message);
-                    updateDateAndTimeSeparators();
-                },
-                error: function (err) {
-                    console.error('Failed to upload file:', err);
+            $('#messageText').on('keydown', function (event) {
+                if ((event.key === 'Enter' && !event.shiftKey && !event.altKey) || (event.key === 'NumpadEnter')) {
+                    event.preventDefault();
+                    $('#sendMessageForm').submit();
+                } else if ((event.key === 'Enter' && event.shiftKey) || (event.key === 'Enter' && event.altKey)) {
+                    event.preventDefault();
+                    insertNewLine($(this));
                 }
             });
-             // 파일을 읽어서 미리보기를 위한 처리 (필요한 경우)
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    // 여기서 e.target.result를 사용하여 파일의 Data URL을 처리할 수 있습니다.
-                    console.log(e.target.result);
-                };
-                reader.onerror = function (e) {
-                    console.error('Error reading file:', e);
-                };
+
+            $('#chat-box-a').hide();
+            $('#chat-create').show();
+
+            $('#chatMessages').on('scroll', function () {
+                if ($(this).scrollTop() === 0 && !isLoading) {
+                    loadMoreMessages();
+                }
+            });
+
+            loadChatRooms(currentUserNum);
+
+            $('#attachIcon').on('click', function () {
+                $('#fileInput').click();
+            });
+
+            $('#fileInput').on('change', function (event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('roomNum', currentRoomNum);
+                    formData.append('sender', currentUserNum);
+
+                    $.ajax({
+                        url: '/api/chat/rooms/' + currentRoomNum + '/upload',
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            var message = {
+                                roomNum: currentRoomNum,
+                                sender: currentUserNum,
+                                receiver: receiverId,
+                                text: '',
+                                messageType: 1,
+                                filePath: response.filePath,
+                                isRead: 0,
+                                sendDate: new Date().toISOString()
+                            };
+                            stompClient.send("/app/chat", {}, JSON.stringify(message));
+                            updateLastMessageInChatList(currentRoomNum, message);
+                            updateDateAndTimeSeparators();
+                        },
+                        error: function (err) {
+                            console.error('Failed to upload file:', err);
+                        }
+                    });
+
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        console.log(e.target.result);
+                    };
+                    reader.onerror = function (e) {
+                        console.error('Error reading file:', e);
+                    };
                     if (file) {
-                      reader.readAsDataURL(file);
+                        reader.readAsDataURL(file);
                     }
-
-        }
-    });
-
-});
+                }
+            });
+        });
 
         function loadChatRooms(currentUserNum) {
             $('.list-group-item').each(function () {
@@ -544,19 +488,18 @@ function connect() {
 
                 stompClient.send("/app/chat", {}, JSON.stringify(message));
                 $('#messageText').val('');
-                updateLastMessageInChatList(roomNum, message); // 새 메시지를 전송할 때 리스트 업데이트
-                updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
+                updateLastMessageInChatList(roomNum, message);
+                updateDateAndTimeSeparators();
             }
         }
 
         function loadMoreMessages() {
-            if (isLoading) return; // 중복 로딩 방지
+            if (isLoading) return;
 
-            isLoading = true; // 로딩 시작
+            isLoading = true;
             var roomNum = parseInt($('#currentRoomNum').val(), 10);
             var oldestMessageId = Math.min(...Array.from(loadedMessages)) || null;
 
-            // 현재 스크롤 위치와 메시지 창의 높이를 기록
             var currentScrollHeight = $('#chatMessages')[0].scrollHeight;
             var currentScrollTop = $('#chatMessages').scrollTop();
 
@@ -574,23 +517,20 @@ function connect() {
                             showMessage(message, true);
                         });
 
-                        // 날짜 경계선 및 시간 업데이트
                         updateDateAndTimeSeparators();
 
-                        // 새 메시지가 추가된 후 스크롤 위치 복원
                         $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight - currentScrollHeight + currentScrollTop);
                     }
 
                     if (messages.length < 30) {
-                        // 남은 메시지가 limit보다 적으면 더 이상 로딩할 데이터가 없는 것으로 간주
                         $('#chatMessages').off('scroll');
                     }
 
-                    isLoading = false; // 로딩 완료
+                    isLoading = false;
                 },
                 error: function (err) {
                     console.error('Failed to fetch more messages:', err);
-                    isLoading = false; // 로딩 실패
+                    isLoading = false;
                 }
             });
         }
@@ -601,7 +541,6 @@ function connect() {
             let lastTime = null;
             let lastMessageElement = null;
 
-            // 모든 날짜 및 시간 표시 제거
             $('#chatMessages .date-separator').remove();
             $('#chatMessages .time').remove();
 
@@ -612,14 +551,12 @@ function connect() {
 
                 const currentDate = date.toLocaleDateString();
 
-                // 날짜 경계선 추가
                 if (!lastDate || lastDate !== currentDate) {
                     message.before('<div class="date-separator">' + currentDate + '</div>');
                     lastDate = currentDate;
-                    lastTime = null; // 새로운 날짜가 시작되면 lastTime 초기화
+                    lastTime = null;
                 }
 
-                // 시간 표시 로직
                 if (!lastTime || date.getMinutes() !== new Date(lastTime).getMinutes() || lastDate !== currentDate || message.data('sender') !== lastMessageElement.data('sender')) {
                     message.append('<div class="time">' + time + '</div>');
                     lastTime = date;
@@ -632,7 +569,6 @@ function connect() {
                 lastMessageElement = message;
             });
 
-            // 마지막 메시지에 시간 표시
             if (lastMessageElement) {
                 lastMessageElement.append('<div class="time">' + formatTime(lastTime) + '</div>');
             }
@@ -673,11 +609,10 @@ function connect() {
         }
 
         function updateChatRoomList2(chatRoom) {
-            console.log('Updating chat room list with:', chatRoom); // 로그 추가
+            console.log('Updating chat room list with:', chatRoom);
 
             const chatRoomElement = $(`.list-group-item[data-roomnum="${chatRoom.roomNum}"]`);
             if (chatRoomElement.length > 0) {
-                // 기존 채팅방 업데이트
                 chatRoomElement.find('.small.text-muted').text(chatRoom.recentMessage);
                 chatRoomElement.find('.recent-message-date').text(chatRoom.recentMessageDate === '54년 전' ? '' : formatListDate(chatRoom.recentMessageDate));
             } else {
@@ -704,7 +639,6 @@ function connect() {
                     </a>`;
                 $('.list-group').prepend(newChatRoomHtml);
 
-                // 새로운 채팅방에 클릭 이벤트 추가
                 $('.list-group-item[data-roomnum="' + chatRoom.roomNum + '"]').on('click', function(event) {
                     event.preventDefault();
                     var roomNum = $(this).data('roomnum');
@@ -719,7 +653,7 @@ function connect() {
                         $(this).removeClass('active');
                         $('#chat-box-a').hide();
                         $('#chat-create').show();
-                        currentRoomNum = null; // 채팅방 닫기
+                        currentRoomNum = null;
                         return;
                     }
 
@@ -727,14 +661,12 @@ function connect() {
                     $(this).addClass('active');
 
                     currentRoomNum = roomNum;
-
                     $('#currentRoomNum').val(roomNum);
 
                     if (isNew) {
-                        localStorage.setItem('openChatRoomNum', roomNum); // 채팅방 번호 저장
-                        location.reload(); // 페이지 리로드
+                        localStorage.setItem('openChatRoomNum', roomNum);
+                        location.reload();
                     } else {
-                        // 기존 채팅방의 경우 메시지 불러오기
                         loadChatRoomMessages(roomNum);
                     }
                 });
@@ -742,7 +674,6 @@ function connect() {
         }
 
         function loadChatRoomMessages(roomNum) {
-            // 메시지를 새로 불러오기 전에 기존 메시지를 모두 지우기
             $('#chatMessages').empty();
             lastMessageTime = null;
             lastMessageDate = null;
@@ -772,7 +703,7 @@ function connect() {
                     var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
                     var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
 
-                    receiverId = otherParticipant.userNum;  // receiverId 설정
+                    receiverId = otherParticipant.userNum;
                     $('#participant_a').html(
                         `<img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userName}`
                     );
@@ -782,14 +713,12 @@ function connect() {
                         method: 'GET',
                         dataType: 'json',
                         success: function (messages) {
-                            messages.reverse().forEach(function (message) { // 최신 메시지가 하단에 오도록 역순으로 표시
+                            messages.reverse().forEach(function (message) {
                                 showMessage(message, false);
                             });
 
-                            // 스크롤을 가장 하단으로 이동
                             $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-                            updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
-                            // 스크롤 이벤트 핸들러 재설정
+                            updateDateAndTimeSeparators();
                             $('#chatMessages').off('scroll').on('scroll', function () {
                                 if ($(this).scrollTop() === 0 && !isLoading) {
                                     loadMoreMessages();
@@ -801,10 +730,7 @@ function connect() {
                         }
                     });
 
-                    // Load unread message count
                     updateUnreadCountFromDB(roomNum);
-
-                    // Mark messages as read
                     markMessagesAsRead(roomNum);
                 },
                 error: function (err) {
@@ -829,12 +755,11 @@ function connect() {
                         hideDeleteButton($(this));
                         isDeleteButtonVisible = false;
                     }
-                }, 1000); // 1초 이상 길게 누를 시 동작
+                }, 1000);
             }).on('mouseup mouseleave', function(event) {
                 clearTimeout(longPressTimer);
             });
 
-            // 삭제 버튼 클릭 이벤트 등록
             $(document).on('click', '.delete-btn', function () {
                 const roomNum = $(this).closest('.list-group-item').data('roomnum');
                 deleteChatRoom(roomNum);
@@ -843,32 +768,28 @@ function connect() {
 
         function showDeleteButton(element) {
             const deleteButton = element.find('.delete-btn');
-            // 삭제 버튼 표시 로직
-            element.css('background-color', '#f8d7da'); // 연한 색으로 변경
+            element.css('background-color', '#f8d7da');
             element.append('<button class="delete-btn btn btn-danger btn-sm" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">나가기</button>');
         }
 
         function hideDeleteButton(element) {
             const deleteButton = element.find('.delete-btn');
-            // 삭제 버튼 숨기기 로직
-            element.css('background-color', ''); // 배경색 원래대로
-            deleteButton.remove(); // 삭제 버튼 제거
+            element.css('background-color', '');
+            deleteButton.remove();
         }
 
         function deleteChatRoom(roomNum) {
-            const userId = $('#sender').val(); // 현재 사용자 번호 가져오기
+            const userId = $('#sender').val();
 
             $.ajax({
                 url: `/api/chat/rooms/${roomNum}/participants/${userId}`,
                 type: 'DELETE',
                 success: function(result) {
-                    // 채팅방 목록에서 해당 항목을 제거
                     $(`.list-group-item[data-roomnum="${roomNum}"]`).remove();
-                    // 채팅방이 열려 있는 경우 닫기
                     if (currentRoomNum === roomNum) {
                         $('#chat-box-a').hide();
                         $('#chat-create').show();
-                        currentRoomNum = null; // 현재 열린 채팅방 초기화
+                        currentRoomNum = null;
                     }
                 },
                 error: function(err) {
@@ -877,7 +798,6 @@ function connect() {
             });
         }
 
-        <!-- popper.js 막기 -->
         document.addEventListener('DOMContentLoaded', function () {
             var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
             var dropdown = new bootstrap.Dropdown(dropdownToggle, {
@@ -906,17 +826,15 @@ function connect() {
             dropdownToggle.addEventListener('click', function () {
                 var dropdownMenu = this.nextElementSibling;
 
-                // 드롭다운 메뉴가 열릴 때 스타일 설정
                 setTimeout(function() {
                     dropdownMenu.style.zIndex = '10000000000';
                     dropdownMenu.style.position = 'fixed';
-                    dropdownMenu.style.inset = 'auto auto 0px 0px'; // 필요 시 위치 조정
+                    dropdownMenu.style.inset = 'auto auto 0px 0px';
                     dropdownMenu.style.margin = '0px';
                     dropdownMenu.style.transform = 'translate(0px, -58px)';
-                }, 10); // 약간의 지연을 주어 Popper.js의 설정 후 스타일 적용
+                }, 10);
             });
 
-            // 드롭다운이 숨겨질 때 위치 초기화
             dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
                 var dropdownMenu = this.nextElementSibling;
                 dropdownMenu.style.position = '';
@@ -931,7 +849,6 @@ function connect() {
             var filter = input.value;
             var resultsContainer = document.getElementById('searchResults');
 
-            // 입력된 검색어가 없으면 결과를 지우고 종료
             if (filter.trim() === '') {
                 resultsContainer.innerHTML = '';
                 return;
@@ -945,7 +862,6 @@ function connect() {
                 const users = await response.json();
                 const currentUserNum = parseInt(document.getElementById('sender').value, 10);
 
-                // 검색 결과 초기화
                 resultsContainer.innerHTML = '';
 
                 if (Array.isArray(users)) {
@@ -976,13 +892,10 @@ function connect() {
             const currentUserNum = parseInt(document.getElementById('sender').value, 10);
 
             try {
-                // 기존 채팅방이 있는지 확인
                 const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
                 if (response.ok) {
                     const chatRoom = await response.json();
-                    // 기존 채팅방이 있는 경우
                     if (response.status === 202) {
-                        // isLeave가 true인 경우
                         await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
                             method: 'POST',
                             headers: {
@@ -990,14 +903,13 @@ function connect() {
                             },
                             body: JSON.stringify({ userNum: currentUserNum })
                         });
-                        $('#chatModal').modal('hide'); // 모달 닫기
-                        openChatRoom(chatRoom.roomNum, false); // 채팅방 열기
+                        $('#chatModal').modal('hide');
+                        openChatRoom(chatRoom.roomNum, false);
                     } else {
-                        openChatRoom(chatRoom.roomNum, false); // 기존 채팅방 열기
-                        $('#chatModal').modal('hide'); // 모달 닫기
+                        openChatRoom(chatRoom.roomNum, false);
+                        $('#chatModal').modal('hide');
                     }
                 } else if (response.status === 404) {
-                    // 새로운 채팅방 생성
                     const createRoomResponse = await fetch('/api/chat/rooms/create', {
                         method: 'POST',
                         headers: {
@@ -1011,9 +923,9 @@ function connect() {
                     }
 
                     const newChatRoom = await createRoomResponse.json();
-                    $('#chatModal').modal('hide'); // 모달 닫기
-                    localStorage.setItem('openChatRoomNum', newChatRoom.roomNum); // 생성된 채팅방 번호 저장
-                    location.reload(); // 페이지 리로드
+                    $('#chatModal').modal('hide');
+                    localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
+                    location.reload();
                 } else {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -1023,22 +935,18 @@ function connect() {
         }
 
         function openChatRoom(roomNum, isNew = false) {
-            // 기존 채팅방이 이미 열려있는지 확인
             const existingChatRoom = $(`.list-group-item[data-roomnum="${roomNum}"]`);
             if (existingChatRoom.hasClass('active')) {
-                // 이미 열려있는 경우 아무 작업도 하지 않음
                 return;
             }
-            // 채팅방 열기
             if (isNew) {
-                localStorage.setItem('openChatRoomNum', roomNum); // 채팅방 번호 저장
-                location.reload(); // 페이지 리로드
+                localStorage.setItem('openChatRoomNum', roomNum);
+                location.reload();
             } else {
-                loadChatRoomMessages(roomNum); // 기존 채팅방의 경우 메시지 불러오기
+                loadChatRoomMessages(roomNum);
             }
         }
 
-        // 페이지 로드 후 방금 생성한 채팅방을 열기
         $(document).ready(function () {
             const openChatRoomNum = localStorage.getItem('openChatRoomNum');
             if (openChatRoomNum) {
@@ -1046,14 +954,11 @@ function connect() {
                 localStorage.removeItem('openChatRoomNum');
             }
         });
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Popper.js 추가 (integrity 속성 제거) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
-    <!-- Bootstrap JS 추가 -->
     <script th:src="@{/bootstrap.min.js}"></script>
     <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/assets/js/sidebars.js}"></script>
