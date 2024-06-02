@@ -472,35 +472,54 @@
 
 
 		
-	    function likeVideo(videoNum, currentUserNum, isLiked) {
-	        console.log("likeVideo 함수 호출됨");
+		function likeVideo(videoNum, currentUserNum, isLiked) {
+		    console.log("likeVideo 함수 호출됨");
 
-	        let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
-	        let method = isLiked === 'true' ? 'DELETE' : 'POST';
+		    let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
+		    let method = isLiked === 'true' ? 'DELETE' : 'POST';
 
-	        fetch(url, {
-	            method: method,
-	            headers: {
-	                'Content-Type': 'application/json'
-	            },
-	            body: JSON.stringify({
-	                video: videoNum,
-	                user: currentUserNum
-	            })
-	        })
-	        .then(response => response.json())
-	        .then(data => {
-	            if (data.success) {
-	                location.reload();
-	            } else {
-	                alert('작업 실패: ' + data.message);
-	            }
-	        })
-	        .catch(error => {
-	            console.error('Error:', error);
-	            alert('작업 중 오류가 발생했습니다.');
-	        });
-	    }
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            video: videoNum,
+		            user: currentUserNum
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            const likeIcon = document.querySelector('.btn-link .bi');
+		            const likeCountSpan = document.querySelector('.like-count');
+
+		            if (isLiked === 'true') {
+		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+		                likeIcon.classList.add('bi-heart');
+		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 좋아요 수 감소
+		                alert('좋아요를 취소하였습니다.');
+		            } else {
+		                likeIcon.classList.remove('bi-heart');
+		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 좋아요 수 증가
+		                alert('좋아요를 눌렀습니다.');
+		            }
+
+		            // 상태를 토글하여 업데이트
+		            likeIcon.parentElement.setAttribute('onclick', `likeVideo(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}')`);
+		        } else {
+		            alert('좋아요 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('좋아요 등록 중 오류가 발생했습니다.');
+		    });
+		}
+
+
+
 
 	    function navigateVideo(videoNum, userNum) {
 	        // 이 함수는 주어진 비디오 번호와 사용자 번호로 이동합니다.
@@ -567,9 +586,11 @@
 		        return;
 		    }
 
-		    // commentText에서 @사용자이름 부분 제거 (정규식 사용)
+		    // commentText에서 @사용자이름 부분 제거
 		    console.log('Original commentText:', commentText);
-		    commentText = commentText.replace(/^@\S+\s*/, '');
+		    if (mentionedUserName && commentText.startsWith(mentionedUserName)) {
+		        commentText = commentText.slice(mentionedUserName.length);
+		    }
 		    console.log('Processed commentText:', commentText);
 
 		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
@@ -592,19 +613,60 @@
 		        },
 		        body: JSON.stringify(comment)
 		    })
-		    .then(response => response.text()) // 응답을 텍스트로 처리
-		    .then(text => {
-		        console.log('Response text:', text);
-		        if (text.trim() === 'success') {
-		            location.reload();
+		    .then(response => response.json()) // 응답을 JSON으로 처리
+		    .then(data => {
+		        console.log('Response data:', data);
+		        if (data.success) {
+		            // 댓글이 성공적으로 추가되면, 화면을 새로고침하지 않고 댓글 목록을 업데이트합니다.
+		            addCommentToDOM(data.comment);
+		            document.getElementById('commentText').value = ''; // 입력란 초기화
+		            document.getElementById('parentCommentNum').value = ''; // 부모 댓글 번호 초기화
 		        } else {
-		            alert('댓글 등록 실패: ' + text);
+		            alert('댓글 등록 실패: ' + data.message);
 		        }
 		    })
 		    .catch(error => {
 		        console.error('Error:', error);
 		        alert('댓글 등록 중 오류가 발생했습니다.');
 		    });
+		}
+
+		function addCommentToDOM(comment) {
+		    const commentsSection = document.querySelector('.comments-section');
+
+		    const commentItem = document.createElement('div');
+		    commentItem.className = 'comment-item';
+		    commentItem.setAttribute('data-comment-num', comment.commentNum);
+		    commentItem.setAttribute('data-user-num', comment.user.userNum);
+
+		    commentItem.innerHTML = `
+		        <img src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
+		            alt="사용자 사진" 
+		            onclick="navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})">
+		        <div class="comment-body">
+		            <strong>${comment.user.userName}</strong>
+		            <p>${comment.text}</p>
+		            <div class="comment-meta">
+		                <small class="comment-date">${calculateDaysAgo(comment.date)}</small>
+		                <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')">답글</a>
+		            </div>
+		            <div class="comment-meta">
+		                <!-- 답글 보기 링크 추가 -->
+		                <a href="javascript:void(0);" class="view-replies-link no-underline" onclick="toggleReplies(${comment.commentNum})">
+		                    답글 보기 (<span>${comment.replies ? comment.replies.size : 0}</span>)
+		                </a>
+		            </div>
+		            <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;"></div>
+		        </div>
+		        <div class="comment-actions">
+		            <button class="like-button" onclick="toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})">
+		                <i class="bi ${comment.liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i>
+		            </button>
+		            <span class="like-count">${comment.likeCount}</span>
+		        </div>
+		    `;
+
+		    commentsSection.appendChild(commentItem);
 		}
 
 
@@ -653,6 +715,7 @@
 		    }
 		}
 		
+
 		function likeComment(commentNum, currentUserNum) {
 		    // 댓글 정보를 가져오기
 		    const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
@@ -762,6 +825,9 @@
 		        }, 8000);
 		    });
 		}
+
+
+
 
 		let mentionedUserName = '';
 
