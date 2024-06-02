@@ -103,7 +103,7 @@
 		    bottom: 10px;
 		    right: 10px;
 		    width: calc(100% - 40px); /* 전체 너비에서 좌우 마진을 고려한 너비 설정 */
-			z-index: 1000; /* z-index 추가 */
+		    z-index: 1000; /* z-index 추가 */
 		}
 
 		.comment-input {
@@ -256,24 +256,36 @@
 		    min-height: 50px; /* 최소 높이 설정하여 빈 공간 표시 */
 		}
 
-
-
 		.reply-item {
 		    display: flex;
 		    align-items: flex-start;
 		    margin-bottom: 10px;
 		    margin-left: 20px; /* 답글을 약간 들여쓰기 */
 		    position: relative;
-		    flex-direction: column; /* 수정: 답글을 세로로 정렬 */
-		    border-left: 2px solid #ccc; /* 수정: 답글 들여쓰기 부분에 선 추가 */
-		    padding-left: 10px; /* 수정: 답글 텍스트와 선 사이의 여백 추가 */
+		    flex-direction: row; /* 수정: 답글을 가로로 정렬 */
+		    border-left: none; /* 수정: 답글 들여쓰기 부분의 선 제거 */
+		    padding-left: 0; /* 수정: 답글 텍스트와 선 사이의 여백 제거 */
 		}
 
 		.reply-body {
 		    background-color: #f9f9f9;
 		    padding: 10px;
 		    border-radius: 10px;
+		    display: flex;
+		    flex-direction: column;
+		    justify-content: center;
 		}
+		.reply-item .comment-body {
+		     display: flex;
+		     flex-direction: column;
+		     justify-content: center;
+		     margin-bottom: 0; /* 세로 간격을 줄이기 위해 margin 제거 */
+		 }
+		 .reply-item .comment-body p,
+		 .reply-item .comment-body .comment-meta {
+		     margin-bottom: 1px; /* 세로 간격을 더 줄이기 위해 margin 설정 */
+		     line-height: 1; /* 행 간격을 줄이기 위해 line-height 설정 */
+		 }
 
 	   	 </style>
 </head>
@@ -853,11 +865,15 @@
 			                  const replyElement = document.createElement('div');
 			                  replyElement.className = 'reply-item';
 			                  replyElement.innerHTML = `
-			                      <div class="reply-body">
-			                          <strong>${reply.userName}</strong>
-			                          <p>${reply.text}</p>
-			                          <div class="comment-meta">
-			                              <small class="comment-date">${formatDate(reply.date)}</small>
+			                      <div class="d-flex align-items-center mb-2">
+			                          <img src="${reply.profilePictureUrl != null ? reply.profilePictureUrl : '/images/default_profile.png'}" alt="사용자 사진" class="rounded-circle" style="width: 40px; height: 40px; margin-right: 10px;" onclick="navigateToProfilePage(${reply.userNum}, ${currentUserNum})">
+			                          <div class="comment-body">
+			                              <strong>${reply.userName}</strong>
+			                              <p>${reply.text}</p>
+			                              <div class="comment-meta">
+			                                  <small class="comment-date">${calculateDaysAgo(reply.date)}</small>
+			                                  <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${reply.commentNum}, '${reply.userName}')"></a>
+			                              </div>
 			                          </div>
 			                      </div>
 			                  `;
@@ -870,11 +886,22 @@
 			          });
 			  }
 
+			  function calculateDaysAgo(dateString) {
+			      const now = new Date();
+			      const replyDate = new Date(dateString);
+			      const diffTime = Math.abs(now - replyDate);
+			      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			      const adjustedDiffDays = diffDays - 1;
 
-			  function formatDate(dateString) {
-			      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-			      return new Date(dateString).toLocaleDateString(undefined, options);
+			      if (adjustedDiffDays === 0) {
+			          return '오늘';
+			      } else if (adjustedDiffDays === 1) {
+			          return '어제';
+			      } else {
+			          return `${adjustedDiffDays}일 전`;
+			      }
 			  }
+
 
 	    /*]]>*/
 	</script>
