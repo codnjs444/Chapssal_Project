@@ -651,6 +651,45 @@
             });
         });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentDate = document.querySelector('h4').textContent.trim();
+            const today = new Date();
+            const currentMonth = new Date(currentDate + '-01');
+
+            // 오른쪽 화살표 비활성화 조건 검사
+            if (currentMonth.getFullYear() === today.getFullYear() && currentMonth.getMonth() === today.getMonth() - 1) {
+                document.getElementById('right-arrow').classList.add('disabled');
+            }
+
+            document.getElementById('left-arrow').addEventListener('click', function() {
+                if (!this.classList.contains('disabled')) {
+                    changeMonth(-1);
+                }
+            });
+            document.getElementById('right-arrow').addEventListener('click', function() {
+                if (!this.classList.contains('disabled')) {
+                    changeMonth(1);
+                }
+            });
+
+            function changeMonth(direction) {
+                let date = new Date(currentDate + '-01');  // 'yyyy-MM' 형식을 'yyyy-MM-01'로 변환하여 날짜 객체 생성
+                date.setMonth(date.getMonth() + direction);
+                const newDateStr = date.toISOString().split('T')[0].slice(0, 7);  // 'yyyy-MM-dd' 형식에서 'yyyy-MM'만 추출
+                const url = `/ranking?date=${newDateStr}`;
+                window.location.href = url;
+            }
+
+            // 학교 검색
+            document.getElementById('schoolSearchButton').addEventListener('click', function() {
+                const searchInput = document.getElementById('schoolSearchInput').value;
+                const url = `/ranking?search=${encodeURIComponent(searchInput)}&date=${currentDate}`;
+                window.location.href = url;
+            });
+        });
+    </script>
 </div>
 </body>
 </html>

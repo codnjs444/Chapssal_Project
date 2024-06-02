@@ -140,7 +140,7 @@
                     <div class="ranking-header">
                         <span class="ranking-arrow" id="left-arrow">&lt;</span>
                         <div>
-                            <h4 th:text="${lastMonth}"></h4>
+                            <h4 th:text="${currentMonth}"></h4>
                             <p>학교 랭킹</p>
                         </div>
                         <span class="ranking-arrow" id="right-arrow">&gt;</span>
@@ -157,7 +157,7 @@
             </div>
 
             <!-- 카드 리스트 추가 영역 -->
-            <div class="row justify-content-center">
+            <div class="row justify-content-center" id="rankingList">
                 <div class="col-md-12">
                     <div th:each="entry : ${schoolRankings}" class="ranking-container">
                         <img th:src="${entry.value.schoolPictureUrl}" alt="School Image" class="school-image"/>
@@ -179,9 +179,9 @@
                             <div class="score">
                                 <p th:text="${entry.value.score} + ' 찹쌀'"></p>
                                 <div class="details">
-                                    <p th:text="'업로드한 영상 수: ' + 0"></p>
-                                    <p th:text="'누적 조회 수: ' + 0"></p>
-                                    <p th:text="'누적 좋아요 수: ' + 0"></p>
+                                    <p th:text="'업로드한 영상 수: ' + ${entry.value.uploadedVideoCount}"></p>
+                                    <p th:text="'누적 조회 수: ' + ${entry.value.totalViewsFormatted}"></p>
+                                    <p th:text="'누적 좋아요 수: ' + ${entry.value.totalLikes}"></p>
                                 </div>
                             </div>
                         </div>
