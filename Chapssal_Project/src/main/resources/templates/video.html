@@ -286,6 +286,15 @@
 		     margin-bottom: 1px; /* 세로 간격을 더 줄이기 위해 margin 설정 */
 		     line-height: 1; /* 행 간격을 줄이기 위해 line-height 설정 */
 		 }
+		 .alert {
+		     position: fixed;
+		     top: 20px;
+		     right: 20px;
+		     z-index: 1050;
+		     padding: 10px 20px;
+		     border-radius: 5px;
+		     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		 }
 
 	   	 </style>
 </head>
@@ -471,7 +480,6 @@
 		});
 
 
-		
 		function likeVideo(videoNum, currentUserNum, isLiked) {
 		    console.log("likeVideo 함수 호출됨");
 
@@ -498,12 +506,12 @@
 		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
 		                likeIcon.classList.add('bi-heart');
 		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 좋아요 수 감소
-		                alert('좋아요를 취소하였습니다.');
+		                showAlert("알림", "좋아요를 취소하였습니다.");
 		            } else {
 		                likeIcon.classList.remove('bi-heart');
 		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
 		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 좋아요 수 증가
-		                alert('좋아요를 눌렀습니다.');
+		                showAlert("알림", "좋아요를 눌렀습니다.");
 		            }
 
 		            // 상태를 토글하여 업데이트
@@ -517,6 +525,20 @@
 		        alert('좋아요 등록 중 오류가 발생했습니다.');
 		    });
 		}
+
+		function showAlert(title, message) {
+		    // 알림을 표시하는 함수
+		    const alertBox = document.createElement('div');
+		    alertBox.className = 'alert alert-info';
+		    alertBox.innerHTML = `<strong>${title}</strong> ${message}`;
+
+		    document.body.appendChild(alertBox);
+
+		    setTimeout(() => {
+		        alertBox.remove();
+		    }, 3000); // 3초 후에 알람을 자동으로 제거합니다.
+		}
+
 
 
 

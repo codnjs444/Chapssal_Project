@@ -25,22 +25,35 @@ public class NotificationService {
         notification.setSender(sender);
         notification.setMessage(message);
         notification.setRead(false);
-        notification.setCreatedAt(LocalDateTime.now()); // createdAt 필드 설정
+        notification.setCreatedAt(LocalDateTime.now());
         return notificationRepository.save(notification);
     }
 
+    // 동영상 좋아요 알림 생성
+    public Notification createLikeVideoNotification(User user, User sender, String message, int videoNum) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setType(NotificationType.LIKE_VIDEO);
+        notification.setSender(sender);
+        notification.setMessage(message);
+        notification.setRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setVideoNum(videoNum); // videoId 설정
+        return notificationRepository.save(notification);
+    }
+    
     // 알림을 읽음으로 표시
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow();
         notification.setRead(true);
         notificationRepository.save(notification);
     }
-    
+
     // 읽지 않은 알림 조회
     public List<Notification> getUnreadNotificationsByUser(User user) {
         return notificationRepository.findByUserAndIsReadFalse(user);
     }
-    
+
     // 특정 사용자의 모든 알림 조회
     public List<Notification> getNotificationsByUser(User user) {
         return notificationRepository.findByUser(user);

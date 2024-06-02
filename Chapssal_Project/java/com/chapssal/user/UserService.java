@@ -19,6 +19,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public Optional<User> findById(Integer userId) {
+        return userRepository.findById(userId);
+    }
+    
     public User create(String userId, String password, School school, LocalDateTime createDate, LocalDateTime lastUpdate, LocalDateTime lastLogin) {
         Optional<User> existingUser = userRepository.findByUserId(userId);
         if (existingUser.isPresent()) {
