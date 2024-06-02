@@ -201,6 +201,16 @@
                 }
 
                 updateDateAndTimeSeparators(); // 날짜 및 시간 업데이트
+
+
+<!--                // sender 정보를 기반으로 사용자 프로필 조회 및 업데이트-->
+<!--                fetch(`/api/chat/rooms/user/${message.sender}`)-->
+<!--                    .then(response => response.json())-->
+<!--                    .then(user => {-->
+<!--                        updateChatRoomProfile(message.roomNum, user);-->
+<!--                    })-->
+<!--                    .catch(error => console.error('Error fetching user profile:', error));-->
+
             } else {
                 console.error('Invalid message format:', message);
             }
@@ -256,6 +266,9 @@ function connect() {
     $('.list-group-item').on('click', function (event) {
         event.preventDefault();
         var roomNum = $(this).data('roomnum');
+    $('.list-group-item').on('click', function (event) {
+        event.preventDefault();
+        var roomNum = $(this).data('roomnum');
 
         if (!roomNum) {
             console.error('roomNum is undefined');
@@ -303,11 +316,12 @@ function connect() {
                     return;
                 }
 
+
+                var userId = otherParticipant.userId;
+                var userProfileUrl = '/profile/' + otherParticipant.userNum; // 상대방 프로필 URL
                 var otherParticipant = otherParticipants[0].user;
                 var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
-                var userId = otherParticipant.userId;
                 var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
-                var userProfileUrl = '/profile/' + otherParticipant.userNum; // 상대방 프로필 URL
 
                 receiverId = otherParticipant.userNum;  // receiverId 설정
                 $('#participant_a').html(
