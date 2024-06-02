@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+    <style>
+        /* 네비게이션 탭 스타일 */
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .home-nav-link {
+            background-color: rgb(100, 100, 100, 0.1);
+            color: black;
+            width: 100px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .home-nav-link.active {
+            background-color: black !important;
+            color: white !important;
+        }
+
+        /* 비디오 그리드 스타일 */
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .video-item {
+            flex: 0 0 calc(20% - 16px);
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 150%; /* 16:9 aspect ratio (9 / 16 * 100) */
+            overflow: hidden;
+            background-color: black; /* 영상이 없는 부분을 검게 표시 */
+            border-radius: 10px;
+        }
+
+        .thumbnail-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 썸네일이 container를 채우도록 설정 */
+        }
+
+        .video-content {
+            font-size: 12px;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .video-content p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content" class="container">
+    <!-- 네비게이션 탭 -->
+    <nav class="container nav-center">
+        <div class="nav nav-pills center" id="nav-tab" role="tablist">
+            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+            <button class="nav-link home-nav-link mx-1 py-1" th:each="topic : ${topicsByVoteCount}"
+                    th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
+                    th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
+                    th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
+            </button>
+        </div>
+    </nav>
+    <br>
+    <br>
+    <!-- 비디오 목록 -->
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
+            <div class="video-grid">
+                <div th:if="${topVideos != null}" th:each="videoLike : ${topVideos}" class="video-item">
+                    <!-- 썸네일 -->
+                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+                        <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+                    </div>
+
+                    <!-- 영상 콘텐츠 -->
+                    <div class="video-content">
+                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+                        <div class="col">
+                            <p th:text="${videoLike[0].user.userName}"></p>
+                            <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${topVideos == null}">
+                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}"
+             role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+            <div class="video-grid">
+                <div th:each="videoLike : ${#lists.filter(topVideos, v -> v[0].topic == topic[0].topicNum)}" class="video-item">
+                    <!-- 썸네일 -->
+                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+                        <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+                    </div>
+
+                    <!-- 영상 콘텐츠 -->
+                    <div class="video-content">
+                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+                        <p th:text="${videoLike[0].user.userName}"></p>
+                        <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:fragment="exploreVideoScript">
+    <script>
+        // JavaScript for tab handling can be added here if needed
+    </script>
+</th:block>
+</body>
+</html>

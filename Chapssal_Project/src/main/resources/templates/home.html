@@ -16,10 +16,10 @@
 	
 	        .video-container {
 	            position: relative;
-	            width: 36%; /* 화면의 36% 너비 설정 */
-				min-width: 461px;
-				min-height: 819px;
-	            padding-bottom: 64%; /* 9:16 비율 (16 / 9 * 36) */
+	            width: 9%; /* 화면의 36% 너비 설정 */
+				min-width: 450px;
+				min-height: 650px;
+	            padding-bottom: 16%; /* 9:16 비율 (16 / 9 * 36) */
 	            background-color: black; /* 영상이 없는 부분을 검게 표시 */
 	            overflow: hidden;
 	            border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
@@ -37,7 +37,7 @@
 
 			.video-buttons {
 			    position: absolute;
-			    top: 65%;
+			    top: 60%;
 			    left: 70%;
 			    display: flex;
 			    flex-direction: column;
@@ -236,14 +236,25 @@
 			    justify-content: center;
 			    align-items: center;
 			}
+
+			.home-nav-link {
+			    background-color: rgb(100, 100, 100, 0.1);
+			    color: black;
+				width: 100px;
+			}
+
+			.home-nav-link.active {
+			    background-color: black !important;
+			    color: white !important;
+			}
 	    </style>
 	</head>
 	<body>
 		<div layout:fragment="content" class="container">
 		    <nav class="container nav-center">
 		        <div class="nav nav-pills center" id="nav-tab" role="tablist">
-		            <button class="nav-link active" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-		            <button class="nav-link" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
+		            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+		            <button class="nav-link home-nav-link mx-1 py-1" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
 				</div>
 		    </nav>
 			<br>

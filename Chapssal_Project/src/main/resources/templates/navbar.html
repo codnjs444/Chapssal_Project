@@ -7,11 +7,6 @@
     .list-group-item-action {
         cursor: pointer;
     }
-	
-	.btn:disabled {
-	    color: red !important; /* 비활성화된 버튼의 색상을 빨간색으로 설정 */
-		border: 0;
-	}
 
 	#hashtagSuggestions,
 	#userSuggestions {
@@ -82,7 +77,7 @@
 						<div class="modal-header d-flex justify-content-between align-items-center border-1">
 							<button type="button" class="btn text-primary" data-bs-dismiss="modal" aria-label="Close">Close</button>
 							<h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
-							<button type="button" id="nextButton1" class="btn text-primary" disabled>Next</button>
+							<button type="button" id="nextButton1" class="btn border-0 text-primary" disabled>Next</button>
 						</div>
 						<div class="modal-body pt-0">
 							<div id="dropZone" class="p-3 text-center" style="

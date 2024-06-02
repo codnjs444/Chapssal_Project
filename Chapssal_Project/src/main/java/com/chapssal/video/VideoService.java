@@ -56,4 +56,16 @@ public class VideoService {
     public List<Video> findVideosByUsers(List<User> users) {
         return videoRepository.findByUserInOrderByVideoNumAsc(users);
     }
+
+    public List<Video> findTopVideosByTopic(Integer topic) {
+        return videoRepository.findTopVideosByTopic(topic);
+    }
+
+    public List<Object[]> findTopVideos() {
+        return videoRepository.findTopVideos();
+    }
+
+    public List<Video> getTopVideosByTopic(Integer topic) {
+        return videoRepository.findTopVideosByTopic(topic);
+    }
 }

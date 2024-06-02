@@ -277,4 +277,11 @@ public class VideoController {
         model.addAttribute("videos", videos);
         return "following"; // following.html 템플릿을 렌더링
     }
+
+    @GetMapping("/bestvideos")
+    public String viewBestVideosPage(Model model) {
+        List<Object[]> topVideos = videoService.findTopVideos();
+        model.addAttribute("topVideos", topVideos);
+        return "bestvideos"; // bestvideos.html 템플릿을 렌더링
+    }
 }
