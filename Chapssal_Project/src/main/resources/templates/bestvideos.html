@@ -84,49 +84,50 @@
     <!-- 비디오 목록 -->
     <div class="tab-content" id="nav-tabContent">
         <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
-            <div class="video-grid">
-                <div th:if="${topVideos != null}" th:each="videoLike : ${topVideos}" class="video-item">
-                    <!-- 썸네일 -->
-                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-                        <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
-                    </div>
-
-                    <!-- 영상 콘텐츠 -->
-                    <div class="video-content">
-                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-                        <div class="col">
-                            <p th:text="${videoLike[0].user.userName}"></p>
-                            <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${topVideos == null}">
-                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-                </div>
-            </div>
+			<div class="video-grid">
+			    <div th:if="${topVideos != null}" th:each="videoLike, iterStat : ${topVideos}" class="video-item">
+			        <!-- 썸네일 -->
+			        <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+			            <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
+			            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+			        </div>
+			        <!-- 영상 콘텐츠 -->
+			        <div class="video-content">
+			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+			            <div class="col">
+			                <p th:text="${videoLike[0].user.userName}"></p>
+			                <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+			            </div>
+			        </div>
+			    </div>
+			    <div th:if="${topVideos == null}">
+			        <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+			    </div>
+			</div>
         </div>
-        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}"
-             role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}"role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
             <div class="video-grid">
-                <div th:each="videoLike : ${#lists.filter(topVideos, v -> v[0].topic == topic[0].topicNum)}" class="video-item">
-                    <!-- 썸네일 -->
-                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-                        <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
-                    </div>
+				<div th:each="videoLike : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
 
-                    <!-- 영상 콘텐츠 -->
-                    <div class="video-content">
-                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-                        <p th:text="${videoLike[0].user.userName}"></p>
-                        <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
-                    </div>
-                </div>
+			        <!-- 썸네일 -->
+			        <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+			            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+			        </div>
+
+			        <!-- 영상 콘텐츠 -->
+			        <div class="video-content">
+			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+			            <p th:text="${videoLike[0].user.userName}"></p>
+			            <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+			        </div>
+
+				</div>
             </div>
         </div>
     </div>
 </div>
 
-<th:block th:fragment="exploreVideoScript">
+<th:block th:fragment="bestVideoScript">
     <script>
         // JavaScript for tab handling can be added here if needed
     </script>

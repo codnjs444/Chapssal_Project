@@ -175,7 +175,7 @@ public class VideoController {
     }
     
     @GetMapping("/video/{videoNum}")
-    public String getVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+    public String getVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam(name = "userNum") int userNum, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";  // 로그인 페이지로 리다이렉트
