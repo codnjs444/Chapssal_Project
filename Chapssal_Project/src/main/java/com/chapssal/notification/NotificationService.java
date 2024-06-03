@@ -29,19 +29,6 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    // 동영상 좋아요 알림 생성
-    public Notification createLikeVideoNotification(User user, User sender, String message, int videoNum) {
-        Notification notification = new Notification();
-        notification.setUser(user);
-        notification.setType(NotificationType.LIKE_VIDEO);
-        notification.setSender(sender);
-        notification.setMessage(message);
-        notification.setRead(false);
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setVideoNum(videoNum); // videoId 설정
-        return notificationRepository.save(notification);
-    }
-    
     // 알림을 읽음으로 표시
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow();

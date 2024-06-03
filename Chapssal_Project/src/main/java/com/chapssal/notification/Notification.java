@@ -47,7 +47,6 @@ public class Notification {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
-    
-    private int videoNum; // videoId 필드 추가
+   
     
 }

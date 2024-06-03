@@ -34,15 +34,4 @@ public class CommentLike {
 
     private LocalDateTime likeDate;
 
-    private LocalDateTime lastUpdated;
-    
-    @PrePersist
-    protected void onCreate() {
-        lastUpdated = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        lastUpdated = LocalDateTime.now();
-    }
     }
