@@ -37,11 +37,10 @@
 
 			.video-buttons {
 			    position: absolute;
-			    top: 60%;
-			    left: 70%;
+			    top: 55%;
+			    left: 69%;
 			    display: flex;
 			    flex-direction: column;
-			    gap: 10px;
 			}
 
 			.action-btn {
@@ -247,6 +246,13 @@
 			    background-color: black !important;
 			    color: white !important;
 			}
+			
+			.video-btn-count{
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-size: 12px;
+			}
 	    </style>
 	</head>
 	<body>
@@ -259,85 +265,93 @@
 		    </nav>
 			<br>
 			<br>
-		    <div class="tab-content" id="nav-tabContent">
-		        <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
-		            <div class="video-list">
-		                <div th:if="${videos != null}">
-		                    <div th:each="video : ${videos}" class="video-item">
-		                        <div class="video-content">
-									<div class="row">
-										<div class="col-5">
-										    <img th:src="${video.user.profilePictureUrl != null ? video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-										</div>
-										<div class="col-35 p-0">
-										    <p th:text="${video.user.userName}"></p>
-										    <p th:text="${video.title}"></p>
-										</div>
-										<div class="col-5">
-										    <button class="follow-btn">팔로우</button>
-										</div>
-									</div>
-		                        </div>
-								<br>
-							    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
-							        <video controls autoplay muted>
-							            <source th:src="@{${video.videoUrl}}" type="video/mp4">
-							            Your browser does not support the video tag.
-							        </video>
-							    </div>
-							    <div class="video-buttons">
-							        <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
-							        <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
-							        <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
-							        <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-							    </div>
-								<br>
-								<hr style="width: 700px;">
-								<br>
-		                    </div>
-		                </div>
-		                <div th:if="${videos == null}">
-		                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-		                </div>
-		            </div>
-		        </div>
-		        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
-		            <div class="video-list">
-		                <div th:each="video : ${videos}" th:if="${video.topic != null and video.topic == topic[0].topicNum}" class="video-item">
-		                    <div class="video-content">
-								<div class="row">
-									<div class="col-5">
-									    <img th:src="${video.user.profilePictureUrl != null ? video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-									</div>
-									<div class="col-35 p-0">
-									    <p th:text="${video.user.userName}"></p>
-									    <p th:text="${video.title}"></p>
-									</div>
-									<div class="col-5">
-									    <button class="follow-btn">팔로우</button>
-									</div>
-								</div>
-		                    </div>
-							<br>
-		                    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${video.videoNum}" th:data-title="${video.title}" th:data-username="${video.user.userName}" th:data-views="${video.viewCount}" th:data-videourl="${video.videoUrl}">
-		                        <video controls autoplay muted>
-		                            <source th:src="@{${video.videoUrl}}" type="video/mp4">
-		                            Your browser does not support the video tag.
-		                        </video>
-		                    </div>
-							<div class="video-buttons">
-							    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
-							    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
-							    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
-							    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-							</div>
-							<br>
-							<hr style="width: 700px;">
-							<br>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
+			<div class="tab-content" id="nav-tabContent">
+			    <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
+			        <div class="video-list">
+			            <div th:if="${videos != null}">
+			                <div th:each="videoData : ${videos}" class="video-item">
+			                    <div class="video-content">
+			                        <div class="row">
+			                            <div class="col-5">
+			                                <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+			                            </div>
+			                            <div class="col-35 p-0">
+			                                <p th:text="${videoData.video.user.userName}"></p>
+			                                <p th:text="${videoData.video.title}"></p>
+			                            </div>
+			                            <div class="col-5">
+			                                <button class="follow-btn">팔로우</button>
+			                            </div>
+			                        </div>
+			                    </div>
+			                    <br>
+			                    <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+			                        <video controls autoplay muted>
+			                            <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+			                            Your browser does not support the video tag.
+			                        </video>
+			                    </div>
+			                    <div class="video-buttons">
+			                        <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+			                        <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
+			                        <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+			                        <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+			                        <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+									<p class="video-btn-count m-0">362</p>
+			                        <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+									<p class="video-btn-count m-0">228</p>
+			                    </div>
+			                    <br>
+			                    <hr style="width: 700px;">
+			                    <br>
+			                </div>
+			            </div>
+			            <div th:if="${videos == null}">
+			                <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+			        <div class="video-list">
+			            <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item">
+			                <div class="video-content">
+			                    <div class="row">
+			                        <div class="col-5">
+			                            <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+			                        </div>
+			                        <div class="col-35 p-0">
+			                            <p th:text="${videoData.video.user.userName}"></p>
+			                            <p th:text="${videoData.video.title}"></p>
+			                        </div>
+			                        <div class="col-5">
+			                            <button class="follow-btn">팔로우</button>
+			                        </div>
+			                    </div>
+			                </div>
+			                <br>
+			                <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+			                    <video controls autoplay muted>
+			                        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+			                        Your browser does not support the video tag.
+			                    </video>
+			                </div>
+			                <div class="video-buttons">
+			                    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+			                    <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
+			                    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+			                    <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+			                    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+								<p class="video-btn-count m-0">187</p>
+			                    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+								<p class="video-btn-count m-0">461</p>
+			                </div>
+			                <br>
+			                <hr style="width: 700px;">
+			                <br>
+			            </div>
+			        </div>
+			    </div>
+			</div>
 		</div>
 	
 		<!-- 홈 영상 디테일 모달 -->

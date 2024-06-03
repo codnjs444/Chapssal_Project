@@ -128,23 +128,38 @@
 							</div>
 						</div>
 					</div>
-					<div class="section3" style="display: none; width: 750px; height: 630px;">
-						<div class="modal-header d-flex justify-content-between align-items-center border-1">
-							<button type="button" class="btn text-primary">Prev</button>
-							<h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
-							<button type="submit" class="btn text-primary p-0">게시하기</button>
-						</div>
-						<div class="modal-body" style="overflow-y: hidden; height: 590px;">
-							<select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
-								<option>(영상 카테고리)</option>
-								<option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
-							</select>
-							<br>
-							<br>
-							<textarea name="title" id="title" class="form-control" placeholder="내용을 입력해주세요." style="resize:none; height: 200px;"></textarea>
-							<div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-							<div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-						</div>
+					<div class="section3" style="display: none; width: 750px; height: 650px;">
+					    <div class="modal-header d-flex justify-content-between align-items-center border-1">
+					        <button type="button" class="btn text-primary">Prev</button>
+					        <h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
+					        <button type="submit" class="btn text-primary p-0">게시하기</button>
+					    </div>
+					    <div class="modal-body" style="overflow-y: hidden; height: 590px;">
+					        <div class="row">
+					            <!-- 왼쪽: 영상 미리보기 -->
+					            <div class="col-6">
+					                <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
+					                    <video id="videoPreview3" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle">
+					                        <source id="videoSource3" src="" type="video/mp4">
+					                        Your browser does not support the video tag.
+					                    </video>
+					                    <img id="thumbnailImagePreview3" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
+					                </div>
+					            </div>
+					            <!-- 오른쪽: 주제 선택과 내용 작성 -->
+					            <div class="col-6">
+					                <select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
+					                    <option>(영상 카테고리)</option>
+					                    <option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
+					                </select>
+					                <br>
+					                <br>
+					                <textarea name="title" id="title" class="form-control" placeholder="내용을 입력해주세요." style="resize:none; height: 200px;"></textarea>
+					                <div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+					                <div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+					            </div>
+					        </div>
+					    </div>
 					</div>
 				</form>
 			</div>
@@ -385,6 +400,8 @@
 			function copyVideoSource() {
 			    videoSource2.src = videoSource.src;
 			    videoPreview2.load();
+				videoSource3.src = videoSource.src; // 소스 복사
+				videoPreview3.load(); // 새로 추가된 요소에 소스 로드
 			}
 
 		    // 제목 입력 시 해시태그 및 사용자 이름 자동완성 기능 추가

@@ -64,6 +64,49 @@
         .video-content p {
             margin: 0;
         }
+
+		.ranking-number {
+		    background-color: #FFDB3C;
+		    color: #CE8219;
+		    padding: 5px 10px;
+			height: 30px;
+			width: 30px;
+		    border-radius: 50%;
+			margin-bottom: 5px;
+		    font-size: 14px;
+		    font-weight: bold;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}		
+		
+		/* 좋아요 수와 아이콘을 붙게 하는 스타일 */
+		.like-container {
+		    display: flex;
+		    align-items: center;
+			justify-content: flex-end;
+		    gap: 5px; /* 좋아요 아이콘과 숫자 사이의 간격 조절 */
+		}
+
+		.like-container i {
+		    font-size: 14px; /* 아이콘 크기 조절 */
+		}
+		
+		.video-item .video-info {
+		    position: absolute;
+		    bottom: 5px;
+		    left: 5px;
+		    color: white;
+		    padding: 3px 5px;
+		    font-size: 0.8rem;
+		    border-radius: 5px;
+		    display: flex;
+		    align-items: center;
+		    gap: 5px;
+		}
+		.video-info .view-count {
+		    font-weight: bold; /* 조회수 텍스트를 굵게 설정 */
+		}
     </style>
 </head>
 <body>
@@ -71,12 +114,12 @@
     <!-- 네비게이션 탭 -->
     <nav class="container nav-center">
         <div class="nav nav-pills center" id="nav-tab" role="tablist">
-            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-            <button class="nav-link home-nav-link mx-1 py-1" th:each="topic : ${topicsByVoteCount}"
-                    th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
-                    th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
-                    th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
-            </button>
+			<button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+			<button class="nav-link home-nav-link mx-1 py-1" th:each="topic : ${topicsByVoteCount}"
+			        th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
+			        th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
+			        th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
+			</button>
         </div>
     </nav>
     <br>
@@ -87,16 +130,27 @@
 			<div class="video-grid">
 			    <div th:if="${topVideos != null}" th:each="videoLike, iterStat : ${topVideos}" class="video-item">
 			        <!-- 썸네일 -->
+					<div class="ranking-number" th:text="${iterStat.index + 1}"></div>
 			        <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-			            <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
-			            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+						<img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+						<div class="video-info">
+						    <i class="bi bi-play-fill"></i>
+						    <span class="view-count" th:text="${videoLike[0].viewCount}">0</span>
+						</div>
 			        </div>
 			        <!-- 영상 콘텐츠 -->
 			        <div class="video-content">
 			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-			            <div class="col">
-			                <p th:text="${videoLike[0].user.userName}"></p>
-			                <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+			            <div class="row ">
+							<div class="col">
+			                	<p th:text="${videoLike[0].user.userName}"></p>
+							</div>
+							<div class="col text-end">
+							    <div class="like-container text-end">
+							        <i class="bi bi-heart"></i>
+							        <p th:text="${videoLike[1]}"></p>
+							    </div>
+							</div>
 			            </div>
 			        </div>
 			    </div>
@@ -105,31 +159,47 @@
 			    </div>
 			</div>
         </div>
-        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}"role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
-            <div class="video-grid">
-				<div th:each="videoLike : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
-
-			        <!-- 썸네일 -->
-			        <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-			            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
-			        </div>
-
-			        <!-- 영상 콘텐츠 -->
-			        <div class="video-content">
-			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-			            <p th:text="${videoLike[0].user.userName}"></p>
-			            <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
-			        </div>
-
-				</div>
-            </div>
-        </div>
+		<div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+		    <div class="video-grid" th:id="'video-grid-' + ${topic[0].topicNum}">
+		        <div th:each="videoLike, iterStat : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
+		            <!-- 썸네일 -->
+		            <div class="ranking-number"></div>
+		            <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+		                <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+		            </div>
+		            <!-- 영상 콘텐츠 -->
+		            <div class="video-content">
+		                <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+		                <p th:text="${videoLike[0].user.userName}"></p>
+		                <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
+		            </div>
+		        </div>
+		    </div>
+		</div>
     </div>
 </div>
 
 <th:block th:fragment="bestVideoScript">
     <script>
-        // JavaScript for tab handling can be added here if needed
+		$(document).ready(function () {
+		    // Function to update rankings in a specific grid
+		    function updateRankings(gridId) {
+		        const $grid = $('#' + gridId);
+		        const $videoItems = $grid.find('.video-item');
+		        $videoItems.each(function (index) {
+		            $(this).find('.ranking-number').text(index + 1);
+		        });
+		    }
+	
+		    // Initial ranking update for the "전체" tab
+		    updateRankings('video-grid-all');
+	
+		    // Event listener for tab changes
+		    $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (event) {
+		        const targetId = $(event.target).data('bs-target').substring(1); // remove leading '#'
+		        updateRankings(targetId);
+		    });
+		});
     </script>
 </th:block>
 </body>

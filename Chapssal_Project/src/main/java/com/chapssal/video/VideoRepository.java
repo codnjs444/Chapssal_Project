@@ -11,7 +11,7 @@ import com.chapssal.user.User;
 
 public interface VideoRepository extends JpaRepository<Video, Integer> {
 	int countByUser_UserNum(Integer userNum);
-    List<Video> findByUserInOrderByVideoNumAsc(List<User> users);
+    List<Video> findByUserInOrderByVideoNumDesc(List<User> users);
     List<Video> findByUser_UserNum(Integer userNum);
     List<Video> findByUser_UserNumOrderByUploadDateDesc(Integer userNum);
 
@@ -23,4 +23,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
     @Query("SELECT v, COUNT(vl) as likeCount FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideos();
+
+    @Query("SELECT v FROM Video v WHERE v.user IN :users")
+    List<Video> findVideosByUsers(@Param("users") List<User> users);
 }

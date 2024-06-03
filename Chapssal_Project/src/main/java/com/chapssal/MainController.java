@@ -26,14 +26,14 @@ public class MainController {
     }
     
     @GetMapping("/")
-    public String showMainPage(Model model) {
+    public String viewHomePage(Model model) {
         List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
-        List<Video> videos = videoService.findAll();
-        Collections.shuffle(videos);
-        model.addAttribute("videos", videos);
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosWithLikeAndCommentCounts();
+        Collections.shuffle(videosWithLikesAndComments); // 영상 리스트를 랜덤으로 섞음
+        model.addAttribute("videos", videosWithLikesAndComments);
 
-        return "home"; // home.html 파일을 렌더링
+        return "home"; // home.html로 매핑
     }
 }

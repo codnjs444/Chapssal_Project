@@ -52,7 +52,7 @@ public class FollowService {
 
     public List<Video> getFollowingUsersVideos(Integer userNum) {
         List<User> followingUsers = getFollowingUsers(userNum);
-        return videoRepository.findByUserInOrderByVideoNumAsc(followingUsers);
+        return videoRepository.findByUserInOrderByVideoNumDesc(followingUsers);
     }
 
     public boolean isFollowing(Integer follower, Integer following) {

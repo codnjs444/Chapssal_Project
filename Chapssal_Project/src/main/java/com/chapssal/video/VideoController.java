@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -157,21 +158,10 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model) {
-        List<Video> videos = videoService.findAll();
-        Collections.shuffle(videos); // 영상 리스트를 섞음
-        model.addAttribute("videos", videos); // 섞인 비디오를 모델에 추가
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosWithLikeAndCommentCounts();
+        Collections.shuffle(videosWithLikesAndComments); // 영상 리스트를 섞음
+        model.addAttribute("videos", videosWithLikesAndComments); // 섞인 비디오를 모델에 추가
         return "explore"; // explore.html 템플릿을 렌더링
-    }
-
-    @GetMapping("/home")
-    public String viewHomePage(Model model) {
-        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
-        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
-
-        List<Video> videos = videoService.findAll();
-        model.addAttribute("videos", videos);
-
-        return "home"; // home.html로 매핑
     }
     
     @GetMapping("/video/{videoNum}")
@@ -273,8 +263,8 @@ public class VideoController {
     public String viewFollowPage(Model model, Principal principal) {
         User currentUser = userService.getUser(principal.getName());
         List<User> followingUsers = followService.getFollowingUsers(currentUser.getUserNum());
-        List<Video> videos = videoService.findVideosByUsers(followingUsers);
-        model.addAttribute("videos", videos);
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers);
+        model.addAttribute("videos", videosWithLikesAndComments);
         return "following"; // following.html 템플릿을 렌더링
     }
 

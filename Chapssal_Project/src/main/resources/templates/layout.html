@@ -340,6 +340,7 @@
 <div th:replace="navbar :: notificationPanelFragment"></div>
 <div th:replace="navbar :: notificationPanelScript"></div>
 <div th:replace="~{home :: homeModalFragment}"></div>
+<div th:replace="~{following :: followingModalFragment}"></div>
 
 <!-- jQuery 먼저 로드 -->
 <!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
@@ -351,6 +352,7 @@
 <div th:replace="~{navbar :: uploadModalScript}"></div>
 <div th:replace="~{home :: homeVideoScript}"></div>
 <div th:replace="~{explore :: exploreVideoScript}"></div>
+<div th:replace="~{bestvideos :: bestVideoScript}"></div>
 <!-- 공통 스크립트 정의 -->
 <div th:fragment="commonScripts">
     <script>
