@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.chapssal.user.User;
@@ -16,6 +17,7 @@ public class NotificationService {
 
     @Autowired
     private final NotificationRepository notificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     // 새로운 알림 생성
     public Notification createNotification(User user, NotificationType type, User sender, String message) {
@@ -26,7 +28,9 @@ public class NotificationService {
         notification.setMessage(message);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
-        return notificationRepository.save(notification);
+        Notification savedNotification = notificationRepository.save(notification);
+        eventPublisher.publishEvent(new NotificationEvent(this, savedNotification)); // 이벤트 발행
+        return savedNotification;
     }
 
     // 알림을 읽음으로 표시
