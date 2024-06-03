@@ -28,7 +28,7 @@ public class VideoLikeService {
 
         // 알림 생성
         String message = user.getUserName() + "님이 " + video.getTitle() + " 영상에 좋아요를 눌렀습니다.";
-        notificationService.createNotification(video.getUser(), NotificationType.LIKE_VIDEO, user, message);
+        notificationService.createNotification(video.getUser(), NotificationType.LIKE_VIDEO, user, message, video);
     }
     
     public boolean isLikedByUser(Integer videoId, Integer userId) {

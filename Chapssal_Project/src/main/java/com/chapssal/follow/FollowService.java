@@ -63,6 +63,6 @@ public class FollowService {
         User followingUser = userRepository.findById(following).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
         
         String message = followerUser.getUserName() + "님이 팔로우했습니다.";
-        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message);
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message,null);
     }
 }

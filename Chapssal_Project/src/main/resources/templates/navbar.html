@@ -383,50 +383,48 @@
 		        showAlert('', generateMessage(notification));
 		    };
 
-		    function addNotification(notification) {
-		        var notificationList = document.getElementById('notificationList');
-		        var noNotifications = document.getElementById('noNotifications');
-		        noNotifications.style.display = 'none';
+			function addNotification(notification) {
+			    var notificationList = document.getElementById('notificationList');
+			    var noNotifications = document.getElementById('noNotifications');
+			    noNotifications.style.display = 'none';
 
-		        var listItem = document.createElement('li');
-		        listItem.id = 'notification-' + notification.notiNum;
+			    var listItem = document.createElement('li');
+			    listItem.id = 'notification-' + notification.notiNum;
 
-		        var profileImage = notification.sender.profilePictureUrl ? 
-		            `<img src="${notification.sender.profilePictureUrl}" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">` : 
-		            '<i class="bi bi-person-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>';
+			    var messageSpan = document.createElement('span');
+			    switch (notification.type.toLowerCase()) {
+			        case 'follow':
+			            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+			            break;
+			        case 'like_video':
+			            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 <a href="/video/${notification.video.videoNum}?userNum=${notification.user.userNum}" class="video-link">당신의 동영상</a>을 좋아합니다.`;
+			            break;
+			        default:
+			            messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
+			            break;
+			    }
 
-		        var messageSpan = document.createElement('span');
-		        switch (notification.type.toLowerCase()) {
-		            case 'follow':
-		                messageSpan.innerHTML = `${profileImage}<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
-		                break;
-		            case 'like_video':
-		                messageSpan.innerHTML = `${profileImage}<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신의 동영상을 좋아합니다.`;
-		                break;
-		            default:
-		                messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
-		                break;
-		        }
+			    var confirmButton = document.createElement('button');
+			    confirmButton.textContent = '확인';
+			    confirmButton.onclick = function() {
+			        confirmNotification(notification.notiNum);
+			        listItem.remove();
+			        updateNotificationCount(-1);
+			    };
 
-		        var confirmButton = document.createElement('button');
-		        confirmButton.textContent = '확인';
-		        confirmButton.onclick = function() {
-		            confirmNotification(notification.notiNum);
-		            listItem.remove();
-		            updateNotificationCount(-1);
-		        };
+			    listItem.appendChild(messageSpan);
+			    listItem.appendChild(confirmButton);
+			    notificationList.appendChild(listItem);
 
-		        listItem.appendChild(messageSpan);
-		        listItem.appendChild(confirmButton);
-		        notificationList.appendChild(listItem);
+			    var userLink = listItem.querySelector('.notification-user-link');
+			    if (userLink) {
+			        userLink.addEventListener('click', function(event) {
+			            document.getElementById('notificationPanel').style.display = 'none';
+			        });
+			    }
+			}
 
-		        var userLink = listItem.querySelector('.notification-user-link');
-		        if (userLink) {
-		            userLink.addEventListener('click', function(event) {
-		                document.getElementById('notificationPanel').style.display = 'none';
-		            });
-		        }
-		    }
+
 
 		    function confirmNotification(notificationId) {
 		        fetch('/notifications/mark-as-read/' + notificationId, {
@@ -509,6 +507,7 @@
 
 		    window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
 		});
+
 
     </script>
 </th:block>

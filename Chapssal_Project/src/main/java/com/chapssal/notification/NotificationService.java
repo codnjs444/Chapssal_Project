@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.chapssal.user.User;
+import com.chapssal.video.Video;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,9 +19,9 @@ public class NotificationService {
     @Autowired
     private final NotificationRepository notificationRepository;
     private final ApplicationEventPublisher eventPublisher;
-
-    // 새로운 알림 생성
-    public Notification createNotification(User user, NotificationType type, User sender, String message) {
+    
+    // 새로운 알림 생성 (video 정보를 추가로 받는 메서드)
+    public Notification createNotification(User user, NotificationType type, User sender, String message, Video video) {
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setType(type);
@@ -28,6 +29,7 @@ public class NotificationService {
         notification.setMessage(message);
         notification.setRead(false);
         notification.setCreatedAt(LocalDateTime.now());
+        notification.setVideo(video); // 비디오 정보 설정
         Notification savedNotification = notificationRepository.save(notification);
         eventPublisher.publishEvent(new NotificationEvent(this, savedNotification)); // 이벤트 발행
         return savedNotification;
