@@ -220,33 +220,33 @@
 
 <!-- 알림 패널 -->
 <div th:fragment="notificationPanelFragment">
-    <div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 400px;">
-        <div class="notification-header">
-            <h5>알림</h5>
-            <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
-        </div>
-        <div class="notification-body">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="showNotifications('all')">모든 활동</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showNotifications('like_video')">좋아요</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="showNotifications('follow')">팔로우</a>
-                </li>
-            </ul>
-            <ul id="notificationList" class="mt-3">
-                <!-- 알림 항목이 여기에 추가됩니다 -->
-            </ul>
-            <!-- 알림이 없을 때 표시할 아이콘과 텍스트 -->
-            <div id="noNotifications" class="text-center mt-5" style="display: none;">
-                <i class="bi bi-bell-slash" style="font-size: 3rem; color: #aaa;"></i>
-                <p class="mt-3">계정에 대한 알림은 여기에 표시됩니다.</p>
-            </div>
-        </div>
-    </div>
+	<div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 400px;">
+	    <div class="notification-header">
+	        <h5>알림</h5>
+	        <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
+	    </div>
+	    <div class="notification-body">
+	        <ul class="nav nav-tabs">
+	            <li class="nav-item">
+	                <a id="allTab" class="nav-link active" href="#" onclick="showNotifications('all')">모든 활동</a>
+	            </li>
+	            <li class="nav-item">
+	                <a id="likeVideoTab" class="nav-link" href="#" onclick="showNotifications('like_video')">좋아요</a>
+	            </li>
+	            <li class="nav-item">
+	                <a id="followTab" class="nav-link" href="#" onclick="showNotifications('follow')">팔로우</a>
+	            </li>
+	        </ul>
+	        <ul id="notificationList" class="mt-3">
+	            <!-- 알림 항목이 여기에 추가됩니다 -->
+	        </ul>
+	        <!-- 알림이 없을 때 표시할 아이콘과 텍스트 -->
+	        <div id="noNotifications" class="text-center mt-5" style="display: none;">
+	            <i class="bi bi-bell-slash" style="font-size: 3rem; color: #aaa;"></i>
+	            <p class="mt-3">계정에 대한 알림은 여기에 표시됩니다.</p>
+	        </div>
+	    </div>
+	</div>
 </div>
 
 <!-- 알림 패널 스크립트를 별도의 프래그먼트로 분리 -->
@@ -270,7 +270,7 @@
 
 		.notification-body .nav-tabs .nav-link.active {
 		    font-weight: bold;
-		    border-bottom: 2px solid #000;
+		    border-bottom: 2px solid #000; /* 검정색 구분선 */
 		}
 
 		.notification-body ul {
@@ -490,12 +490,15 @@
 		                    const filteredNotifications = data.filter(notification => notification.type.toLowerCase() === type.toLowerCase());
 		                    updateNotificationList(filteredNotifications);
 		                }
+		                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+		                document.querySelector(`#${type === 'all' ? 'allTab' : type === 'like_video' ? 'likeVideoTab' : 'followTab'}`).classList.add('active');
 		            })
 		            .catch(error => console.error('Error fetching notifications:', error));
 		    };
 
 		    window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
 		});
+
 
     </script>
 </th:block>
