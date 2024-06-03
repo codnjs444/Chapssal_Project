@@ -58,7 +58,7 @@ public class ChatRoomController {
     public ResponseEntity<List<Message>> getMessages(
             @PathVariable Integer roomNum,
             @RequestParam(required = false) Integer oldestMessageId,
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "30") int limit) {
         List<Message> messages = messageService.getMessagesBeforeId(roomNum, oldestMessageId, limit);
         return ResponseEntity.ok(messages);
     }
