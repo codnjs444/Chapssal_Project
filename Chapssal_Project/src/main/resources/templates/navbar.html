@@ -220,7 +220,7 @@
 
 <!-- 알림 패널 -->
 <div th:fragment="notificationPanelFragment">
-    <div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 300px;">
+    <div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 400px;">
         <div class="notification-header">
             <h5>알림</h5>
             <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
@@ -234,6 +234,32 @@
 </div>
 <!-- 알림 패널 스크립트를 별도의 프래그먼트로 분리 -->
 <th:block th:fragment="notificationPanelScript">
+    <style>
+        /* 알림 말풍선 스타일 */
+        .notification-tooltip {
+            position: absolute;
+            top: 30px;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 400px;
+            display: none;
+        }
+        
+        .notification-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: #fff transparent transparent transparent;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             function toggleNotifications() {
@@ -282,7 +308,7 @@
                 addNotification(notification);
                 updateNotificationCount(1);
                 // 실시간 알림이 도착했을 때 3초 동안 화면에 표시
-                showAlert('알림', generateMessage(notification));
+                showAlert('', generateMessage(notification));
             };
 
             function addNotification(notification) {
@@ -344,14 +370,15 @@
             }
 
             function showAlert(title, message) {
-                const alertBox = document.createElement('div');
-                alertBox.className = 'alert alert-info';
-                alertBox.innerHTML = `<strong>${title}</strong> ${message}`;
-
-                document.body.appendChild(alertBox);
+                const notificationIcon = document.querySelector('.notification-icon');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'notification-tooltip';
+                tooltip.innerHTML = `<strong>${title}</strong> ${message}`;
+                notificationIcon.appendChild(tooltip);
+                tooltip.style.display = 'block';
 
                 setTimeout(() => {
-                    alertBox.remove();
+                    tooltip.remove();
                 }, 3000); // 3초 후에 알람을 자동으로 제거
             }
 
@@ -368,3 +395,4 @@
         });
     </script>
 </th:block>
+
