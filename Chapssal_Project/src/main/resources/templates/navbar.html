@@ -226,173 +226,277 @@
             <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
         </div>
         <div class="notification-body">
-            <ul id="notificationList">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" onclick="showNotifications('all')">모든 활동</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showNotifications('like_video')">좋아요</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showNotifications('follow')">팔로우</a>
+                </li>
+            </ul>
+            <ul id="notificationList" class="mt-3">
                 <!-- 알림 항목이 여기에 추가됩니다 -->
             </ul>
+            <!-- 알림이 없을 때 표시할 아이콘과 텍스트 -->
+            <div id="noNotifications" class="text-center mt-5" style="display: none;">
+                <i class="bi bi-bell-slash" style="font-size: 3rem; color: #aaa;"></i>
+                <p class="mt-3">계정에 대한 알림은 여기에 표시됩니다.</p>
+            </div>
         </div>
     </div>
 </div>
+
 <!-- 알림 패널 스크립트를 별도의 프래그먼트로 분리 -->
 <th:block th:fragment="notificationPanelScript">
     <style>
-        /* 알림 말풍선 스타일 */
-        .notification-tooltip {
-            position: absolute;
-            top: 30px;
-            right: 0;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            width: 400px;
-            display: none;
-        }
-        
-        .notification-tooltip::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            right: 10px;
-            border-width: 10px;
-            border-style: solid;
-            border-color: #fff transparent transparent transparent;
-        }
+		.notification-panel {
+		    font-family: Arial, sans-serif;
+		}
+
+		.notification-header h6 {
+		    font-size: 14px;
+		    margin: 0;
+		}
+
+		.notification-body .nav-tabs .nav-link {
+		    color: #000;
+		    font-size: 12px;
+		    border: none;
+		    border-bottom: 2px solid transparent;
+		}
+
+		.notification-body .nav-tabs .nav-link.active {
+		    font-weight: bold;
+		    border-bottom: 2px solid #000;
+		}
+
+		.notification-body ul {
+		    padding: 0;
+		    list-style: none;
+		    margin-top: 10px;
+		}
+
+		.notification-body ul li {
+		    padding: 5px 0;
+		    border-bottom: 1px solid #eee;
+		}
+
+		.notification-body ul li span {
+		    font-size: 12px;
+		}
+
+		.notification-body ul li button {
+		    font-size: 10px;
+		    padding: 2px 5px;
+		    margin-left: 10px;
+		    border: none;
+		    background-color: #007bff;
+		    color: white;
+		    border-radius: 3px;
+		}
+
+		.notification-body ul li button:hover {
+		    background-color: #0056b3;
+		}
+
+		.notification-tooltip {
+		    position: absolute;
+		    top: 30px;
+		    right: 0;
+		    background-color: #fff;
+		    border: 1px solid #ddd;
+		    border-radius: 5px;
+		    padding: 10px;
+		    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		    z-index: 1000;
+		    width: 320px;
+		    display: none;
+		}
+
+		.notification-tooltip::after {
+		    content: '';
+		    position: absolute;
+		    bottom: -10px;
+		    right: 10px;
+		    border-width: 10px;
+		    border-style: solid;
+		    border-color: #fff transparent transparent transparent;
+		}
+
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function toggleNotifications() {
-                var panel = document.getElementById('notificationPanel');
-                if (panel.style.display === 'none' || panel.style.display === '') {
-                    panel.style.display = 'block';
-                } else {
-                    panel.style.display = 'none';
-                }
-            }
+		document.addEventListener('DOMContentLoaded', function() {
+		    function toggleNotifications() {
+		        var panel = document.getElementById('notificationPanel');
+		        if (panel.style.display === 'none' || panel.style.display === '') {
+		            panel.style.display = 'block';
+		        } else {
+		            panel.style.display = 'none';
+		        }
+		    }
 
-            document.querySelector('.notification-icon').addEventListener('click', function(event) {
-                event.stopPropagation();
-                toggleNotifications();
-            });
+		    document.querySelector('.notification-icon').addEventListener('click', function(event) {
+		        event.stopPropagation();
+		        toggleNotifications();
+		    });
 
-            document.addEventListener('click', function(event) {
-                var panel = document.getElementById('notificationPanel');
-                if (!panel.contains(event.target) && panel.style.display === 'block') {
-                    panel.style.display = 'none';
-                }
-            });
+		    document.addEventListener('click', function(event) {
+		        var panel = document.getElementById('notificationPanel');
+		        if (!panel.contains(event.target) && panel.style.display === 'block') {
+		            panel.style.display = 'none';
+		        }
+		    });
 
-            document.getElementById('notificationPanel').addEventListener('click', function(event) {
-                event.stopPropagation();
-            });
+		    document.getElementById('notificationPanel').addEventListener('click', function(event) {
+		        event.stopPropagation();
+		    });
 
-            fetch('/notifications/unread')
-                .then(response => response.json())
-                .then(data => {
-                    var count = document.getElementById('notificationCount');
-                    count.innerText = data.length;
-                    count.style.display = data.length > 0 ? 'block' : 'none';
+		    fetch('/notifications/unread')
+		        .then(response => response.json())
+		        .then(data => {
+		            var count = document.getElementById('notificationCount');
+		            count.innerText = data.length;
+		            count.style.display = data.length > 0 ? 'block' : 'none';
 
-                    var notificationList = document.getElementById('notificationList');
-                    notificationList.innerHTML = '';  
-                    data.forEach(notification => {
-                        addNotification(notification);
-                    });
-                })
-                .catch(error => console.error('Error fetching unread notifications:', error));
+		            updateNotificationList(data);
+		        })
+		        .catch(error => console.error('Error fetching unread notifications:', error));
 
-            const eventSource = new EventSource('/notifications/stream');
-            eventSource.onmessage = function(event) {
-                const notification = JSON.parse(event.data);
-                addNotification(notification);
-                updateNotificationCount(1);
-                // 실시간 알림이 도착했을 때 3초 동안 화면에 표시
-                showAlert('', generateMessage(notification));
-            };
+		    const eventSource = new EventSource('/notifications/stream');
+		    eventSource.onmessage = function(event) {
+		        const notification = JSON.parse(event.data);
+		        addNotification(notification);
+		        updateNotificationCount(1);
+		        // 실시간 알림이 도착했을 때 3초 동안 화면에 표시
+		        showAlert('', generateMessage(notification));
+		    };
 
-            function addNotification(notification) {
-                var notificationList = document.getElementById('notificationList');
-                var listItem = document.createElement('li');
-                listItem.id = 'notification-' + notification.notiNum;
+		    function addNotification(notification) {
+		        var notificationList = document.getElementById('notificationList');
+		        var noNotifications = document.getElementById('noNotifications');
+		        noNotifications.style.display = 'none';
 
-                var messageSpan = document.createElement('span');
-                switch (notification.type.toLowerCase()) {
-                    case 'follow':
-                        messageSpan.innerHTML = `<a th:href="@{/user/profile/{userNum}(userNum=${notification.sender.userNum})}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
-                        break;
-                    case 'like_video':
-                        messageSpan.innerHTML = `<a th:href="@{/user/profile/{userNum}(userNum=${notification.sender.userNum})}" class="notification-user-link">${notification.sender.userName}</a>님이 당신의 동영상을 좋아합니다.`;
-                        break;
-                    default:
-                        messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
-                        break;
-                }
+		        var listItem = document.createElement('li');
+		        listItem.id = 'notification-' + notification.notiNum;
 
-                var confirmButton = document.createElement('button');
-                confirmButton.textContent = '확인';
-                confirmButton.onclick = function() {
-                    confirmNotification(notification.notiNum);
-                    listItem.remove();
-                    updateNotificationCount(-1);
-                };
+		        var messageSpan = document.createElement('span');
+		        switch (notification.type.toLowerCase()) {
+		            case 'follow':
+		                messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+		                break;
+		            case 'like_video':
+		                messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신의 동영상을 좋아합니다.`;
+		                break;
+		            default:
+		                messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
+		                break;
+		        }
 
-                listItem.appendChild(messageSpan);
-                listItem.appendChild(confirmButton);
-                notificationList.appendChild(listItem);
+		        var confirmButton = document.createElement('button');
+		        confirmButton.textContent = '확인';
+		        confirmButton.onclick = function() {
+		            confirmNotification(notification.notiNum);
+		            listItem.remove();
+		            updateNotificationCount(-1);
+		        };
 
-                var userLink = listItem.querySelector('.notification-user-link');
-                if (userLink) {
-                    userLink.addEventListener('click', function(event) {
-                        document.getElementById('notificationPanel').style.display = 'none';
-                    });
-                }
-            }
+		        listItem.appendChild(messageSpan);
+		        listItem.appendChild(confirmButton);
+		        notificationList.appendChild(listItem);
 
-            function confirmNotification(notificationId) {
-                fetch('/notifications/mark-as-read/' + notificationId, {
-                    method: 'POST'
-                }).then(response => {
-                    if (!response.ok) {
-                        console.error('Error marking notification as read');
-                    }
-                });
-            }
+		        var userLink = listItem.querySelector('.notification-user-link');
+		        if (userLink) {
+		            userLink.addEventListener('click', function(event) {
+		                document.getElementById('notificationPanel').style.display = 'none';
+		            });
+		        }
+		    }
 
-            function updateNotificationCount(change) {
-                var countElement = document.getElementById('notificationCount');
-                var count = parseInt(countElement.innerText);
+		    function confirmNotification(notificationId) {
+		        fetch('/notifications/mark-as-read/' + notificationId, {
+		            method: 'POST'
+		        }).then(response => {
+		            if (!response.ok) {
+		                console.error('Error marking notification as read');
+		            } else {
+		                document.querySelectorAll(`[id^='notification-']`).forEach(function(element) {
+		                    if (element.id.includes(notificationId)) {
+		                        element.remove();
+		                    }
+		                });
+		            }
+		        });
+		    }
 
-                count += change;
-                countElement.innerText = count;
+		    function updateNotificationCount(change) {
+		        var countElement = document.getElementById('notificationCount');
+		        var count = parseInt(countElement.innerText);
 
-                countElement.style.display = count > 0 ? 'block' : 'none';
-            }
+		        count += change;
+		        countElement.innerText = count;
 
-            function showAlert(title, message) {
-                const notificationIcon = document.querySelector('.notification-icon');
-                const tooltip = document.createElement('div');
-                tooltip.className = 'notification-tooltip';
-                tooltip.innerHTML = `<strong>${title}</strong> ${message}`;
-                notificationIcon.appendChild(tooltip);
-                tooltip.style.display = 'block';
+		        countElement.style.display = count > 0 ? 'block' : 'none';
+		    }
 
-                setTimeout(() => {
-                    tooltip.remove();
-                }, 3000); // 3초 후에 알람을 자동으로 제거
-            }
+		    function showAlert(title, message) {
+		        const notificationIcon = document.querySelector('.notification-icon');
+		        const tooltip = document.createElement('div');
+		        tooltip.className = 'notification-tooltip';
+		        tooltip.innerHTML = `<strong>${title}</strong> ${message}`;
+		        notificationIcon.appendChild(tooltip);
+		        tooltip.style.display = 'block';
 
-            function generateMessage(notification) {
-                switch (notification.type.toLowerCase()) {
-                    case 'follow':
-                        return `${notification.sender.userName}님이 당신을 팔로우했습니다.`;
-                    case 'like_video':
-                        return `${notification.sender.userName}님이 당신의 동영상을 좋아합니다.`;
-                    default:
-                        return `알 수 없는 알림 유형입니다.`;
-                }
-            }
-        });
+		        setTimeout(() => {
+		            tooltip.remove();
+		        }, 3000); // 3초 후에 알람을 자동으로 제거
+		    }
+
+		    function generateMessage(notification) {
+		        switch (notification.type.toLowerCase()) {
+		            case 'follow':
+		                return `${notification.sender.userName}님이 당신을 팔로우했습니다.`;
+		            case 'like_video':
+		                return `${notification.sender.userName}님이 당신의 동영상을 좋아합니다.`;
+		            default:
+		                return `알 수 없는 알림 유형입니다.`;
+		        }
+		    }
+
+		    function updateNotificationList(notifications) {
+		        var notificationList = document.getElementById('notificationList');
+		        var noNotifications = document.getElementById('noNotifications');
+		        notificationList.innerHTML = '';
+
+		        if (notifications.length === 0) {
+		            noNotifications.style.display = 'block';
+		        } else {
+		            noNotifications.style.display = 'none';
+		            notifications.forEach(notification => {
+		                addNotification(notification);
+		            });
+		        }
+		    }
+
+		    window.showNotifications = function(type) {
+		        fetch('/notifications/unread')
+		            .then(response => response.json())
+		            .then(data => {
+		                if (type === 'all') {
+		                    updateNotificationList(data);
+		                } else {
+		                    const filteredNotifications = data.filter(notification => notification.type.toLowerCase() === type.toLowerCase());
+		                    updateNotificationList(filteredNotifications);
+		                }
+		            })
+		            .catch(error => console.error('Error fetching notifications:', error));
+		    };
+
+		    window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
+		});
+
     </script>
 </th:block>
 
