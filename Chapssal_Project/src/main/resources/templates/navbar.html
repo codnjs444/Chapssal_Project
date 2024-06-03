@@ -1,4 +1,5 @@
-<div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+<div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom"
+     xmlns:th="http://www.w3.org/1999/xhtml">
     <div class="container-fluid">
         <a class="navbar-brand" href="/"><img th:src="${'/images/chapssal_logo.png'}" style="width: 96px; height: 54px;"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -24,6 +25,7 @@
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link center-icon"  th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
+                    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;"></span>
                 </li>
 				<!-- 알림 아이콘 -->
 				<li class="nav-item" sec:authorize="isAuthenticated()">
@@ -242,100 +244,140 @@
 <!-- 알림 패널 스크립트를 별도의 프래그먼트로 분리 -->
 <th:block th:fragment="notificationPanelScript">
     <script>
-		document.addEventListener('DOMContentLoaded', function() {
-		    function toggleNotifications() {
-		        var panel = document.getElementById('notificationPanel');
-		        if (panel.classList.contains('active')) {
-		            panel.classList.remove('active');
-		        } else {
-		            panel.classList.add('active');
-		        }
-		    }
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded and parsed'); // 디버깅 로그 추가
 
-		    // 알림 아이콘 클릭 시 알림 패널 표시/숨김
-		    document.querySelector('.notification-icon').addEventListener('click', function (event) {
-		        event.stopPropagation();
-		        toggleNotifications();
-		    });
+            function toggleNotifications() {
+                var panel = document.getElementById('notificationPanel');
+                if (panel.classList.contains('active')) {
+                    panel.classList.remove('active');
+                } else {
+                    panel.classList.add('active');
+                }
+            }
 
-		    // 다른 영역 클릭 시 알림 패널 숨기기
-		    document.addEventListener('click', function(event) {
-		        var panel = document.getElementById('notificationPanel');
-		        if (!panel.contains(event.target) && panel.classList.contains('active')) {
-		            panel.classList.remove('active');
-		        }
-		    });
+            var notificationIcon = document.querySelector('.notification-icon');
+            if (notificationIcon) {
+                notificationIcon.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    toggleNotifications();
+                });
+            }
 
-		    // 알림 패널 안에서 클릭할 경우 이벤트 전파 중지
-		    document.getElementById('notificationPanel').addEventListener('click', function(event) {
-		        event.stopPropagation();
-		    });
+            document.addEventListener('click', function(event) {
+                var panel = document.getElementById('notificationPanel');
+                if (panel && !panel.contains(event.target) && panel.classList.contains('active')) {
+                    panel.classList.remove('active');
+                }
+            });
 
-		    fetch('/notifications/unread')
-		        .then(response => response.json())
-		        .then(data => {
-		            var count = document.getElementById('notificationCount');
-		            count.innerText = data.length;
-		            count.style.display = data.length > 0 ? 'block' : 'none';
+            var notificationPanel = document.getElementById('notificationPanel');
+            if (notificationPanel) {
+                notificationPanel.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
 
-		            var notificationList = document.getElementById('notificationList');
-		            notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
-		            data.forEach(notification => {
-		                addNotification(notification);
-		            });
-		        })
-		        .catch(error => console.error('Error fetching unread notifications:', error));
+            fetch('/notifications/unread')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Unread notifications:', data); // 디버깅 로그 추가
+                    var count = document.getElementById('notificationCount');
+                    if (count) {
+                        count.innerText = data.length;
+                        count.style.display = data.length > 0 ? 'block' : 'none';
+                    }
 
-		    function addNotification(notification) {
-		        var notificationList = document.getElementById('notificationList');
-		        var listItem = document.createElement('li');
-		        listItem.id = 'notification-' + notification.notiNum;
+                    var notificationList = document.getElementById('notificationList');
+                    if (notificationList) {
+                        notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
+                        data.forEach(notification => {
+                            addNotification(notification);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching unread notifications:', error));
 
-		        var messageSpan = document.createElement('span');
-		        messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+            function addNotification(notification) {
+                var notificationList = document.getElementById('notificationList');
+                if (notificationList) {
+                    var listItem = document.createElement('li');
+                    listItem.id = 'notification-' + notification.notiNum;
 
-		        var confirmButton = document.createElement('button');
-		        confirmButton.textContent = '확인';
-		        confirmButton.onclick = function() {
-		            confirmNotification(notification.notiNum);
-		            listItem.remove();
-		            updateNotificationCount();
-		        };
+                    var messageSpan = document.createElement('span');
+                    messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
 
-		        listItem.appendChild(messageSpan);
-		        listItem.appendChild(confirmButton);
-		        notificationList.appendChild(listItem);
+                    var confirmButton = document.createElement('button');
+                    confirmButton.textContent = '확인';
+                    confirmButton.onclick = function() {
+                        confirmNotification(notification.notiNum);
+                        listItem.remove();
+                        updateNotificationCount();
+                    };
 
-		        // 새로 추가된 링크에도 클릭 이벤트 핸들러 추가
-		        listItem.querySelector('.notification-user-link').addEventListener('click', function(event) {
-		            document.getElementById('notificationPanel').classList.remove('active');
-		        });
-		    }
+                    listItem.appendChild(messageSpan);
+                    listItem.appendChild(confirmButton);
+                    notificationList.appendChild(listItem);
 
-		    function confirmNotification(notificationId) {
-		        fetch('/notifications/mark-as-read/' + notificationId, {
-		            method: 'POST'
-		        }).then(response => {
-		            if (!response.ok) {
-		                console.error('Error marking notification as read');
-		            }
-		        });
-		    }
+                    var userLink = listItem.querySelector('.notification-user-link');
+                    if (userLink) {
+                        userLink.addEventListener('click', function(event) {
+                            var panel = document.getElementById('notificationPanel');
+                            if (panel) {
+                                panel.classList.remove('active');
+                            }
+                        });
+                    }
+                }
+            }
 
-		    function updateNotificationCount() {
-		        var countElement = document.getElementById('notificationCount');
-		        var count = parseInt(countElement.innerText);
+            function confirmNotification(notificationId) {
+                fetch('/notifications/mark-as-read/' + notificationId, {
+                    method: 'POST'
+                }).then(response => {
+                    if (!response.ok) {
+                        console.error('Error marking notification as read');
+                    }
+                });
+            }
 
-		        if (count > 0) {
-		            count--;
-		            countElement.innerText = count;
+            function updateNotificationCount() {
+                var countElement = document.getElementById('notificationCount');
+                if (countElement) {
+                    var count = parseInt(countElement.innerText);
 
-		            if (count === 0) {
-		                countElement.style.display = 'none';
-		            }
-		        }
-		    }
-		});
+                    if (count > 0) {
+                        count--;
+                        countElement.innerText = count;
+
+                        if (count === 0) {
+                            countElement.style.display = 'none';
+                        }
+                    }
+                }
+            }
+
+            // 알림 관련 코드만 남김
+            fetch('/notifications/unread')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Unread notifications:', data);
+                    var count = document.getElementById('notificationCount');
+                    if (count) {
+                        count.innerText = data.length;
+                        count.style.display = data.length > 0 ? 'block' : 'none';
+                    }
+
+                    var notificationList = document.getElementById('notificationList');
+                    if (notificationList) {
+                        notificationList.innerHTML = '';
+                        data.forEach(notification => {
+                            addNotification(notification);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching unread notifications:', error));
+        });
 
     </script>
 </th:block>

@@ -48,4 +48,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("roomNum") int roomNum,
             @Param("userNum") int userNum
     );
+
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.receiver = :userNum AND m.isRead = 0")
+    int countUnreadMessages2(@Param("userNum") int userNum);
+
 }

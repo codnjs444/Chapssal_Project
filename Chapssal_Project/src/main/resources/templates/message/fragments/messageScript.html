@@ -116,78 +116,85 @@
             }
         }
 
-        function showMessage(message, prepend = false) {
-            var currentUserNum = parseInt($('#sender').val(), 10);
+function showMessage(message, prepend = false) {
+    var currentUserNum = parseInt($('#sender').val(), 10);
 
-            if (typeof message.sender !== 'undefined') {
-                if (loadedMessages.has(message.messageNum)) {
-                    return;
-                }
-                loadedMessages.add(message.messageNum);
+    if (typeof message.sender !== 'undefined') {
+        if (loadedMessages.has(message.messageNum)) {
+            return;
+        }
+        loadedMessages.add(message.messageNum);
 
-                var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
-                var currentTime = new Date(message.sendDate);
-                var currentDate = currentTime.toLocaleDateString();
+        var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
+        var currentTime = new Date(message.sendDate);
+        var currentDate = currentTime.toLocaleDateString();
 
-                var messageHtml = '';
+        var messageHtml = '';
 
-                if (prepend) {
-                    if (!lastMessageDate || lastMessageDate !== currentDate) {
-                        messageHtml += '<div class="date-separator">' + currentDate + '</div>';
-                        lastMessageDate = currentDate;
-                    }
-                } else {
-                    if (!lastMessageDate || lastMessageDate !== currentDate) {
-                        $('#chatMessages').append('<div class="date-separator">' + currentDate + '</div>');
-                        lastMessageDate = currentDate;
-                    }
-                }
-
-                if (message.messageType === 1 && message.filePath) {
-                    var fileName = message.filePath.split('/').pop();
-                    var fileExtension = fileName.split('.').pop().toLowerCase();
-
-                    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                        messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                        messageHtml += '<img src="' + escapeHtml(message.filePath) + '" alt="Image" style="max-width: 100%;">';
-                        messageHtml += '</div>';
-                    } else if (['mp4', 'mov', 'avi'].includes(fileExtension)) {
-                        messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                        messageHtml += '<video controls style="max-width: 100%;"><source src="' + escapeHtml(message.filePath) + '" type="video/' + fileExtension + '">Your browser does not support the video tag.</video>';
-                        messageHtml += '</div>';
-                    } else {
-                        messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                        messageHtml += '<a href="' + escapeHtml(message.filePath) + '" download>' + escapeHtml(fileName) + '</a>';
-                        messageHtml += '</div>';
-                    }
-                } else {
-                    messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
-                    messageHtml += escapeHtml(message.text);
-                    messageHtml += '</div>';
-                }
-
-                if (prepend) {
-                    $('#chatMessages').prepend(messageHtml);
-                } else {
-                    $('#chatMessages').append(messageHtml);
-                    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-                }
-
-                const messageElement = $('#chatMessages').find('.' + alignment).last();
-                messageElement.text(message.text);
-
-                if (message.roomNum === currentRoomNum) {
-                    updateLastMessageInChatList(message.roomNum, message);
-                } else {
-                    updateChatRoomList(message.roomNum, message);
-                    updateUnreadCountFromDB(message.roomNum);
-                }
-
-                updateDateAndTimeSeparators();
-            } else {
-                console.error('Invalid message format:', message);
+        if (prepend) {
+            if (!lastMessageDate || lastMessageDate !== currentDate) {
+                messageHtml += '<div class="date-separator">' + currentDate + '</div>';
+                lastMessageDate = currentDate;
+            }
+        } else {
+            if (!lastMessageDate || lastMessageDate !== currentDate) {
+                $('#chatMessages').append('<div class="date-separator">' + currentDate + '</div>');
+                lastMessageDate = currentDate;
             }
         }
+
+        if (message.messageType === 1 && message.filePath) {
+            var fileName = message.filePath.split('/').pop();
+            var fileExtension = fileName.split('.').pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<img src="' + escapeHtml(message.filePath) + '" alt="Image" style="max-width: 100%;">';
+                messageHtml += '</div>';
+            } else if (['mp4', 'mov', 'avi'].includes(fileExtension)) {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<video controls style="max-width: 100%;"><source src="' + escapeHtml(message.filePath) + '" type="video/' + fileExtension + '">Your browser does not support the video tag.</video>';
+                messageHtml += '</div>';
+            } else {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<a href="' + escapeHtml(message.filePath) + '" download>' + escapeHtml(fileName) + '</a>';
+                messageHtml += '</div>';
+            }
+        } else {
+            messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+            messageHtml += escapeHtml(message.text);
+            messageHtml += '</div>';
+        }
+
+        if (prepend) {
+            $('#chatMessages').prepend(messageHtml);
+        } else {
+            $('#chatMessages').append(messageHtml);
+        }
+
+        const messageElement = $('#chatMessages').find('.' + alignment).last();
+        messageElement.text(message.text);
+
+        if (message.roomNum === currentRoomNum) {
+            updateLastMessageInChatList(message.roomNum, message);
+        } else {
+            updateChatRoomList(message.roomNum, message);
+            updateUnreadCountFromDB(message.roomNum);
+        }
+
+        updateDateAndTimeSeparators();
+
+        // 추가된 부분: 스크롤을 항상 아래로 이동
+        if (!prepend) {
+            setTimeout(() => {
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+            }, 100);
+        }
+
+    } else {
+        console.error('Invalid message format:', message);
+    }
+}
 
         function connect() {
             var socket = new SockJS('/ws');
@@ -282,7 +289,7 @@
                         var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
                         var userId = otherParticipant.userId;
                         var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
-                        var userProfileUrl = '/profile/' + otherParticipant.userNum;
+                        var userProfileUrl = 'http://localhost:8080/user/profile/' + otherParticipant.userNum;
 
                         receiverId = otherParticipant.userNum;
                         $('#participant_a').html(
@@ -673,74 +680,79 @@
             }
         }
 
-        function loadChatRoomMessages(roomNum) {
-            $('#chatMessages').empty();
-            lastMessageTime = null;
-            lastMessageDate = null;
-            loadedMessages.clear();
+function loadChatRoomMessages(roomNum) {
+    $('#chatMessages').empty();
+    lastMessageTime = null;
+    lastMessageDate = null;
+    loadedMessages.clear();
+
+    $.ajax({
+        url: '/api/chat/rooms/' + roomNum + '/participants',
+        method: 'GET',
+        dataType: 'json',
+        success: function (participants) {
+            if (!participants || participants.length === 0) {
+                console.error('No participants found for roomNum:', roomNum);
+                return;
+            }
+
+            var otherParticipants = participants.filter(function (participant) {
+                var userNum = parseInt(participant.user.userNum, 10);
+                return userNum !== currentUserNum;
+            });
+
+            if (otherParticipants.length === 0) {
+                console.error('No other participants found for currentUserNum:', currentUserNum);
+                return;
+            }
+
+            var otherParticipant = otherParticipants[0].user;
+            var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
+            var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+
+            receiverId = otherParticipant.userNum;
+            $('#participant_a').html(
+                `<img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userName}`
+            );
 
             $.ajax({
-                url: '/api/chat/rooms/' + roomNum + '/participants',
+                url: '/api/chat/rooms/' + roomNum + '/messages',
                 method: 'GET',
                 dataType: 'json',
-                success: function (participants) {
-                    if (!participants || participants.length === 0) {
-                        console.error('No participants found for roomNum:', roomNum);
-                        return;
-                    }
-
-                    var otherParticipants = participants.filter(function (participant) {
-                        var userNum = parseInt(participant.user.userNum, 10);
-                        return userNum !== currentUserNum;
+                success: function (messages) {
+                    messages.reverse().forEach(function (message) {
+                        showMessage(message, false);
                     });
 
-                    if (otherParticipants.length === 0) {
-                        console.error('No other participants found for currentUserNum:', currentUserNum);
-                        return;
-                    }
+                    // 추가된 부분: 스크롤을 항상 아래로 이동
+                    setTimeout(() => {
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                    }, 100);
 
-                    var otherParticipant = otherParticipants[0].user;
-                    var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
-                    var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
-
-                    receiverId = otherParticipant.userNum;
-                    $('#participant_a').html(
-                        `<img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userName}`
-                    );
-
-                    $.ajax({
-                        url: '/api/chat/rooms/' + roomNum + '/messages',
-                        method: 'GET',
-                        dataType: 'json',
-                        success: function (messages) {
-                            messages.reverse().forEach(function (message) {
-                                showMessage(message, false);
-                            });
-
-                            $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-                            updateDateAndTimeSeparators();
-                            $('#chatMessages').off('scroll').on('scroll', function () {
-                                if ($(this).scrollTop() === 0 && !isLoading) {
-                                    loadMoreMessages();
-                                }
-                            });
-                        },
-                        error: function (err) {
-                            console.error('Failed to fetch messages:', err);
+                    updateDateAndTimeSeparators();
+                    $('#chatMessages').off('scroll').on('scroll', function () {
+                        if ($(this).scrollTop() === 0 && !isLoading) {
+                            loadMoreMessages();
                         }
                     });
-
-                    updateUnreadCountFromDB(roomNum);
-                    markMessagesAsRead(roomNum);
                 },
                 error: function (err) {
-                    console.error('Failed to fetch participants:', err);
+                    console.error('Failed to fetch messages:', err);
                 }
             });
 
-            $('#chat-box-a').show();
-            $('#chat-create').hide();
+            updateUnreadCountFromDB(roomNum);
+            markMessagesAsRead(roomNum);
+        },
+        error: function (err) {
+            console.error('Failed to fetch participants:', err);
         }
+    });
+
+    $('#chat-box-a').show();
+    $('#chat-create').hide();
+}
+
 
         $(document).ready(function () {
             let longPressTimer;
@@ -888,53 +900,61 @@
             }
         }
 
-        async function selectUser(selectedUserNum) {
-            const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+async function selectUser(selectedUserNum) {
+    const currentUserNum = parseInt(document.getElementById('sender').value, 10);
 
-            try {
-                const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
-                if (response.ok) {
-                    const chatRoom = await response.json();
-                    if (response.status === 202) {
-                        await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ userNum: currentUserNum })
-                        });
-                        $('#chatModal').modal('hide');
-                        openChatRoom(chatRoom.roomNum, false);
-                    } else {
-                        openChatRoom(chatRoom.roomNum, false);
-                        $('#chatModal').modal('hide');
-                    }
-                } else if (response.status === 404) {
-                    const createRoomResponse = await fetch('/api/chat/rooms/create', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ participants: [currentUserNum, selectedUserNum] })
-                    });
-
-                    if (!createRoomResponse.ok) {
-                        throw new Error(`HTTP error! status: ${createRoomResponse.status}`);
-                    }
-
-                    const newChatRoom = await createRoomResponse.json();
-                    $('#chatModal').modal('hide');
-                    localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
+    try {
+        const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
+        if (response.ok) {
+            const chatRoom = await response.json();
+            if (response.status === 202) {
+                await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userNum: currentUserNum })
+                });
+                $('#chatModal').modal('hide');
+                localStorage.setItem('openChatRoomNum', chatRoom.roomNum);
+                location.reload();
+            } else {
+                const chatRoomElement = $(`.list-group-item[data-roomnum="${chatRoom.roomNum}"]`);
+                if (chatRoomElement.length === 0) {
+                    // 채팅방이 리스트에 없으면 로컬 스토리지에 저장 후 리로드
+                    localStorage.setItem('openChatRoomNum', chatRoom.roomNum);
                     location.reload();
                 } else {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    openChatRoom(chatRoom.roomNum, false);
+                    $('#chatModal').modal('hide');
                 }
-            } catch (error) {
-                console.error('Error selecting user:', error);
             }
-        }
+        } else if (response.status === 404) {
+            const createRoomResponse = await fetch('/api/chat/rooms/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ participants: [currentUserNum, selectedUserNum] })
+            });
 
-        function openChatRoom(roomNum, isNew = false) {
+            if (!createRoomResponse.ok) {
+                throw new Error(`HTTP error! status: ${createRoomResponse.status}`);
+            }
+
+            const newChatRoom = await createRoomResponse.json();
+            $('#chatModal').modal('hide');
+            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
+            location.reload();
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error selecting user:', error);
+    }
+}
+
+function openChatRoom(roomNum, isNew = false) {
             const existingChatRoom = $(`.list-group-item[data-roomnum="${roomNum}"]`);
             if (existingChatRoom.hasClass('active')) {
                 return;
@@ -945,7 +965,7 @@
             } else {
                 loadChatRoomMessages(roomNum);
             }
-        }
+}
 
         $(document).ready(function () {
             const openChatRoomNum = localStorage.getItem('openChatRoomNum');

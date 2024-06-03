@@ -243,99 +243,160 @@
 <th:block th:fragment="notificationPanelScript">
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function toggleNotifications() {
-            var panel = document.getElementById('notificationPanel');
-            if (panel.classList.contains('active')) {
-                panel.classList.remove('active');
-            } else {
-                panel.classList.add('active');
-            }
-        }
+           console.log('DOM fully loaded and parsed'); // 디버깅 로그 추가
 
-        // 알림 아이콘 클릭 시 알림 패널 표시/숨김
-        document.querySelector('.notification-icon').addEventListener('click', function (event) {
-            event.stopPropagation();
-            toggleNotifications();
-        });
+           function toggleNotifications() {
+               var panel = document.getElementById('notificationPanel');
+               if (panel.classList.contains('active')) {
+                   panel.classList.remove('active');
+               } else {
+                   panel.classList.add('active');
+               }
+           }
 
-        // 다른 영역 클릭 시 알림 패널 숨기기
-        document.addEventListener('click', function(event) {
-            var panel = document.getElementById('notificationPanel');
-            if (!panel.contains(event.target) && panel.classList.contains('active')) {
-                panel.classList.remove('active');
-            }
-        });
+           var notificationIcon = document.querySelector('.notification-icon');
+           if (notificationIcon) {
+               notificationIcon.addEventListener('click', function (event) {
+                   event.stopPropagation();
+                   toggleNotifications();
+               });
+           }
 
-        // 알림 패널 안에서 클릭할 경우 이벤트 전파 중지
-        document.getElementById('notificationPanel').addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
+           document.addEventListener('click', function(event) {
+               var panel = document.getElementById('notificationPanel');
+               if (panel && !panel.contains(event.target) && panel.classList.contains('active')) {
+                   panel.classList.remove('active');
+               }
+           });
 
-        fetch('/notifications/unread')
-            .then(response => response.json())
-            .then(data => {
-                var count = document.getElementById('notificationCount');
-                count.innerText = data.length;
-                count.style.display = data.length > 0 ? 'block' : 'none';
+           var notificationPanel = document.getElementById('notificationPanel');
+           if (notificationPanel) {
+               notificationPanel.addEventListener('click', function(event) {
+                   event.stopPropagation();
+               });
+           }
 
-                var notificationList = document.getElementById('notificationList');
-                notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
-                data.forEach(notification => {
-                    addNotification(notification);
-                });
-            })
-            .catch(error => console.error('Error fetching unread notifications:', error));
+           fetch('/notifications/unread')
+               .then(response => response.json())
+               .then(data => {
+                   console.log('Unread notifications:', data); // 디버깅 로그 추가
+                   var count = document.getElementById('notificationCount');
+                   if (count) {
+                       count.innerText = data.length;
+                       count.style.display = data.length > 0 ? 'block' : 'none';
+                   }
 
-        function addNotification(notification) {
-            var notificationList = document.getElementById('notificationList');
-            var listItem = document.createElement('li');
-            listItem.id = 'notification-' + notification.notiNum;
+                   var notificationList = document.getElementById('notificationList');
+                   if (notificationList) {
+                       notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
+                       data.forEach(notification => {
+                           addNotification(notification);
+                       });
+                   }
+               })
+               .catch(error => console.error('Error fetching unread notifications:', error));
 
-            var messageSpan = document.createElement('span');
-            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+           function addNotification(notification) {
+               var notificationList = document.getElementById('notificationList');
+               if (notificationList) {
+                   var listItem = document.createElement('li');
+                   listItem.id = 'notification-' + notification.notiNum;
 
-            var confirmButton = document.createElement('button');
-            confirmButton.textContent = '확인';
-            confirmButton.onclick = function() {
-                confirmNotification(notification.notiNum);
-                listItem.remove();
-                updateNotificationCount();
-            };
+                   var messageSpan = document.createElement('span');
+                   messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
 
-            listItem.appendChild(messageSpan);
-            listItem.appendChild(confirmButton);
-            notificationList.appendChild(listItem);
+                   var confirmButton = document.createElement('button');
+                   confirmButton.textContent = '확인';
+                   confirmButton.onclick = function() {
+                       confirmNotification(notification.notiNum);
+                       listItem.remove();
+                       updateNotificationCount();
+                   };
 
-            // 새로 추가된 링크에도 클릭 이벤트 핸들러 추가
-            listItem.querySelector('.notification-user-link').addEventListener('click', function(event) {
-                document.getElementById('notificationPanel').classList.remove('active');
-            });
-        }
+                   listItem.appendChild(messageSpan);
+                   listItem.appendChild(confirmButton);
+                   notificationList.appendChild(listItem);
 
-        function confirmNotification(notificationId) {
-            fetch('/notifications/mark-as-read/' + notificationId, {
-                method: 'POST'
-            }).then(response => {
-                if (!response.ok) {
-                    console.error('Error marking notification as read');
-                }
-            });
-        }
+                   var userLink = listItem.querySelector('.notification-user-link');
+                   if (userLink) {
+                       userLink.addEventListener('click', function(event) {
+                           var panel = document.getElementById('notificationPanel');
+                           if (panel) {
+                               panel.classList.remove('active');
+                           }
+                       });
+                   }
+               }
+           }
 
-        function updateNotificationCount() {
-            var countElement = document.getElementById('notificationCount');
-            var count = parseInt(countElement.innerText);
+           function confirmNotification(notificationId) {
+               fetch('/notifications/mark-as-read/' + notificationId, {
+                   method: 'POST'
+               }).then(response => {
+                   if (!response.ok) {
+                       console.error('Error marking notification as read');
+                   }
+               });
+           }
 
-            if (count > 0) {
-                count--;
-                countElement.innerText = count;
+           function updateNotificationCount() {
+               var countElement = document.getElementById('notificationCount');
+               if (countElement) {
+                   var count = parseInt(countElement.innerText);
 
-                if (count === 0) {
-                    countElement.style.display = 'none';
-                }
-            }
-        }
-    });
+                   if (count > 0) {
+                       count--;
+                       countElement.innerText = count;
 
+                       if (count === 0) {
+                           countElement.style.display = 'none';
+                       }
+                   }
+               }
+           }
+
+           // 채팅 알림 관련 코드 추가
+           function updateMessageNotificationIndicator(hasUnread) {
+               var messageIndicatorElement = document.getElementById('messageNotificationIndicator');
+               if (messageIndicatorElement) {
+                   if (hasUnread) {
+                       messageIndicatorElement.style.display = 'block';
+                   } else {
+                       messageIndicatorElement.style.display = 'none';
+                   }
+               }
+           }
+
+           // 웹소켓 연결을 통해 새 메시지 도착 시 알림 업데이트
+           function connectToChat() {
+               console.log('Connecting to chat...'); // 디버깅 로그 추가
+               var socket = new SockJS('/ws');
+               var stompClient = Stomp.over(socket);
+               stompClient.connect({}, function(frame) {
+                   console.log('Connected to WebSocket'); // 디버깅 로그 추가
+                   stompClient.subscribe('/user/queue/messages', function(message) {
+                       console.log('Received message:', message.body); // 디버깅 로그 추가
+                       fetchUnreadMessageStatus();
+                   });
+               });
+           }
+
+           // 읽지 않은 메시지가 있는지 여부를 가져오는 함수
+           function fetchUnreadMessageStatus() {
+               console.log('Fetching unread message status...'); // 디버깅 로그 추가
+               fetch('/api/messages/unread-count')
+                   .then(response => response.json())
+                   .then(data => {
+                       console.log('Unread message count:', data.count); // 디버깅 로그 추가
+                       var hasUnread = data.count > 0;
+                       updateMessageNotificationIndicator(hasUnread);
+                   })
+                   .catch(error => console.error('Error fetching unread message status:', error));
+           }
+
+           // 페이지 로드 시 읽지 않은 메시지 여부 확인
+           fetchUnreadMessageStatus();
+           connectToChat();
+       });
   </script>
 </th:block>

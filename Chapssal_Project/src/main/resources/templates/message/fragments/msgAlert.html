@@ -1,0 +1,63 @@
+<div th:fragment="msgAlert" xmlns:th="http://www.w3.org/1999/xhtml">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+              console.log('DOM fully loaded and parsed'); // 디버깅 로그 추가
+
+              // SSE 연결 설정
+              function connectToSse() {
+                  fetch('/api/messages/info')
+                      .then(response => response.json())
+                      .then(data => {
+                          var userId = data.userNum; // 사용자 ID
+                          var eventSource = new EventSource('/api/messages/subscribe');
+
+                          eventSource.onmessage = function(event) {
+                              console.log('Received message:', event.data); // 디버깅 로그 추가
+                              showNotification('새로운 메시지가 도착했습니다.');
+                          };
+
+                          eventSource.onerror = function(event) {
+                              console.error('Error in SSE connection:', event);
+                              eventSource.close();
+                          };
+                      });
+              }
+
+              function showNotification(message) {
+                  var notificationElement = document.getElementById('messageNotificationIndicator');
+                  if (notificationElement) {
+                      notificationElement.innerText = message;
+                      notificationElement.style.display = 'block';
+                  }
+              }
+
+              connectToSse();
+
+              function fetchUnreadMessageStatus() {
+                  console.log('Fetching unread message status...'); // 디버깅 로그 추가
+                  fetch('/api/messages/unread-count')
+                      .then(response => response.json())
+                      .then(data => {
+                          console.log('Unread message count:', data.count); // 디버깅 로그 추가
+                          var hasUnread = data.count > 0;
+                          updateMessageNotificationIndicator(hasUnread);
+                      })
+                      .catch(error => console.error('Error fetching unread message status:', error));
+              }
+
+              function updateMessageNotificationIndicator(hasUnread) {
+                  var messageIndicatorElement = document.getElementById('messageNotificationIndicator');
+                  if (messageIndicatorElement) {
+                      if (hasUnread) {
+                          messageIndicatorElement.style.display = 'block';
+                      } else {
+                          messageIndicatorElement.style.display = 'none';
+                      }
+                  }
+              }
+
+              // 페이지 로드 시 읽지 않은 메시지 여부 확인
+              fetchUnreadMessageStatus();
+          });
+    </script>
+</div>
