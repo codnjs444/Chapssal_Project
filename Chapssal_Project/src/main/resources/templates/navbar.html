@@ -282,6 +282,8 @@
 		.notification-body ul li {
 		    padding: 5px 0;
 		    border-bottom: 1px solid #eee;
+		    display: flex;
+		    align-items: center;
 		}
 
 		.notification-body ul li span {
@@ -300,6 +302,12 @@
 
 		.notification-body ul li button:hover {
 		    background-color: #0056b3;
+		}
+
+		.notification-profile-image {
+		    width: 30px;
+		    height: 30px;
+		    object-fit: cover;
 		}
 
 		.notification-tooltip {
@@ -325,6 +333,7 @@
 		    border-style: solid;
 		    border-color: #fff transparent transparent transparent;
 		}
+
 
     </style>
     <script>
@@ -382,13 +391,17 @@
 		        var listItem = document.createElement('li');
 		        listItem.id = 'notification-' + notification.notiNum;
 
+		        var profileImage = notification.sender.profilePictureUrl ? 
+		            `<img src="${notification.sender.profilePictureUrl}" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">` : 
+		            '<i class="bi bi-person-circle" style="font-size: 1.5rem; margin-right: 10px;"></i>';
+
 		        var messageSpan = document.createElement('span');
 		        switch (notification.type.toLowerCase()) {
 		            case 'follow':
-		                messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+		                messageSpan.innerHTML = `${profileImage}<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
 		                break;
 		            case 'like_video':
-		                messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신의 동영상을 좋아합니다.`;
+		                messageSpan.innerHTML = `${profileImage}<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신의 동영상을 좋아합니다.`;
 		                break;
 		            default:
 		                messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
@@ -490,14 +503,14 @@
 		                    const filteredNotifications = data.filter(notification => notification.type.toLowerCase() === type.toLowerCase());
 		                    updateNotificationList(filteredNotifications);
 		                }
-		                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-		                document.querySelector(`#${type === 'all' ? 'allTab' : type === 'like_video' ? 'likeVideoTab' : 'followTab'}`).classList.add('active');
 		            })
 		            .catch(error => console.error('Error fetching notifications:', error));
 		    };
 
 		    window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
 		});
+
+
 
 
     </script>
