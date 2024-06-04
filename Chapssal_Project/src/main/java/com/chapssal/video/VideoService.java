@@ -1,6 +1,7 @@
 package com.chapssal.video;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.chapssal.comment.CommentService;
 import com.chapssal.hashtag.HashtagService;
 import com.chapssal.user.User;
+import com.chapssal.user.UserService;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class VideoService {
     private final HashtagService hashtagService;
     private final VideoLikeService videoLikeService;
     private final CommentService commentService;
+    private final UserService userService;
 
     public void create(Video video) {
         video.setUploadDate(LocalDateTime.now());
@@ -103,6 +106,61 @@ public class VideoService {
         return videoRepository.findByUserInOrderByVideoNumDesc(users).stream()
                 .map(video -> {
                     int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<VideoWithLikesAndComments> getTopVideosByLikesInLastHour() {
+        return videoRepository.findTopVideosByLikesInLastHour().stream()
+                .map(result -> {
+                    int videoNum = (Integer) result[0];
+                    String title = (String) result[1];
+                    String videoUrl = (String) result[2];
+                    String thumbnailUrl = (String) result[3];
+                    int userNum = (Integer) result[4];
+                    Integer topic = (Integer) result[5];
+                    int likeCount = ((Number) result[5]).intValue();
+
+                    Video video = new Video();
+                    video.setVideoNum(videoNum);
+                    video.setTitle(title);
+                    video.setVideoUrl(videoUrl);
+                    video.setThumbnailUrl(thumbnailUrl);
+                    video.setTopic(topic);
+                    // User 객체는 필요한 경우 UserService를 통해 가져와야 합니다.
+                    User user = userService.findByUserNum(userNum);
+                    video.setUser(user);
+
+                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByLikes() {
+        return videoRepository.findAllVideosOrderedByLikes().stream()
+                .map(result -> {
+                    int videoNum = (Integer) result[0];
+                    String title = (String) result[1];
+                    String videoUrl = (String) result[2];
+                    String thumbnailUrl = (String) result[3];
+                    int userNum = (Integer) result[4];
+                    Integer topic = (Integer) result[5];
+                    int likeCount = ((Number) result[6]).intValue();
+                    int recentLikeCount = ((Number) result[7]).intValue();
+
+                    Video video = new Video();
+                    video.setVideoNum(videoNum);
+                    video.setTitle(title);
+                    video.setVideoUrl(videoUrl);
+                    video.setThumbnailUrl(thumbnailUrl);
+                    video.setTopic(topic);
+                    // User 객체는 필요한 경우 UserService를 통해 가져와야 합니다.
+                    User user = userService.findByUserNum(userNum);
+                    video.setUser(user);
+
                     int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
                     return new VideoWithLikesAndComments(video, likeCount, commentCount);
                 })

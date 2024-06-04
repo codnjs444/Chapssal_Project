@@ -70,10 +70,11 @@ public class VideoController {
         this.commentLikeService = commentLikeService;
     }
     
-    @ModelAttribute("topicsByVoteCount")
-    public List<Object[]> topicsByVoteCount() {
-        return selectedTopicService.findTopicsByVoteCount();
-    }
+//    @ModelAttribute("topicsByVoteCount")
+//    public List<Object[]> topicsByVoteCount() {
+//        return selectedTopicService.findTopicsByVoteCount();
+//    	return selectedTopicService.getTopicsByVoteCountForLastWeek();
+//    }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/video/upload")
@@ -158,6 +159,9 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model) {
+        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        
         List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosWithLikeAndCommentCounts();
         Collections.shuffle(videosWithLikesAndComments); // 영상 리스트를 섞음
         model.addAttribute("videos", videosWithLikesAndComments); // 섞인 비디오를 모델에 추가
@@ -270,6 +274,9 @@ public class VideoController {
 
     @GetMapping("/bestvideos")
     public String viewBestVideosPage(Model model) {
+        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        
         List<Object[]> topVideos = videoService.findTopVideos();
         model.addAttribute("topVideos", topVideos);
         return "bestvideos"; // bestvideos.html 템플릿을 렌더링

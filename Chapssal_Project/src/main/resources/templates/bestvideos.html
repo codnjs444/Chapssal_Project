@@ -12,10 +12,12 @@
         .home-nav-link {
             background-color: rgb(100, 100, 100, 0.1);
             color: black;
-            width: 100px;
+            width: 108px;
+			height: 40px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+			font-size: 15px;
         }
 
         .home-nav-link.active {
@@ -107,15 +109,28 @@
 		.video-info .view-count {
 		    font-weight: bold; /* 조회수 텍스트를 굵게 설정 */
 		}
+
+		.user-profile {
+		    display: flex;
+		    align-items: center;
+		    gap: 10px;
+		}
+
+		.user-profile img {
+		    width: 20px;
+		    height: 20px;
+		    border-radius: 50%;
+		    object-fit: cover;
+		}
     </style>
 </head>
 <body>
 <div layout:fragment="content" class="container">
     <!-- 네비게이션 탭 -->
-    <nav class="container nav-center">
-        <div class="nav nav-pills center" id="nav-tab" role="tablist">
+    <nav class="container nav-center p-0">
+        <div class="nav nav-pills center p-0" id="nav-tab" role="tablist">
 			<button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-			<button class="nav-link home-nav-link mx-1 py-1" th:each="topic : ${topicsByVoteCount}"
+			<button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}"
 			        th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
 			        th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
 			        th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
@@ -141,9 +156,12 @@
 			        <!-- 영상 콘텐츠 -->
 			        <div class="video-content">
 			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-			            <div class="row ">
+			            <div class="row">
 							<div class="col">
-			                	<p th:text="${videoLike[0].user.userName}"></p>
+								<div class="user-profile">
+									<img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+				                	<p th:text="${videoLike[0].user.userName}"></p>
+								</div>
 							</div>
 							<div class="col text-end">
 							    <div class="like-container text-end">
@@ -168,11 +186,23 @@
 		                <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
 		            </div>
 		            <!-- 영상 콘텐츠 -->
-		            <div class="video-content">
-		                <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-		                <p th:text="${videoLike[0].user.userName}"></p>
-		                <p th:text="'좋아요: ' + ${videoLike[1]}"></p>
-		            </div>
+					<div class="video-content">
+			            <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+			            <div class="row">
+							<div class="col">
+								<div class="user-profile">
+									<img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+				                	<p th:text="${videoLike[0].user.userName}"></p>
+								</div>
+							</div>
+							<div class="col text-end">
+							    <div class="like-container text-end">
+							        <i class="bi bi-heart"></i>
+							        <p th:text="${videoLike[1]}"></p>
+							    </div>
+							</div>
+			            </div>
+			        </div>
 		        </div>
 		    </div>
 		</div>
