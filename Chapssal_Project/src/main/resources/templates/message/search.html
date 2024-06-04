@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html layout:decorate="~{message/chatLayout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<div layout:fragment="content" class="container-fluid">
+    <!-- 컨텐츠 자리 -->
+    <div class="row" style="height: 100%; margin-left: 5%;">
+
+        <div class="main-content" style = "margin-left: 35%">
+
+            <div class="accounts">
+                <h3>계정</h3>
+                <ul>
+                    <li>뉴진스계정 newjeans_official</li>
+                    <li>뉴진스계정 newjeans_official</li>
+                    <li>뉴진스계정 newjeans_official</li>
+                </ul>
+            </div>
+            <div class="videos">
+                <h3>동영상</h3>
+                <div style="display: flex;">
+                    <div class="video-item">
+                        <img src="video_thumbnail1.jpg" alt="Video Thumbnail">
+                        <p>뉴진스 챌린지 영상</p>
+                    </div>
+                    <div class="video-item">
+                        <img src="video_thumbnail2.jpg" alt="Video Thumbnail">
+                        <p>뉴진스 챌린지 영상</p>
+                    </div>
+                    <div class="video-item">
+                        <img src="video_thumbnail3.jpg" alt="Video Thumbnail">
+                        <p>뉴진스 챌린지 영상</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/js/sidebars.js}"></script>
+</html>
