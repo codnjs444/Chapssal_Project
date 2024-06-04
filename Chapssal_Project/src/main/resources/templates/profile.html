@@ -119,7 +119,7 @@
                     <div class="d-flex align-items-center w-100">			
 						<div class="profile-info">
 						    <div>
-                                <h4 th:text="${userName != null ? userName : '사용자'}" class="mb-1"></h4>
+								<h4 th:text="${userName != null ? userName : #strings.concat('사용자', currentUserNum)}" class="mb-1"></h4>
                                 <p th:text="${schoolName}" class="mb-1">학교 이름</p>
                             </div>
                             <div class="profile-actions">
@@ -156,11 +156,23 @@
 				<!-- 수상 내용 섹션 -->
 				<div class="awards-section">
 				    <div th:each="award : ${awards}" class="award-item">
-				        <div class="award-icon" 
-				             th:data-bs-content="|<div class='popover-body'><img src='/images/${award.awardType.toLowerCase()}.png' alt='${award.awardType}' style='width: 100%; height: auto;'><br> ${award.awardName}<br>${award.awardType}<br>${award.awardDate}</div>|"
-				             data-bs-toggle="popover"
-				             data-bs-html="true">
-				            <img th:src="@{/images/} + ${award.awardType.toLowerCase()} + '.png'" th:alt="${award.awardType}">
+				        <!-- awardType 값에 따라 이미지를 조건부로 출력 -->
+				        <div class="award-icon">
+				            <div th:if="${award.awardType == 3}">
+				                <img th:src="@{/images/Gold.png}" alt="금상" data-bs-toggle="popover" data-bs-html="true"
+				                     title="금상"
+				                     th:data-bs-content="'<div class=\'popover-content\'><p><strong>Award:</strong> ' + ${award.awardName} + '</p><p><strong>Date:</strong> ' + ${award.awardDate} + '</p></div>'">
+				            </div>
+				            <div th:if="${award.awardType == 2}">
+				                <img th:src="@{/images/Silver.png}" alt="은상" data-bs-toggle="popover" data-bs-html="true"
+				                     title="은상"
+				                     th:data-bs-content="'<div class=\'popover-content\'><p><strong>Award:</strong> ' + ${award.awardName} + '</p><p><strong>Date:</strong> ' + ${award.awardDate} + '</p></div>'">
+				            </div>
+				            <div th:if="${award.awardType == 1}">
+				                <img th:src="@{/images/Bronze.png}" alt="동상" data-bs-toggle="popover" data-bs-html="true"
+				                     title="동상"
+				                     th:data-bs-content="'<div class=\'popover-content\'><p><strong>Award:</strong> ' + ${award.awardName} + '</p><p><strong>Date:</strong> ' + ${award.awardDate} + '</p></div>'">
+				            </div>
 				        </div>
 				    </div>
 				</div>
@@ -221,6 +233,14 @@
 	
 	<script th:inline="javascript">
 	    /*<![CDATA[*/
+		
+		document.addEventListener('DOMContentLoaded', function () {
+		    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+		    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+		        return new bootstrap.Popover(popoverTriggerEl);
+		    });
+		});
+		
 	    function profileQuerySelectorAll() {
 	        const buttons = document.querySelectorAll('.icon-btn');
 	        console.log('buttons:', buttons);
