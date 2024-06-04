@@ -54,14 +54,16 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
-    private void sendSseEventToUser(int userId, String messageContent) {
+    public void sendSseEventToUser(int userId, String messageContent) {
         SseEmitter emitter = sseEmitters.get(userId);
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event().name("message").data(messageContent));
+                System.out.println("SSE event sent to user: " + userId); // 디버깅 로그 추가
             } catch (IOException e) {
                 emitter.completeWithError(e);
                 sseEmitters.remove(userId);
+                System.err.println("Error sending SSE event: " + e.getMessage()); // 디버깅 로그 추가
             }
         }
     }
@@ -79,12 +81,18 @@ public class MessageController {
         User user = userRepository.findByUserId(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         int userId = user.getUserNum();
 
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 minutes
         sseEmitters.put(userId, emitter);
 
         emitter.onCompletion(() -> sseEmitters.remove(userId));
         emitter.onTimeout(() -> sseEmitters.remove(userId));
         emitter.onError((e) -> sseEmitters.remove(userId));
+
+        try {
+            emitter.send(SseEmitter.event().name("INIT"));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
 
         return emitter;
     }

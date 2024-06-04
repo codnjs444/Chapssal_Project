@@ -1,9 +1,8 @@
-<div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom"
-     xmlns:th="http://www.w3.org/1999/xhtml">
+<div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom" xmlns:th="http://www.w3.org/1999/xhtml">
     <div class="container-fluid">
         <a class="navbar-brand" href="/"><img th:src="${'/images/chapssal_logo.png'}" style="width: 96px; height: 54px;"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -24,16 +23,16 @@
                     </div>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link center-icon"  th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
-                    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;"></span>
+                    <a class="nav-link center-icon" th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
+                    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;;"></span>
                 </li>
-				<!-- 알림 아이콘 -->
-				<li class="nav-item" sec:authorize="isAuthenticated()">
-				    <a class="nav-link center-icon notification-icon" href="#">
-				        <i class="bi bi-bell"></i>
-				        <span id="notificationCount" class="badge bg-danger" style="display: none;"></span>
-				    </a>
-				</li>
+                <!-- 알림 아이콘 -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link center-icon notification-icon" href="#">
+                        <i class="bi bi-bell"></i>
+                        <span id="notificationCount" class="badge bg-danger" style="display: none;"></span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/user/login}">로그인</a>
                 </li>

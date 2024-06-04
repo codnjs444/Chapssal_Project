@@ -24,11 +24,25 @@
               }
 
               function showNotification(message) {
-                  var notificationElement = document.getElementById('messageNotificationIndicator');
-                  if (notificationElement) {
-                      notificationElement.innerText = message;
-                      notificationElement.style.display = 'block';
-                  }
+                  var notificationElement2 = document.getElementById('messageNotificationIndicator');
+                    if (notificationElement2) {
+                        notificationElement2.style.display = 'block';
+                    }
+
+                  var notificationElement = document.createElement('div');
+
+                  notificationElement.className = 'alert alert-success';
+                  notificationElement.innerText = message;
+                  notificationElement.style.position = 'fixed';
+                  notificationElement.style.top = '10px';
+                  notificationElement.style.right = '300px';
+                  notificationElement.style.zIndex = 1000;
+
+                  document.body.appendChild(notificationElement);
+
+                  setTimeout(() => {
+                      notificationElement.remove();
+                  }, 3000);
               }
 
               connectToSse();
