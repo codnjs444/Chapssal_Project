@@ -126,6 +126,16 @@ public class VideoService {
                 .collect(Collectors.toList());
     }
     
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByUploadDate() {
+        return videoRepository.findAllVideosOrderByUploadDateDesc().stream()
+                .map(video -> {
+                    int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
+                })
+                .collect(Collectors.toList());
+    }
+    
     public List<VideoWithLikesAndComments> getTopVideosByLikesInLastHour() {
         return videoRepository.findTopVideosByLikesInLastHour().stream()
                 .map(result -> {
