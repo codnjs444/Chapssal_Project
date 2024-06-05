@@ -168,11 +168,10 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model) {
-        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
         
-        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosWithLikeAndCommentCounts();
-        Collections.shuffle(videosWithLikesAndComments); // 영상 리스트를 섞음
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosOrderedByLikes();
         model.addAttribute("videos", videosWithLikesAndComments); // 섞인 비디오를 모델에 추가
         return "explore"; // explore.html 템플릿을 렌더링
     }
