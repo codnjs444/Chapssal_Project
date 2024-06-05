@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,11 +24,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -36,6 +39,7 @@ import com.chapssal.award.AwardService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
+import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.video.S3Service;
 import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
@@ -63,8 +67,16 @@ public class UserController {
     private AwardService awardService;
     
     @Autowired
+    private SelectedTopicService selectedTopicService;
+    
+    @Autowired
     private S3Service s3Service;
     private static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
+    
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+        return selectedTopicService.findTopicsByVoteCount();
+    }
     
     @GetMapping("/signup")
     public String signup(Model model) {
@@ -359,5 +371,29 @@ public class UserController {
     @GetMapping("/test")
     public String testPage() {
         return "test";
+    }
+    
+    @GetMapping("/suggestions")
+    @ResponseBody
+    public List<UserDTO> getUserSuggestions(@RequestParam(name = "query") String query) {
+        return userService.getUserSuggestions(query).stream()
+                .map(user -> new UserDTO(user.getUserName()))
+                .collect(Collectors.toList());
+    }
+
+    static class UserDTO {
+        private String userName;
+
+        public UserDTO(String userName) {
+            this.userName = userName;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
     }
 }
