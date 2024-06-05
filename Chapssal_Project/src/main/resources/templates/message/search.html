@@ -1,36 +1,50 @@
 <!DOCTYPE html>
-<html layout:decorate="~{message/chatLayout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
-<div layout:fragment="content" class="container-fluid">
+<html layout:decorate="~{layout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content" class="container-fluid" style="max-width: 80%;">
     <!-- 컨텐츠 자리 -->
-    <div class="row" style="height: 100%; margin-left: 5%;">
+    <div class="row" style="height: 100%;">
+        <div class="main-content" style="margin-left: 30%; max-width: 70%;">
 
-        <div class="main-content" style = "margin-left: 35%">
-
-            <div class="accounts">
-                <h3>계정</h3>
+            <h2>Search Results</h2>
+            <div th:if="${searchType == 'user'}">
+                <h3>Users</h3>
                 <ul>
-                    <li>뉴진스계정 newjeans_official</li>
-                    <li>뉴진스계정 newjeans_official</li>
-                    <li>뉴진스계정 newjeans_official</li>
+                    <li th:each="user : ${results}" th:text="${user.userName}">User Name</li>
                 </ul>
             </div>
-            <div class="videos">
-                <h3>동영상</h3>
-                <div style="display: flex;">
-                    <div class="video-item">
-                        <img src="video_thumbnail1.jpg" alt="Video Thumbnail">
-                        <p>뉴진스 챌린지 영상</p>
-                    </div>
-                    <div class="video-item">
-                        <img src="video_thumbnail2.jpg" alt="Video Thumbnail">
-                        <p>뉴진스 챌린지 영상</p>
-                    </div>
-                    <div class="video-item">
-                        <img src="video_thumbnail3.jpg" alt="Video Thumbnail">
-                        <p>뉴진스 챌린지 영상</p>
-                    </div>
-                </div>
+            <div th:if="${searchType == 'hashtag'}">
+                <h3>Videos with Hashtag</h3>
+                <ul>
+                    <li th:each="video : ${results}" th:text="${video.Title}">Video Title</li>
+                </ul>
             </div>
+            <div th:if="${searchType == 'general'}">
+                <h3>Users</h3>
+                <ul>
+                    <li th:each="user : ${userResults}" th:text="${user.userName}">User Name</li>
+                </ul>
+                <h3>Videos</h3>
+                <ul>
+                    <li th:each="video : ${videoResults}" th:text="${video.Title}">Video Title</li>
+                </ul>
+                <h3>Videos with Hashtag</h3>
+                <ul>
+                    <li th:each="video : ${hashtagResults}" th:text="${video.Title}">Video Title</li>
+                </ul>
+            </div>
+
+            <div id="popular-searches" class="list-group mt-2">
+                <h3>Popular Searches</h3>
+                <!-- Popular searches will be dynamically populated here -->
+            </div>
+
         </div>
 
     </div>
@@ -39,4 +53,7 @@
 
 <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/assets/js/sidebars.js}"></script>
+
 </html>
+
+

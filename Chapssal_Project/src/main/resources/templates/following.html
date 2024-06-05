@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+    <head>
+        <style>
+            .video-list {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .video-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+
+            .video-container {
+                position: relative;
+                width: 9%;
+                min-width: 450px;
+                min-height: 650px;
+                padding-bottom: 16%;
+                background-color: black;
+                overflow: hidden;
+                border-radius: 10px;
+                position: relative;
+            }
+
+            .video-container video {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 100%;
+                height: 100%;
+                transform: translate(-50%, -50%);
+            }
+
+			.video-buttons {
+			    position: absolute;
+			    top: 55%;
+			    left: 69%;
+			    display: flex;
+			    flex-direction: column;
+			}
+
+            .action-btn {
+                background-color: rgba(0, 0, 0, 0.1);
+                border: none;
+                color: black;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .modal-action-btn {
+                background-color: white;
+                border: none;
+                color: black;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+
+            .video-content {
+                font-size: 14px;
+                text-align: left;
+                width: 45%;
+                min-width: 576px;
+            }
+
+            .video-content .col-5,
+            .video-content .col-35,
+            .video-content .col-5 {
+                flex: 1;
+            }
+
+            .video-content .col-35 {
+                flex: 7;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+
+            .video-content img {
+                width: 100%;
+                height: auto;
+                border-radius: 50%;
+            }
+
+            .video-content p {
+                margin: 0;
+            }
+
+            .follow-btn {
+                width: 100%;
+                padding: 5px 0;
+                font-size: 14px;
+                background-color: #007bff;
+                border: none;
+                color: white;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            .follow-btn:hover {
+                background-color: #0056b3;
+            }
+
+            /* Modal styles */
+            .home-modal {
+                display: none;
+                position: fixed;
+                z-index: 1050;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0,0.7);
+            }
+
+            .home-modal-content {
+                margin: 5% auto;
+                padding: 20px;
+                width: 80%;
+                max-width: 1000px;
+                background-color: white;
+            }
+
+            .home-close {
+                position: absolute;
+                top: 15px;
+                right: 35px;
+                color: #f1f1f1;
+                font-size: 40px;
+                font-weight: bold;
+                transition: 0.3s;
+                cursor: pointer;
+            }
+
+            .home-close:hover,
+            .home-close:focus {
+                color: #bbb;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .home-modal-video-container {
+                position: relative;
+                width: 51%;
+                padding-bottom: 90.67%; /* 16:9 aspect ratio */
+                background-color: black;
+                overflow: hidden;
+                max-height: 70%; /* 비디오 컨테이너의 최대 높이를 70%로 설정 */
+            }
+
+            .home-modal-video-container video {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 100%;
+                height: 100%;
+                transform: translate(-50%, -50%);
+            }
+
+            .home-modal-video-content {
+                font-size: 14px;
+                text-align: left;
+                width: 100%;
+                display: flex; /* flex 컨테이너로 설정 */
+                flex-direction: column; /* 세로 정렬 */
+                height: 98vh; /* 모달의 전체 높이 설정 */
+                overflow-y: auto; /* 컨텐츠가 넘칠 때 세로 스크롤만 추가 */
+                overflow-x: hidden; /* 가로 스크롤 숨김 */
+                padding-left: 15px; /* 패딩 추가 */
+                box-sizing: border-box; /* 스크롤바 너비 포함 */
+            }
+
+            .home-modal-video-content .uploader-info {
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #ccc;
+            }
+
+            .home-modal-video-content .uploader-info img {
+                width: 74px;
+                height: 50px;
+                border-radius: 50%;
+            }
+
+            .home-modal-video-content .uploader-info p {
+                display: inline;
+                vertical-align: middle;
+            }
+
+            .home-modal-video-content p {
+                margin: 0;
+            }
+
+            .comment-list {
+                flex: 1; /* 남은 공간을 차지 */
+                overflow-y: auto; /* 스크롤 추가 */
+                overflow-x: hidden;
+                padding-right: 5%;
+            }
+
+            .comment-form {
+                border-top: 1px solid #ccc;
+                padding-top: 10px;
+                margin-top: 10px;
+            }
+
+            .modal-profile {
+                width: 10vw;
+                height: 10vw;
+                max-width: 74px; /* Ensure the image doesn't grow too large */
+                max-height: 50px;
+                object-fit: cover; /* Ensures the image covers the element without distorting */
+            }
+
+            body.modal-open {
+                overflow: hidden;
+            }
+
+			.video-btn-count{
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				font-size: 12px;
+			}
+        </style>
+    </head>
+    <body>
+		<div layout:fragment="content" class="container">
+		    <div class="video-list">
+		        <div th:if="${videos != null}">
+					<div th:if="${videos.isEmpty()}">
+					    <p>팔로우 중인 유저가 없습니다.</p>
+					</div>
+		            <div th:each="videoData : ${videos}" class="video-item">
+		                <div class="video-content">
+		                    <div class="row">
+		                        <div class="col-5">
+		                            <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+		                        </div>
+		                        <div class="col-35 p-0">
+		                            <p th:text="${videoData.video.user.userName}"></p>
+		                            <p th:text="${videoData.video.title}"></p>
+		                        </div>
+		                        <div class="col-5">
+		                            <button class="follow-btn">팔로우</button>
+		                        </div>
+		                    </div>
+		                </div>
+		                <br>
+		                <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+		                    <video controls autoplay muted>
+		                        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+		                        Your browser does not support the video tag.
+		                    </video>
+		                </div>
+		                <div class="video-buttons">
+		                    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+		                    <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
+		                    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+		                    <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+		                    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+		                    <p class="video-btn-count m-0">362</p>
+		                    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+		                    <p class="video-btn-count m-0">228</p>
+		                </div>
+		                <br>
+		                <hr style="width: 700px;">
+		                <br>
+		            </div>
+		        </div>
+		        <div th:if="${videos == null}">
+		            <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+		        </div>
+		    </div>
+		</div>
+        
+        <!-- 홈 스크립트 -->
+        <th:block th:fragment="homeVideoScript">
+            <script>
+                function styleSpecialChars(text) {
+                    return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
+                               .replace(/@(\S+)/g, '<strong>@$1</strong>');
+                }
+
+                $(document).ready(function() {
+                    $('.video-content p').each(function() {
+                        const originalText = $(this).text();
+                        const styledText = styleSpecialChars(originalText);
+                        $(this).html(styledText);
+                    });
+
+                    let options = {
+                        root: null,
+                        rootMargin: '0px',
+                        threshold: 0.5
+                    };
+
+                    let observer = new IntersectionObserver(function(entries, observer) {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                let video = entry.target.querySelector('video');
+                                if (video) {
+                                    video.play();
+                                }
+                            } else {
+                                let video = entry.target.querySelector('video');
+                                if (video) {
+                                    video.pause();
+                                }
+                            }
+                        });
+                    }, options);
+
+                    document.querySelectorAll('.video-item').forEach(item => {
+                        observer.observe(item);
+                    });
+                });
+            </script>
+        </th:block>
+    </body>
+</html>

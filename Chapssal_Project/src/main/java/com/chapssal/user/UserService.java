@@ -3,6 +3,7 @@ package com.chapssal.user;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public Optional<User> findById(Integer userId) {
+        return userRepository.findById(userId);
+    }
 
     public User create(String userId, String password, School school, LocalDateTime createDate, LocalDateTime lastUpdate, LocalDateTime lastLogin) {
         Optional<User> existingUser = userRepository.findByUserId(userId);
@@ -101,8 +106,13 @@ public class UserService {
 
     public String getUserNameByUserId(String userId) {
         return userRepository.findUserNameByUserId(userId)
-                .orElse("사용자"); // 사용자 이름이 없을 경우 "사용자"를 반환
+                .orElseGet(() -> {
+                    // currentUserNum을 사용자 정보에서 가져오는 로직
+                    Optional<User> user = userRepository.findByUserId(userId);
+                    return user.map(u -> "사용자" + u.getUserNum()).orElse("사용자");
+                });
     }
+
 
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
@@ -147,6 +157,22 @@ public class UserService {
 
     public User updateUser(User user) {
         return userRepository.save(user);
+    }
+
+    public List<User> getUserSuggestions(String query) {
+        return userRepository.findByUserNameContaining(query); // 수정된 부분
+    }
+
+    // 전체 검색 관련
+    public List<User> searchByUserName(String userName) {
+        return userRepository.findByUserNameContaining(userName);
+    }
+
+    public List<String> findUserNamesByQuery(String query) {
+        return userRepository.findByUserNameContaining(query)
+                .stream()
+                .map(User::getUserName)
+                .collect(Collectors.toList());
     }
 
 }

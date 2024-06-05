@@ -33,8 +33,7 @@ public class TopicController {
     }
 
     // 현재 년/월/주차를 계산해서 모델에 추가하는 메서드
-    // 테스트 클래스에서 사용하기 위해 접근 제한자를 private에서 protected로 변경
-    protected void addCurrentWeekToModel(Model model) {
+    private void addCurrentWeekToModel(Model model) {
         LocalDate now = LocalDate.now();
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
         int year = now.getYear();

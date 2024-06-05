@@ -7,11 +7,12 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;">
-        <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search">
+      <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;" action="/message/search" method="get">
+        <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search" name="query">
         <button class="btn btn-outline-success rounded-pill" type="submit">
           <i class="bi bi-search"></i>
         </button>
+      </form>
       </form>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item" sec:authorize="isAuthenticated()">

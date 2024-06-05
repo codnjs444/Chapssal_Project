@@ -28,15 +28,14 @@
             border-radius: 10px;
             overflow: hidden;
             z-index: 1050;
-            display: none; /* 패널을 처음에는 보이지 않도록 설정 */
+            display: none;
             transition: transform 0.3s ease-in-out;
         }
 
         .notification-panel.active {
-            display: block; /* 패널을 보이도록 설정 */
+            display: block;
             transform: translateY(0);
         }
-
 
         .notification-header {
             display: flex;
@@ -99,14 +98,15 @@
             flex-grow: 1;
             margin-right: 10px;
         }
+
         .notification-icon {
             position: relative;
         }
 
         #notificationCount {
             position: absolute;
-            top: 10px; /* 더 아래로 이동 */
-            right: 10px; /* 약간 왼쪽으로 이동 */
+            top: 10px;
+            right: 10px;
             transform: translate(50%, -50%);
             display: inline-block;
             padding: 0.3em 0.5em;
@@ -118,15 +118,15 @@
             white-space: nowrap;
             vertical-align: baseline;
             background-color: #dc3545;
-            border-radius: 0.75rem; /* 둥근 모서리를 더 강조 */
+            border-radius: 0.75rem;
         }
 
         .popover {
-            max-width: 250px; /* 팝오버 최대 너비 조정 */
-            background-color: #fff; /* 배경색을 흰색으로 변경 */
-            border: 1px solid #ddd; /* 테두리 색상을 연하게 변경 */
-            border-radius: 10px; /* 테두리를 둥글게 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+            max-width: 250px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .popover .popover-body {
@@ -152,63 +152,63 @@
             margin: 0;
             font-size: 14px;
         }
-        .modal-lg {
+
+		.profile-modal-lg {
             max-width: 600px;
         }
+
         .modal-content {
             border-radius: 20px;
             padding: 20px;
         }
+
         .modal-header {
             border-bottom: none;
         }
+
         .modal-body {
             padding: 20px;
         }
+
         .modal-footer {
             border-top: none;
             padding-top: 0;
         }
+
         .form-label {
             font-weight: bold;
         }
+
         .form-control, .form-select {
             border-radius: 10px;
         }
+
         .btn-outline-primary {
             border-radius: 10px;
             border-width: 2px;
         }
+
         .btn-primary {
             border-radius: 10px;
             background-color: #0095f6;
             border-color: #0095f6;
         }
+
         .btn-primary:hover {
             background-color: #007bb5;
             border-color: #007bb5;
         }
+
         .btn-secondary {
             border-radius: 10px;
             background-color: #e1e1e1;
             border-color: #e1e1e1;
         }
+
         .btn-secondary:hover {
             background-color: #c1c1c1;
             border-color: #c1c1c1;
         }
-
-       #messageAlert {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1050;
-        padding: 15px;
-        border-radius: 5px;
-        background-color: #28a745;
-        color: white;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
     </style>
 </head>
 
@@ -223,7 +223,7 @@
 <!-- 프로필 수정 모달 -->
 <div th:fragment="editProfileModalFragment">
     <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg profile-modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editProfileModalLabel">프로필 편집</h5>
@@ -304,8 +304,6 @@
                                                th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
                                         </div>
                                     </div>
-                                    <!--                                        <p th:text="'Follower UserNum: ' + ${follower.userNum}"></p>  Follower UserNum 출력
-                                                                            <p style="color: blue;" th:text="'Current UserNum: ' + ${currentUserNum}"></p>  현재 로그인한 사용자의 UserNum 출력 -->
                                     <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
@@ -328,8 +326,6 @@
                                                th:href="@{'/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
                                         </div>
                                     </div>
-                                    <!--                                        <p th:text="'Following UserNum: ' + ${following.userNum}"></p>  Following UserNum 출력
-                                                                            <p style="color: blue;" th:text="'Current UserNum: ' + ${currentUserNum}"></p>  현재 로그인한 사용자의 UserNum 출력 -->
                                     <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
@@ -347,17 +343,14 @@
     </div>
 </div>
 
-
 <div th:replace="~{navbar :: uploadModalFragment}"></div>
 <!-- 알림 패널과 스크립트 포함 -->
 <div th:replace="navbar :: notificationPanelFragment"></div>
 <div th:replace="navbar :: notificationPanelScript"></div>
-<div th:replace="~{home :: homeModalFragment}"></div>
 
 <!-- jQuery 먼저 로드 -->
 <!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- 팔로워 및 팔로우 탭 활성화 설정 -->
 
 <!-- Bootstrap Bundle with Popper from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
@@ -365,46 +358,33 @@
 <div th:replace="~{navbar :: uploadModalScript}"></div>
 <div th:replace="~{home :: homeVideoScript}"></div>
 <div th:replace="~{explore :: exploreVideoScript}"></div>
-
+<div th:replace="~{bestvideos :: bestVideoScript}"></div>
 
 <!-- 공통 스크립트 정의 -->
 <div th:fragment="commonScripts">
     <script>
-		function openTab(tabName) {
-		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
-		    tabTrigger.show();
-		}
+        function openTab(tabName) {
+            let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+            tabTrigger.show();
+        }
 
-        // 투표 함수 추가
         function selectTopic(button) {
             var topicId = button.getAttribute("data-id");
             console.log("Topic ID: " + topicId);
 
-            // Ajax 요청 보내기
             $.post("/topic/select", { topicId: topicId }, function(response) {
-                alert(response); // 서버 응답 메시지 표시
+                alert(response);
 
-                // 버튼의 배경을 빨간색으로 변경하고 텍스트를 "투표 완료"로 변경
                 button.style.backgroundColor = "red";
                 button.textContent = "투표 완료";
-                button.disabled = true; // 버튼을 비활성화하여 중복 투표를 방지
+                button.disabled = true;
 
-                // 페이지 새로고침하여 투표 횟수를 업데이트
                 location.reload();
-            }).fail(function(xhr) {
-                if (xhr.status === 403) {
-                    alert("이번 주 투표 가능한 횟수 5회를 모두 사용하셨습니다.");
-                } else if (xhr.status === 404) {
-                    alert("사용자를 찾을 수 없습니다.");
-                } else if (xhr.status === 400) {
-                    alert("유효하지 않은 토픽입니다.");
-                } else {
-                    alert("토픽 선택에 실패했습니다.");
-                }
+            }).fail(function() {
+                alert("토픽 선택에 실패했습니다.");
             });
         }
 
-        // 페이지 로드 시 이미 투표한 버튼 업데이트
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('button[data-voted="true"]').forEach(button => {
                 button.style.backgroundColor = "pink";
@@ -412,14 +392,12 @@
                 button.disabled = true;
             });
 
-            // 버튼의 data-onclick 속성을 읽어서 이벤트 핸들러 설정
             document.querySelectorAll('button[data-onclick="selectTopic"]').forEach(button => {
                 button.addEventListener('click', function() {
                     selectTopic(this);
                 });
             });
 
-            // 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가 (기존 기능)
             $('#topicInput').on('input focus', function() {
                 let query = $(this).val();
                 $.ajax({
@@ -435,21 +413,18 @@
                 });
             });
 
-            // 자동완성 항목 클릭 시 입력창에 해당 값 설정 (기존 기능)
             $('#suggestions').on('click', 'a', function(e) {
                 e.preventDefault();
                 $('#topicInput').val($(this).text());
                 $('#suggestions').empty();
             });
 
-            // 입력창에서 벗어나면 추천 기능 사라지게 하기 (기존 기능)
             $(document).on('click', function(e) {
                 if (!$(e.target).closest('#topicInput, #suggestions').length) {
                     $('#suggestions').empty();
                 }
             });
 
-            // 검색 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가 (새로운 기능)
             $('#searchInput').on('input focus', function() {
                 let query = $(this).val();
                 $.ajax({
@@ -465,21 +440,18 @@
                 });
             });
 
-            // 자동완성 항목 클릭 시 검색창에 해당 값 설정 (새로운 기능)
             $('#searchSuggestions').on('click', 'a', function(e) {
                 e.preventDefault();
                 $('#searchInput').val($(this).text());
                 $('#searchSuggestions').empty();
             });
 
-            // 검색창에서 벗어나면 추천 기능 사라지게 하기 (새로운 기능)
             $(document).on('click', function(e) {
                 if (!$(e.target).closest('#searchInput, #searchSuggestions').length) {
                     $('#searchSuggestions').empty();
                 }
             });
 
-            // 검색 버튼 클릭 시 검색 기능 추가
             $('#searchButton').on('click', function() {
                 let query = $('#searchInput').val();
                 $.ajax({
@@ -506,7 +478,6 @@
                             `);
                         });
 
-                        // 새로 추가된 버튼들에 이벤트 핸들러 설정
                         document.querySelectorAll('button[data-onclick="selectTopic"]').forEach(button => {
                             button.addEventListener('click', function() {
                                 selectTopic(this);
@@ -521,7 +492,6 @@
             alert("버튼이 눌려졌다");
         }
 
-		// follow 요청 script
         function followUser(currentUserNum, userNum, isFollowing) {
             console.log("followUser 함수 호출됨");
 
@@ -558,13 +528,10 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-                return new bootstrap.Popover(popoverTriggerEl, {
-                    html: true,
-                    sanitize: false
-                });
+                return new bootstrap.Popover(popoverTriggerEl);
             });
         });
 
@@ -589,9 +556,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 업데이트된 이미지 URL을 가져와서 두 이미지 요소 모두 업데이트
-                    var outputMain = document.querySelector('.profile-pic'); // 프로필 페이지의 이미지
-                    var outputModal = document.getElementById('modalProfilePicture'); // 모달 내부의 이미지
+                    var outputMain = document.querySelector('.profile-pic');
+                    var outputModal = document.getElementById('modalProfilePicture');
                     outputMain.src = data.profilePictureUrl;
                     outputModal.src = data.profilePictureUrl;
                     alert('프로필 사진이 변경되었습니다.');
@@ -604,6 +570,7 @@
                 alert('프로필 사진 변경 중 오류가 발생했습니다.');
             });
         }
+
         function resetToDefault() {
             fetch('/user/resetProfilePicture', {
                 method: 'POST'
@@ -611,10 +578,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 기본 이미지 URL을 가져와서 두 이미지 요소 모두 업데이트
                     var defaultImageUrl = '/images/default_profile.png';
-                    var outputMain = document.querySelector('.profile-pic'); // 프로필 페이지의 이미지
-                    var outputModal = document.getElementById('modalProfilePicture'); // 모달 내부의 이미지
+                    var outputMain = document.querySelector('.profile-pic');
+                    var outputModal = document.getElementById('modalProfilePicture');
                     outputMain.src = defaultImageUrl;
                     outputModal.src = defaultImageUrl;
                     alert('프로필 사진이 기본 이미지로 변경되었습니다.');
@@ -628,69 +594,32 @@
             });
         }
 
-		function openVideoModal() {
-		    document.getElementById('videoModal').style.display = 'block';
-		    document.body.classList.add('modal-open');
-		}
+        function openVideoModal() {
+            document.getElementById('videoModal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
 
-		function closeVideoModal() {
-		    document.getElementById('videoModal').style.display = 'none';
-		    document.body.classList.remove('modal-open');
-		}
+        function closeVideoModal() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
 
-
-		// profile.관련 script
-		function openTab(tabName) {
-		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
-		    tabTrigger.show();
-		}
-		function changeProfilePicture() {
-		    document.getElementById('profilePic').focus();
-		}
-
-    </script>
-
-    <!-- 학교 검색 자동완성 스크립트 -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const currentDate = document.querySelector('h4').textContent.trim();
-            const today = new Date();
-            const currentMonth = new Date(currentDate + '-01');
-
-            // 오른쪽 화살표 비활성화 조건 검사
-            if (currentMonth.getFullYear() === today.getFullYear() && currentMonth.getMonth() === today.getMonth() - 1) {
-                document.getElementById('right-arrow').classList.add('disabled');
-            }
-
-            document.getElementById('left-arrow').addEventListener('click', function() {
-                if (!this.classList.contains('disabled')) {
-                    changeMonth(-1);
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+                if (link.getAttribute("href") === currentPath) {
+                    link.classList.add("active");
+                } else {
+                    link.classList.remove("active");
                 }
-            });
-            document.getElementById('right-arrow').addEventListener('click', function() {
-                if (!this.classList.contains('disabled')) {
-                    changeMonth(1);
-                }
-            });
-
-            function changeMonth(direction) {
-                let date = new Date(currentDate + '-01');  // 'yyyy-MM' 형식을 'yyyy-MM-01'로 변환하여 날짜 객체 생성
-                date.setMonth(date.getMonth() + direction);
-                const newDateStr = date.toISOString().split('T')[0].slice(0, 7);  // 'yyyy-MM-dd' 형식에서 'yyyy-MM'만 추출
-                const url = `/ranking?date=${newDateStr}`;
-                window.location.href = url;
-            }
-
-            // 학교 검색
-            document.getElementById('schoolSearchButton').addEventListener('click', function() {
-                const searchInput = document.getElementById('schoolSearchInput').value;
-                const url = `/ranking?search=${encodeURIComponent(searchInput)}&date=${currentDate}`;
-                window.location.href = url;
             });
         });
+
+        function changeProfilePicture() {
+            document.getElementById('profilePic').focus();
+        }
     </script>
     <div th:replace="~{message/fragments/msgAlert :: msgAlert}"></div>
-
 </div>
 </body>
 </html>

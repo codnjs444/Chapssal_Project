@@ -11,4 +11,3 @@ public interface SchoolRepository extends JpaRepository<School, Integer> {
     List<School> findTop3BySchoolNameStartingWithOrderBySchoolNameAsc(String name);
     School findBySchoolName(String schoolName);
 }
-
