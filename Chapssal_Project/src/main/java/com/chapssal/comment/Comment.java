@@ -60,7 +60,6 @@ public class Comment {
         this.likeCount = likeCount;
     }
     
-    
     ///////////////////////
     @OneToMany(mappedBy = "comment")
     private List<RComment> replies; // 답글 목록
@@ -80,4 +79,5 @@ public class Comment {
     public void setHasReplies(boolean hasReplies) {
         this.hasReplies = hasReplies;
     }
+    
 }

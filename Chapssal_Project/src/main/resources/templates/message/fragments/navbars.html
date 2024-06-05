@@ -7,11 +7,12 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;">
-        <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search">
+      <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;" action="/message/search" method="get">
+        <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search" name="query">
         <button class="btn btn-outline-success rounded-pill" type="submit">
           <i class="bi bi-search"></i>
         </button>
+      </form>
       </form>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item" sec:authorize="isAuthenticated()">
@@ -243,6 +244,8 @@
 <th:block th:fragment="notificationPanelScript">
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded and parsed'); // 디버깅 로그 추가
+
         function toggleNotifications() {
             var panel = document.getElementById('notificationPanel');
             if (panel.classList.contains('active')) {
@@ -252,64 +255,79 @@
             }
         }
 
-        // 알림 아이콘 클릭 시 알림 패널 표시/숨김
-        document.querySelector('.notification-icon').addEventListener('click', function (event) {
-            event.stopPropagation();
-            toggleNotifications();
-        });
+        var notificationIcon = document.querySelector('.notification-icon');
+        if (notificationIcon) {
+            notificationIcon.addEventListener('click', function (event) {
+                event.stopPropagation();
+                toggleNotifications();
+            });
+        }
 
-        // 다른 영역 클릭 시 알림 패널 숨기기
         document.addEventListener('click', function(event) {
             var panel = document.getElementById('notificationPanel');
-            if (!panel.contains(event.target) && panel.classList.contains('active')) {
+            if (panel && !panel.contains(event.target) && panel.classList.contains('active')) {
                 panel.classList.remove('active');
             }
         });
 
-        // 알림 패널 안에서 클릭할 경우 이벤트 전파 중지
-        document.getElementById('notificationPanel').addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
+        var notificationPanel = document.getElementById('notificationPanel');
+        if (notificationPanel) {
+            notificationPanel.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        }
 
         fetch('/notifications/unread')
             .then(response => response.json())
             .then(data => {
+                console.log('Unread notifications:', data); // 디버깅 로그 추가
                 var count = document.getElementById('notificationCount');
-                count.innerText = data.length;
-                count.style.display = data.length > 0 ? 'block' : 'none';
+                if (count) {
+                    count.innerText = data.length;
+                    count.style.display = data.length > 0 ? 'block' : 'none';
+                }
 
                 var notificationList = document.getElementById('notificationList');
-                notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
-                data.forEach(notification => {
-                    addNotification(notification);
-                });
+                if (notificationList) {
+                    notificationList.innerHTML = '';  // 기존 알림 리스트를 초기화
+                    data.forEach(notification => {
+                        addNotification(notification);
+                    });
+                }
             })
             .catch(error => console.error('Error fetching unread notifications:', error));
 
         function addNotification(notification) {
             var notificationList = document.getElementById('notificationList');
-            var listItem = document.createElement('li');
-            listItem.id = 'notification-' + notification.notiNum;
+            if (notificationList) {
+                var listItem = document.createElement('li');
+                listItem.id = 'notification-' + notification.notiNum;
 
-            var messageSpan = document.createElement('span');
-            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+                var messageSpan = document.createElement('span');
+                messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link">${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
 
-            var confirmButton = document.createElement('button');
-            confirmButton.textContent = '확인';
-            confirmButton.onclick = function() {
-                confirmNotification(notification.notiNum);
-                listItem.remove();
-                updateNotificationCount();
-            };
+                var confirmButton = document.createElement('button');
+                confirmButton.textContent = '확인';
+                confirmButton.onclick = function() {
+                    confirmNotification(notification.notiNum);
+                    listItem.remove();
+                    updateNotificationCount();
+                };
 
-            listItem.appendChild(messageSpan);
-            listItem.appendChild(confirmButton);
-            notificationList.appendChild(listItem);
+                listItem.appendChild(messageSpan);
+                listItem.appendChild(confirmButton);
+                notificationList.appendChild(listItem);
 
-            // 새로 추가된 링크에도 클릭 이벤트 핸들러 추가
-            listItem.querySelector('.notification-user-link').addEventListener('click', function(event) {
-                document.getElementById('notificationPanel').classList.remove('active');
-            });
+                var userLink = listItem.querySelector('.notification-user-link');
+                if (userLink) {
+                    userLink.addEventListener('click', function(event) {
+                        var panel = document.getElementById('notificationPanel');
+                        if (panel) {
+                            panel.classList.remove('active');
+                        }
+                    });
+                }
+            }
         }
 
         function confirmNotification(notificationId) {
@@ -324,18 +342,19 @@
 
         function updateNotificationCount() {
             var countElement = document.getElementById('notificationCount');
-            var count = parseInt(countElement.innerText);
+            if (countElement) {
+                var count = parseInt(countElement.innerText);
 
-            if (count > 0) {
-                count--;
-                countElement.innerText = count;
+                if (count > 0) {
+                    count--;
+                    countElement.innerText = count;
 
-                if (count === 0) {
-                    countElement.style.display = 'none';
+                    if (count === 0) {
+                        countElement.style.display = 'none';
+                    }
                 }
             }
         }
     });
-
   </script>
 </th:block>

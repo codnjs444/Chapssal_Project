@@ -283,38 +283,54 @@
 		});
 		
 		document.addEventListener("DOMContentLoaded", function() {
-		    const weekOffset = parseInt("[[${weekOffset}]]", 10);
-		    const leftArrow = document.getElementById('left-arrow');
-		    const rightArrow = document.getElementById('right-arrow');
+	        const leftArrow = document.getElementById('left-arrow');
+	        const rightArrow = document.getElementById('right-arrow');
+	        const weekOffset = parseInt("[[${weekOffset}]]", 10);
+			const currentWeekElement = document.querySelector('.ranking-header h4');
+	        
+			if (currentWeekElement) {
+			    const currentWeekText = currentWeekElement.textContent;
 
-			if (weekOffset === 0) {
-			    rightArrow.disabled = true;
-			} else {
-			    rightArrow.disabled = false;
+			    // Check if currentWeek is the first week of May 2024
+			    const firstWeekOfMay2024 = "2024년 05월 1주차";
+			    if (currentWeekText === firstWeekOfMay2024) {
+			        if (leftArrow) {
+			            leftArrow.disabled = true;
+			        }
+			    } else {
+			        if (leftArrow) {
+			            leftArrow.disabled = false;
+			        }
+			    }
+
+			    if (rightArrow) {
+			        if (weekOffset === 0) {
+			            rightArrow.disabled = true;
+			        } else {
+			            rightArrow.disabled = false;
+			        }
+			    }
 			}
 
-			const currentWeekText = document.querySelector('.ranking-header h4').textContent;
-			if (currentWeekText === '2024년 05월 1주차') {
-			    leftArrow.disabled = true;
-			} else {
-			    leftArrow.disabled = false;
+			if (leftArrow) {
+			    leftArrow.addEventListener('click', function() {
+			        changeWeek(weekOffset + 1);
+			    });
 			}
-			
-		    leftArrow.addEventListener('click', function() {
-		        changeWeek(weekOffset + 1);
-		    });
 
-		    rightArrow.addEventListener('click', function() {
-		        if (weekOffset > 0) {
-		            changeWeek(weekOffset - 1);
-		        }
-		    });
+			if (rightArrow) {
+			    rightArrow.addEventListener('click', function() {
+			        if (weekOffset > 0) {
+			            changeWeek(weekOffset - 1);
+			        }
+			    });
+			}
 
-		    function changeWeek(offset) {
-		        const url = `/bestvideos?weekOffset=${offset}`;
-		        window.location.href = url;
-		    }
-		});
+	        function changeWeek(offset) {
+	            const url = `/bestvideos?weekOffset=${offset}`;
+	            window.location.href = url;
+	        }
+	    });
     </script>
 </th:block>
 </body>

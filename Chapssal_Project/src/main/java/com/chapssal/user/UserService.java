@@ -3,6 +3,7 @@ package com.chapssal.user;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class UserService {
     public Optional<User> findById(Integer userId) {
         return userRepository.findById(userId);
     }
+
     public User create(String userId, String password, School school, LocalDateTime createDate, LocalDateTime lastUpdate, LocalDateTime lastLogin) {
         Optional<User> existingUser = userRepository.findByUserId(userId);
         if (existingUser.isPresent()) {
@@ -111,6 +113,7 @@ public class UserService {
                 });
     }
 
+
     public User findByUserNum(Integer userNum) {
         return userRepository.findById(userNum).orElse(null);
     }
@@ -151,6 +154,7 @@ public class UserService {
     }
 
 
+
     public User updateUser(User user) {
         return userRepository.save(user);
     }
@@ -158,4 +162,17 @@ public class UserService {
     public List<User> getUserSuggestions(String query) {
         return userRepository.findByUserNameContaining(query); // 수정된 부분
     }
+
+    // 전체 검색 관련
+    public List<User> searchByUserName(String userName) {
+        return userRepository.findByUserNameContaining(userName);
+    }
+
+    public List<String> findUserNamesByQuery(String query) {
+        return userRepository.findByUserNameContaining(query)
+                .stream()
+                .map(User::getUserName)
+                .collect(Collectors.toList());
+    }
+
 }

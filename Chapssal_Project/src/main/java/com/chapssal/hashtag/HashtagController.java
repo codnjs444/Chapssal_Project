@@ -13,7 +13,6 @@ public class HashtagController {
 	
 	private final HashtagService hashtagService;
 
-    @Autowired
     public HashtagController(HashtagService hashtagService) {
         this.hashtagService = hashtagService;
     }

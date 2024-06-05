@@ -60,10 +60,18 @@ dependencies {
 	// Spring WebSocket messaging 의존성
 	implementation 'org.springframework:spring-messaging'
 	implementation 'org.springframework:spring-websocket'
+<<<<<<< HEAD
 
 	// Spring SSE 통신 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'io.projectreactor:reactor-core'
+=======
+	
+	// Spring SSE 통신 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.projectreactor:reactor-core'
+	
+>>>>>>> refs/heads/develope
 }
 
 tasks.named('test') {

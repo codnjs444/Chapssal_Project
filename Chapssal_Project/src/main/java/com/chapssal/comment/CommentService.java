@@ -14,7 +14,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final RCommentRepository rCommentRepository;
-
+    
     @Transactional
     public Comment create(Comment comment) {
         return commentRepository.save(comment);

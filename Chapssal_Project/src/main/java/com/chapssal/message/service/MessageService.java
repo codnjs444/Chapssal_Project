@@ -6,13 +6,21 @@ import com.chapssal.message.model.Participant;
 import com.chapssal.message.repository.ChatRoomRepository;
 import com.chapssal.message.repository.MessageRepository;
 import com.chapssal.message.repository.ParticipantRepository;
+import com.chapssal.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MessageService {
@@ -25,10 +33,18 @@ public class MessageService {
     @Autowired
     private ParticipantRepository participantRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private UserRepository userRepository;
+
+
     public List<Message> getAllMessages() {
         return messageRepository.findAll();
     }
 
+    @Transactional
     public Message addMessage(Message message) {
         ChatRoom chatRoom = chatRoomRepository.findById(message.getRoomNum())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid room number"));
@@ -44,6 +60,10 @@ public class MessageService {
                 participant.setIsLeave(false);
                 participant.setJoinDate(LocalDateTime.now());
                 participantRepository.save(participant);
+
+                // WebSocket 메시지 발송
+                ChatRoomDTO chatRoomDTO = new ChatRoomDTO(chatRoom);
+                messagingTemplate.convertAndSend("/topic/chatRoomUpdate/" + participant.getUser().getUserNum(), chatRoomDTO);
             }
         }
 
@@ -75,6 +95,14 @@ public class MessageService {
 
     public void markMessagesAsRead(int roomNum, int currentUserNum) {
         messageRepository.updateIsReadByChatRoom_RoomNumAndReceiver_UserNum(roomNum, currentUserNum);
+    }
+
+    public int countUnreadMessagesForUser(String username) {
+        Integer userNum = userRepository.findUserNumByUserId(username);
+        if (userNum == null) {
+            return 0;
+        }
+        return messageRepository.countUnreadMessages2(userNum);
     }
 
 }

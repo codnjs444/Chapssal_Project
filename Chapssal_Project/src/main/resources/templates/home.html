@@ -377,6 +377,18 @@
 					    const styledText = styleSpecialChars(originalText);
 					    $(this).html(styledText);
 					});
+
+					/*// 저장된 탭 정보를 로드하고 해당 탭을 활성화
+					let savedTabId = localStorage.getItem('selectedTab');
+					if (savedTabId) {
+					    $('#' + savedTabId).tab('show');
+					}
+
+					// 탭 클릭 시 로컬 스토리지에 탭 ID 저장
+					$('#nav-tab button').on('click', function() {
+					    let selectedTabId = $(this).attr('id');
+					    localStorage.setItem('selectedTab', selectedTabId);
+					});*/
 					
 				    let options = {
 				        root: null,
@@ -404,6 +416,7 @@
 				        observer.observe(item);
 				    });
 				});
+				
 	        </script>
 	    </th:block>
 	</body>

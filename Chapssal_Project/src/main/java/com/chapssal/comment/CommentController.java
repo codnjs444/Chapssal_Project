@@ -4,7 +4,6 @@ import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,6 @@ public class CommentController {
     private final VideoService videoService;
     private final UserService userService;
 
-    @Autowired
     public CommentController(CommentService commentService, VideoService videoService, UserService userService, CommentLikeService commentLikeService) {
         this.commentService = commentService;
         this.videoService = videoService;

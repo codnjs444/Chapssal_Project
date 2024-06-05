@@ -17,7 +17,6 @@ public class SelectedTopicService {
 
     private final SelectedTopicRepository selectedTopicRepository;
 
-    @Autowired
     public SelectedTopicService(SelectedTopicRepository selectedTopicRepository) {
         this.selectedTopicRepository = selectedTopicRepository;
     }

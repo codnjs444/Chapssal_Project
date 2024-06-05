@@ -16,7 +16,6 @@ public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final VideoHashtagRepository videoHashtagRepository;
 
-    @Autowired
     public HashtagService(HashtagRepository hashtagRepository, VideoHashtagRepository videoHashtagRepository) {
         this.hashtagRepository = hashtagRepository;
         this.videoHashtagRepository = videoHashtagRepository;
@@ -62,4 +61,9 @@ public class HashtagService {
             return hashtagRepository.findByTagContaining(query); // 수정된 부분
         }
     }
+
+    public List<Video> searchVideosByHashtag(String hashtag) {
+        return videoHashtagRepository.findVideosByHashtagTag(hashtag);
+    }
+
 }

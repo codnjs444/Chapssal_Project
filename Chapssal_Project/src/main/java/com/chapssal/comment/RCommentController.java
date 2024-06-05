@@ -21,7 +21,6 @@ public class RCommentController {
     private final UserService userService;
     private final RCommentRepository rCommentRepository;
     
-    @Autowired
     public RCommentController(RCommentService rCommentService, CommentService commentService, UserService userService, RCommentRepository rCommentRepository) {
         this.rCommentService = rCommentService;
         this.commentService = commentService;

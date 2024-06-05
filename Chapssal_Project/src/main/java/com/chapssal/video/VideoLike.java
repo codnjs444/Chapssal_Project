@@ -1,3 +1,4 @@
+
 package com.chapssal.video;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Setter
 @Table(name = "videolike")
 public class VideoLike {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer vlikeNum;
@@ -29,5 +30,5 @@ public class VideoLike {
 
     @Column(name = "likedate")
     private LocalDateTime likeDate;
-    
+
 }
