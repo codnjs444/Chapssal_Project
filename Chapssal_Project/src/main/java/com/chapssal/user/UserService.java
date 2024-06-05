@@ -158,4 +158,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public List<User> getUserSuggestions(String query) {
+        return userRepository.findByUserNameContaining(query); // 수정된 부분
+    }
 }

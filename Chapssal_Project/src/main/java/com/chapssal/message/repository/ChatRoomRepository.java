@@ -1,8 +1,6 @@
 package com.chapssal.message.repository;
 
 import com.chapssal.message.model.ChatRoom;
-import com.chapssal.message.model.Participant;
-import com.chapssal.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
