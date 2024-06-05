@@ -3,6 +3,7 @@ package com.chapssal.notification;
 import java.time.LocalDateTime;
 
 import com.chapssal.user.User;
+import com.chapssal.video.Video;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,4 +48,8 @@ public class Notification {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+   
+    @ManyToOne
+    @JoinColumn(name = "video", referencedColumnName = "videoNum")
+    private Video video;
 }

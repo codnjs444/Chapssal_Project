@@ -24,4 +24,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT p.user FROM Participant p WHERE p.room.roomNum = :roomNum AND p.user.userNum != :currentUserNum")
     List<User> findOtherParticipants(@Param("roomNum") Integer roomNum, @Param("currentUserNum") Integer currentUserNum);
+
+    //메신저에서 유저 찾기
+    @Query("SELECT u FROM User u WHERE LOWER(u.userId) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<User> searchByUserId(@Param("query") String query);
+
+    @Query("SELECT u FROM User u WHERE u.userName LIKE CONCAT('%', :query, '%')")
+    List<User> searchByUserName(@Param("query") String query);
 }

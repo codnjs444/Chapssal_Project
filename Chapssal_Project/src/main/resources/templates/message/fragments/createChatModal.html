@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatModal</title>
+</head>
+<body>
+
+
+<div th:fragment="modalfragments">
+    <!-- 모달 HTML 구조 -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chatModalLabel">유저검색</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 검색 입력창 -->
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="searchInput" placeholder="유저 검색" oninput="searchUsers()">
+                    </div>
+                    <!-- 검색 결과 -->
+                    <div id="searchResults" class="list-group">
+                        <!-- 검색 결과는 JavaScript로 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary "  style = "margin-right: 43%;"  data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

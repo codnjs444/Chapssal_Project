@@ -19,6 +19,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public Optional<User> findById(Integer userId) {
+        return userRepository.findById(userId);
+    }
     public User create(String userId, String password, School school, LocalDateTime createDate, LocalDateTime lastUpdate, LocalDateTime lastLogin) {
         Optional<User> existingUser = userRepository.findByUserId(userId);
         if (existingUser.isPresent()) {
@@ -101,7 +104,11 @@ public class UserService {
 
     public String getUserNameByUserId(String userId) {
         return userRepository.findUserNameByUserId(userId)
-                .orElse("사용자"); // 사용자 이름이 없을 경우 "사용자"를 반환
+                .orElseGet(() -> {
+                    // currentUserNum을 사용자 정보에서 가져오는 로직
+                    Optional<User> user = userRepository.findByUserId(userId);
+                    return user.map(u -> "사용자" + u.getUserNum()).orElse("사용자");
+                });
     }
 
     public User findByUserNum(Integer userNum) {
@@ -142,7 +149,6 @@ public class UserService {
     public Optional<User> findByUserId2(String userId) {
         return userRepository.findByUserId2(userId);
     }
-
 
 
     public User updateUser(User user) {

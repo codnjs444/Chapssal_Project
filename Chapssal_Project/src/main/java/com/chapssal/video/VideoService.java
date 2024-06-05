@@ -17,6 +17,7 @@ import com.chapssal.hashtag.HashtagService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -192,5 +193,12 @@ public class VideoService {
                     return !(startDate.isAfter(uploadEndOfWeek) || endDate.isBefore(uploadStartOfWeek));
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void incrementViewCount(int videoNum) {
+        Video video = videoRepository.findById(videoNum).orElseThrow(() -> new IllegalArgumentException("Invalid video ID"));
+        video.setViewCount(video.getViewCount() + 1);
+        videoRepository.save(video);
     }
 }

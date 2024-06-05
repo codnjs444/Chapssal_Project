@@ -12,8 +12,6 @@ import com.chapssal.notification.NotificationService;
 import com.chapssal.notification.NotificationType;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
-import com.chapssal.video.Video;
-import com.chapssal.video.VideoRepository;
 
 @Service
 public class FollowService {
@@ -21,8 +19,6 @@ public class FollowService {
     private FollowRepository followRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private VideoRepository videoRepository;
     @Autowired
     private NotificationService notificationService;
 
@@ -50,11 +46,6 @@ public class FollowService {
                         .collect(Collectors.toList());
     }
 
-    public List<Video> getFollowingUsersVideos(Integer userNum) {
-        List<User> followingUsers = getFollowingUsers(userNum);
-        return videoRepository.findByUserInOrderByVideoNumDesc(followingUsers);
-    }
-
     public boolean isFollowing(Integer follower, Integer following) {
         return followRepository.existsByFollowerAndFollowing(follower, following);
     }
@@ -72,6 +63,6 @@ public class FollowService {
         User followingUser = userRepository.findById(following).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
         
         String message = followerUser.getUserName() + "님이 팔로우했습니다.";
-        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message);
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message,null);
     }
 }

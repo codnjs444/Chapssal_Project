@@ -211,7 +211,7 @@
 <!-- 프로필 수정 모달 -->
 <div th:fragment="editProfileModalFragment">
     <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg profile-modal-lg">
+        <div class="modal-dialog profile-modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editProfileModalLabel">프로필 편집</h5>
@@ -339,8 +339,6 @@
 <!-- 알림 패널과 스크립트 포함 -->
 <div th:replace="navbar :: notificationPanelFragment"></div>
 <div th:replace="navbar :: notificationPanelScript"></div>
-<div th:replace="~{home :: homeModalFragment}"></div>
-<div th:replace="~{following :: followingModalFragment}"></div>
 
 <!-- jQuery 먼저 로드 -->
 <!-- 이 부분만 추가하여 JQuery 및 AJAX 문제를 해결 -->
@@ -355,7 +353,11 @@
 <div th:replace="~{bestvideos :: bestVideoScript}"></div>
 <!-- 공통 스크립트 정의 -->
 <div th:fragment="commonScripts">
-    <script>
+    <script>	
+		function openTab(tabName) {
+		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
+		    tabTrigger.show();
+		}
 		
         // 투표 함수 추가
         function selectTopic(button) {
@@ -496,60 +498,59 @@
         }
 
 		// follow 요청 script
-		function followUser(currentUserNum, userNum, isFollowing) {
-		    console.log("followUser 함수 호출됨");
+        function followUser(currentUserNum, userNum, isFollowing) {
+            console.log("followUser 함수 호출됨");
 
-		    if (isFollowing === 'true') {
-		        if (!confirm(`팔로우를 취소하시겠습니까?`)) {
-		            return;
-		        }
-		    }
+            if (isFollowing === 'true') {
+                if (!confirm(`팔로우를 취소하시겠습니까?`)) {
+                    return;
+                }
+            }
 
-		    let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
-		    let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+            let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+            let method = isFollowing === 'true' ? 'DELETE' : 'POST';
 
-		    fetch(url, {
-		        method: method,
-		        headers: {
-		            'Content-Type': 'application/json'
-		        },
-		        body: JSON.stringify({
-		            follower: currentUserNum,
-		            following: userNum
-		        })
-		    })
-		    .then(response => response.json())
-		    .then(data => {
-		        if (data.success) {
-		            location.reload();
-		        } else {
-		            alert('작업 실패: ' + data.message);
-		        }
-		    })
-		    .catch(error => {
-		        console.error('Error:', error);
-		        alert('작업 중 오류가 발생했습니다.');
-		    });
-		}
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    follower: currentUserNum,
+                    following: userNum
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('작업 실패: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('작업 중 오류가 발생했습니다.');
+            });
+        }
 
-		document.addEventListener('DOMContentLoaded', function() {
+
+		document.addEventListener('DOMContentLoaded', function () {
 		    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
 		    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-		        return new bootstrap.Popover(popoverTriggerEl, {
-		            html: true,
-		            sanitize: false
-		        });
+		        return new bootstrap.Popover(popoverTriggerEl);
 		    });
 		});
 
-		function previewImage(event) {
-		    var reader = new FileReader();
-		    reader.onload = function(){
-		        var output = document.querySelector('.rounded-circle');
-		        output.src = reader.result;
-		    };
-		    reader.readAsDataURL(event.target.files[0]);
-		}
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function(){
+                var output = document.querySelector('.rounded-circle');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
 
         function uploadAndPreviewImage(event) {
             var file = event.target.files[0];
@@ -602,18 +603,6 @@
             });
         }
 		
-		// 현재 페이지 URL에 맞는 사이드바 항목에 active 클래스 추가
-        document.addEventListener("DOMContentLoaded", function () {
-            const currentPath = window.location.pathname;
-            document.querySelectorAll(".sidebar .nav-link").forEach(link => {
-                if (link.getAttribute("href") === currentPath) {
-                    link.classList.add("active");
-                } else {
-                    link.classList.remove("active");
-                }
-            });
-        });
-
 		function openVideoModal() {
 		    document.getElementById('videoModal').style.display = 'block';
 		    document.body.classList.add('modal-open');
@@ -624,7 +613,18 @@
 		    document.body.classList.remove('modal-open');
 		}
 
-
+		// 현재 페이지 URL에 맞는 사이드바 항목에 active 클래스 추가
+		document.addEventListener("DOMContentLoaded", function () {
+		    const currentPath = window.location.pathname;
+		    document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+		        if (link.getAttribute("href") === currentPath) {
+		            link.classList.add("active");
+		        } else {
+		            link.classList.remove("active");
+		        }
+		    });
+		});
+		
 		// profile.관련 script
 		function openTab(tabName) {
 		    let tabTrigger = new bootstrap.Tab(document.querySelector(`#${tabName}-tab`));
@@ -633,6 +633,7 @@
 		function changeProfilePicture() {
 		    document.getElementById('profilePic').focus();
 		}
+		
     </script>
 </div>
 </body>

@@ -2,7 +2,9 @@ package com.chapssal.message.repository;
 
 import com.chapssal.message.model.ChatRoom;
 import com.chapssal.message.model.Message;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.data.domain.Pageable;
@@ -29,5 +31,21 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByChatRoom_RoomNumOrderBySendDateDesc(
             @Param("roomNum") int roomNum,
             Pageable pageable
+    );
+
+
+
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.chatRoom.roomNum = :roomNum AND m.receiver = :userNum AND m.isRead = 0")
+    long countByChatRoom_RoomNumAndReceiver_UserNumAndIsRead(
+            @Param("roomNum") int roomNum,
+            @Param("userNum") int userNum
+    );
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Message m SET m.isRead = 1 WHERE m.chatRoom.roomNum = :roomNum AND m.receiver = :userNum AND m.isRead = 0")
+    void updateIsReadByChatRoom_RoomNumAndReceiver_UserNum(
+            @Param("roomNum") int roomNum,
+            @Param("userNum") int userNum
     );
 }
