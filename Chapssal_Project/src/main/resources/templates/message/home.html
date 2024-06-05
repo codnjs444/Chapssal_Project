@@ -44,14 +44,16 @@
         <div class="col-lg-8 col-md-9 col-sm-9 chat-section">
             <div class="row chat-page">
                 <div class="col chat-box" id="chat-box-a" style="display: none;">
-                    <h3><span id="participant_a"></span></h3>
+                    <h3><span id="participant_a" class="participant" data-bs-toggle="popover" data-bs-content="Loading...">sss</span></h3>
                     <div class="msg_view scrollarea" id="chatMessages"></div>
                     <div class="msg_input">
-                        <form id="sendMessageForm">
+                        <form id="sendMessageForm" enctype="multipart/form-data">
                             <input type="hidden" id="currentRoomNum">
                             <input type="hidden" id="sender" th:value="${currentUserNum}"> <!-- Hidden input field for currentUserNum -->
+                            <input type="file" id="fileInput" class="form-control mt-2" style="display: none;">
+                            <i class="bi bi-paperclip mt-2" id="attachIcon" style="cursor: pointer; font-size: 1.5rem;"></i>
                             <input type="text" id="messageText" class="form-control" placeholder="메시지 보내기...">
-                            <button class="btn btn-primary" type="submit">send</button>
+                            <button class="btn btn-primary mt-2" type="submit">보내기</button>
                         </form>
                     </div>
                 </div>
