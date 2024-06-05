@@ -47,4 +47,8 @@ public class VideoService {
     public void delete(int videoNum) {
         videoRepository.deleteById(videoNum);
     }
+
+    public List<Video> searchByTitle(String title) {
+        return videoRepository.findByTitleContaining(title);
+    }
 }

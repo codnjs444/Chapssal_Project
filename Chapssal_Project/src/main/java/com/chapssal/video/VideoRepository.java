@@ -11,5 +11,6 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
     Optional<Video> findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(int userNum, int videoNum);
     Optional<Video> findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(int userNum, int videoNum);
-    
+
+    List<Video> findByTitleContaining(String title);
 }

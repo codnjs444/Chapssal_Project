@@ -149,4 +149,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public List<User> searchByUserName(String userName) {
+        return userRepository.findByUserNameContaining(userName);
+    }
 }

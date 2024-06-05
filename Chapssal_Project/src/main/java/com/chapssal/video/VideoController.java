@@ -56,6 +56,9 @@ public class VideoController {
     
     @Autowired
     private CommentService commentService;
+
+    @Autowired
+    private HashtagService hashtagService;
     
     @Autowired
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {

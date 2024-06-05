@@ -70,4 +70,5 @@ public class HomeController {
         model.addAttribute("chatRooms", chatRooms);
         return "message/home";
     }
+
 }

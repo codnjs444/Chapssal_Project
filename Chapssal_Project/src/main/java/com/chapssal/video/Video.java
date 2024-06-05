@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "video")
@@ -39,4 +40,12 @@ public class Video {
 
     @Column(name = "viewCount")
     private Integer viewCount;
+
+    @ManyToMany
+    @JoinTable(
+            name = "VideoHashtag",
+            joinColumns = @JoinColumn(name = "video"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag")
+    )
+    private List<Hashtag> hashtags;
 }
