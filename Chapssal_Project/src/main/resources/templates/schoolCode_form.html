@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학교 코드 입력</title>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
+</head>
+<body>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">학교 코드 입력</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/user/enterSchoolCode}" th:object="${schoolCodeForm}" method="post">
+                        <!-- 에러 메시지 처리 -->
+                        <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                            <p>검증되지 않은 학교 코드입니다.</p>
+                            <ul>
+                                <li th:each="err : ${#fields.errors('*')}" th:text="${err}">오류 메시지</li>
+                            </ul>
+                        </div>
+                        <div class="mb-3">
+                            <label for="schoolCode" class="form-label">학교 코드</label>
+                            <input type="text" th:field="*{schoolCode}" class="form-control" placeholder="학교 코드를 입력하세요" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">확인</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

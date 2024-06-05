@@ -1,0 +1,67 @@
+<nav th:fragment="sidebarsFragment" class="sidebar d-flex flex-column" xmlns:th="http://www.w3.org/1999/xhtml">
+
+
+  <!-- sidebars -->
+  <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+    <li class="nav-item">
+      <a th:href="@{/}" class="nav-link py-3 border-bottom rounded-0" aria-current="page" title="Home" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-house-door"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/explore}" class="nav-link py-3 border-bottom rounded-0" title="Search" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-compass"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/bestvideos}" class="nav-link py-3 border-bottom rounded-0" title="BestVideo" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-film"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/following}" class="nav-link py-3 border-bottom rounded-0" title="Follow" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-person-check"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/topic}" class="nav-link py-3 border-bottom rounded-0" title="Vote" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-bar-chart"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/ranking}" class="nav-link py-3 border-bottom rounded-0" title="Ranking" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-trophy"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/community}" class="nav-link py-3 border-bottom rounded-0" title="Community" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-chat-dots"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+    <li class="nav-item">
+      <a th:href="@{/user/profile}" class="nav-link py-3 border-bottom rounded-0" title="Profile" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-person"></i> <!-- 아이콘 변경 -->
+      </a>
+    </li>
+  </ul>
+
+  <!-- 사용자 프로필 드롭다운 -->
+  <div class="dropdown border-top mt-auto mb-3">
+    <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="24" height="24" class="rounded-circle" />
+    </a>
+    <ul class="dropdown-menu text-small shadow" style="position: fixed; inset: auto auto 0px 0px; margin: 0px; transform: translate(0px, -58px);">
+      <li><a class="dropdown-item" th:href="@{/settings}"><i class="bi bi-gear"></i> 설정</a></li>
+      <li><a class="dropdown-item" th:href="@{/activity}"><i class="bi bi-activity"></i> 내 활동</a></li>
+      <li><a class="dropdown-item" th:href="@{/saved}"><i class="bi bi-bookmark"></i> 저장됨</a></li>
+      <li><a class="dropdown-item" th:href="@{/mode}"><i class="bi bi-moon"></i> 모드 전환</a></li>
+      <li><a class="dropdown-item" th:href="@{/report}"><i class="bi bi-exclamation-circle"></i> 문제 신고</a></li>
+      <li><a class="dropdown-item" th:href="@{/user/logout}"><i class="bi bi-box-arrow-right"></i> 로그아웃</a></li>
+    </ul>
+  </div>
+  <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+
+  <script th:src="@{/assets/js/sidebars.js}"></script>
+
+</nav>
+
