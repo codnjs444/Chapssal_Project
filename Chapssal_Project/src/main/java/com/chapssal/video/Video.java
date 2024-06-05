@@ -1,5 +1,6 @@
 package com.chapssal.video;
 
+import com.chapssal.hashtag.Hashtag;
 import com.chapssal.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,11 +42,15 @@ public class Video {
     @Column(name = "viewCount")
     private Integer viewCount;
 
+    @Transient // This field is not persisted in the database
+    private Long likeCount;
+
     @ManyToMany
     @JoinTable(
             name = "VideoHashtag",
             joinColumns = @JoinColumn(name = "video"),
             inverseJoinColumns = @JoinColumn(name = "hashtag")
     )
-    private List<Hashtag> hashtags;
+    private List<Hashtag> hashtags; // List of hashtags
+
 }

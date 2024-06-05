@@ -61,4 +61,9 @@ public class HashtagService {
             return hashtagRepository.findByTagContaining(query); // 수정된 부분
         }
     }
+
+    public List<Video> searchVideosByHashtag(String hashtag) {
+        return videoHashtagRepository.findVideosByHashtagTag(hashtag);
+    }
+
 }

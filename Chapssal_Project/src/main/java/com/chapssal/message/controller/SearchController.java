@@ -1,10 +1,10 @@
 package com.chapssal.message.controller;
 
+import com.chapssal.hashtag.HashtagService;
 import com.chapssal.message.model.SearchQuery;
 import com.chapssal.message.repository.SearchQueryRepository;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
-import com.chapssal.video.HashtagService;
 import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
 import org.slf4j.Logger;
