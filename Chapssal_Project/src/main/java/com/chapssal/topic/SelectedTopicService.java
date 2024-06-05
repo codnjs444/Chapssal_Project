@@ -45,4 +45,8 @@ public class SelectedTopicService {
 
         return selectedTopicRepository.findTopicsByVoteCountForWeek(startDateTime, endDateTime);
     }
+
+    public List<Object[]> getTopicsByVoteCountForWeek(LocalDateTime startDate, LocalDateTime endDate) {
+        return selectedTopicRepository.findTopicsByVoteCountForWeek(startDate, endDate);
+    }
 }

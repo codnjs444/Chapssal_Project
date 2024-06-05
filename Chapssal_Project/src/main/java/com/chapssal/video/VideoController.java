@@ -30,7 +30,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -273,12 +277,29 @@ public class VideoController {
     }
 
     @GetMapping("/bestvideos")
-    public String viewBestVideosPage(Model model) {
-        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
-        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
-        
-        List<Object[]> topVideos = videoService.findTopVideos();
+    public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일
+        LocalDate endOfWeek = startOfWeek.plusDays(6); // 저번 주 일요일
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX);
+
+        List<Object[]> topVideos = videoService.findTopVideosForWeek(startDateTime, endDateTime);
+        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForWeek(startDateTime, endDateTime);
+
+        int weekOfMonth = (startOfWeek.getDayOfMonth() - 1) / 7 + 1;
+        String currentWeek = String.format("%d년 %02d월 %d주차",
+                startOfWeek.getYear(),
+                startOfWeek.getMonthValue(),
+                weekOfMonth);
+
         model.addAttribute("topVideos", topVideos);
-        return "bestvideos"; // bestvideos.html 템플릿을 렌더링
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        model.addAttribute("weekOffset", weekOffset);
+        model.addAttribute("currentWeek", currentWeek);
+
+        return "bestvideos";
     }
 }

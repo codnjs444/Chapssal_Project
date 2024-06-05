@@ -1,6 +1,10 @@
 package com.chapssal.video;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +29,7 @@ public class VideoService {
     private final VideoLikeService videoLikeService;
     private final CommentService commentService;
     private final UserService userService;
+    private final VideoLikeRepository videoLikeRepository;
 
     public void create(Video video) {
         video.setUploadDate(LocalDateTime.now());
@@ -163,6 +168,28 @@ public class VideoService {
 
                     int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
                     return new VideoWithLikesAndComments(video, likeCount, commentCount);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<Object[]> findTopVideosForWeek(LocalDateTime startDate, LocalDateTime endDate) {
+        return videoRepository.findTopVideosForWeek(startDate, endDate);
+    }
+
+    public List<Object[]> findTopVideosByLikesInUploadWeek(LocalDateTime startDate, LocalDateTime endDate) {
+        List<Object[]> likesInWeek = videoLikeRepository.findLikeCountForVideosInWeek(startDate, endDate);
+        return likesInWeek.stream()
+                .filter(videoLike -> {
+                    Video video = videoRepository.findById((Integer) videoLike[0]).orElse(null);
+                    if (video == null) {
+                        return false;
+                    }
+                    LocalDate videoUploadDate = video.getUploadDate().toLocalDate();
+                    LocalDate startOfUploadWeek = videoUploadDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                    LocalDate endOfUploadWeek = startOfUploadWeek.plusDays(6);
+                    LocalDateTime uploadStartOfWeek = startOfUploadWeek.atStartOfDay();
+                    LocalDateTime uploadEndOfWeek = endOfUploadWeek.atTime(LocalTime.MAX);
+                    return !(startDate.isAfter(uploadEndOfWeek) || endDate.isBefore(uploadStartOfWeek));
                 })
                 .collect(Collectors.toList());
     }

@@ -1,5 +1,6 @@
 package com.chapssal.video;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +41,9 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "GROUP BY v.videoNum " +
             "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
     List<Object[]> findAllVideosOrderedByLikes();
+
+    @Query("SELECT v, COUNT(vl) as likeCount FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video " +
+           "WHERE v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
+           "GROUP BY v.videoNum ORDER BY likeCount DESC")
+    List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
