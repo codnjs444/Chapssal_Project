@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -46,5 +47,12 @@ public class VideoService {
     
     public void delete(int videoNum) {
         videoRepository.deleteById(videoNum);
+    }
+    
+    @Transactional
+    public void incrementViewCount(int videoNum) {
+        Video video = videoRepository.findById(videoNum).orElseThrow(() -> new IllegalArgumentException("Invalid video ID"));
+        video.setViewCount(video.getViewCount() + 1);
+        videoRepository.save(video);
     }
 }

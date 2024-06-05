@@ -411,59 +411,86 @@
 	    /*<![CDATA[*/
 		
 		document.addEventListener('DOMContentLoaded', function() {
-		    const videoNum = '[[${videoNum}]]';
-		    const currentUserNum = '[[${currentUserNum}]]';
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+			const currentUserNum = '[[${currentUserNum}]]';
 		    console.log('Video Number:', videoNum);
-		    console.log('Current User Number:', currentUserNum);
+			console.log('Current User Number:', currentUserNum);
 		    document.getElementById('videoNumDisplay').textContent = videoNum;
-		    document.getElementById('videoNum').value = videoNum;
-		    document.getElementById('currentUserNum').value = currentUserNum;
+			document.getElementById('videoNum').value = videoNum;
+			document.getElementById('currentUserNum').value = currentUserNum;
 		});
-
+		
 		function followUser(currentUserNum, userNum, isFollowing) {
-		    console.log("followUser 함수 호출됨");
+				    console.log("followUser 함수 호출됨");
 
-		    let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
-		    let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+				    let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+				    let method = isFollowing === 'true' ? 'DELETE' : 'POST';
 
-		    fetch(url, {
-		        method: method,
-		        headers: {
-		            'Content-Type': 'application/json'
-		        },
-		        body: JSON.stringify({
-		            follower: currentUserNum,
-		            following: userNum
-		        })
-		    })
-		    .then(response => response.json())
-		    .then(data => {
-		        if (data.success) {
-		            const followButton = document.querySelector('button[onclick^="followUser"]');
-		            if (isFollowing === 'true') {
-		                followButton.classList.remove('btn-outline-secondary');
-		                followButton.classList.add('btn-primary', 'text-white');
-		                followButton.innerHTML = '<span>팔로우</span>';
-		                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'false')`);
-		            } else {
-		                followButton.classList.remove('btn-primary', 'text-white');
-		                followButton.classList.add('btn-outline-secondary');
-		                followButton.innerHTML = '<i class="bi bi-check2"></i> <span>팔로잉</span>';
-		                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'true')`);
-		            }
-		            showAlert("알림", isFollowing === 'true' ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
-		        } else {
-		            alert('작업 실패: ' + data.message);
-		        }
-		    })
-		    .catch(error => {
-		        console.error('Error:', error);
-		        alert('작업 중 오류가 발생했습니다.');
-		    });
-		}
+				    fetch(url, {
+				        method: method,
+				        headers: {
+				            'Content-Type': 'application/json'
+				        },
+				        body: JSON.stringify({
+				            follower: currentUserNum,
+				            following: userNum
+				        })
+				    })
+				    .then(response => response.json())
+				    .then(data => {
+				        if (data.success) {
+				            const followButton = document.querySelector('button[onclick^="followUser"]');
+				            if (isFollowing === 'true') {
+				                followButton.classList.remove('btn-outline-secondary');
+				                followButton.classList.add('btn-primary', 'text-white');
+				                followButton.innerHTML = '<span>팔로우</span>';
+				                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'false')`);
+				            } else {
+				                followButton.classList.remove('btn-primary', 'text-white');
+				                followButton.classList.add('btn-outline-secondary');
+				                followButton.innerHTML = '<i class="bi bi-check2"></i> <span>팔로잉</span>';
+				                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'true')`);
+				            }
+				            showAlert("알림", isFollowing === 'true' ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+				        } else {
+				            alert('작업 실패: ' + data.message);
+				        }
+				    })
+				    .catch(error => {
+				        console.error('Error:', error);
+				        alert('작업 중 오류가 발생했습니다.');
+				    });
+				}
 
+				document.addEventListener('DOMContentLoaded', function() {
+				    const videoElement = document.querySelector('video');
+				    const videoNum = document.getElementById('videoNum').value;
+
+				    videoElement.addEventListener('timeupdate', function() {
+				        if (videoElement.currentTime > 10) { // 10초 이상 시청 시 조회수 증가
+				            fetch('/video/incrementViewCount', {
+				                method: 'POST',
+				                headers: {
+				                    'Content-Type': 'application/json'
+				                },
+				                body: JSON.stringify({ videoNum: parseInt(videoNum) })
+				            }).then(response => {
+				                if (!response.ok) {
+				                    console.error('Error incrementing view count');
+				                }
+				            }).catch(error => {
+				                console.error('Error:', error);
+				            });
+
+				            // 조회수 증가 요청을 한 번만 보내도록 이벤트 리스너 제거
+				            videoElement.removeEventListener('timeupdate', arguments.callee);
+				        }
+				    });
+				});
+
+				
 		document.addEventListener('DOMContentLoaded', function() {
-		    const videoNum = '[[${videoNum}]]';
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
 		    console.log('Video Number:', videoNum);
 		    document.getElementById('videoNumDisplay').textContent = videoNum;
 
@@ -488,6 +515,7 @@
 		        }
 		    });
 		});
+
 
 		function likeVideo(videoNum, currentUserNum, isLiked) {
 		    console.log("likeVideo 함수 호출됨");
@@ -548,19 +576,23 @@
 		    }, 3000); // 3초 후에 알람을 자동으로 제거합니다.
 		}
 
-		function navigateVideo(videoNum, userNum) {
-		    // 이 함수는 주어진 비디오 번호와 사용자 번호로 이동합니다.
-		    if (videoNum === 0) {
-		        alert("더 이상의 영상이 없습니다.");
-		    } else {
-		        window.location.href = '/video/' + videoNum + '?userNum=' + userNum;
-		    }
-		}
+
+
+
+
+	    function navigateVideo(videoNum, userNum) {
+	        // 이 함수는 주어진 비디오 번호와 사용자 번호로 이동합니다.
+	        if (videoNum === 0) {
+	            alert("더 이상의 영상이 없습니다.");
+	        } else {
+	            window.location.href = '/video/' + videoNum + '?userNum=' + userNum;
+	        }
+	    }
 
 		function navigateToProfile() {
 		    // 사용자의 프로필 페이지로 이동합니다.
-		    const userNum = '[[${videoUser.userNum}]]';
-		    const currentUserNum = '[[${currentUserNum}]]';
+		    const userNum = /*[[${videoUser.userNum}]]*/ [[${videoUser.userNum}]];
+		    const currentUserNum = /*[[${currentUserNum}]]*/ [[${currentUserNum}]];
 		    
 		    if (userNum === currentUserNum) {
 		        window.location.href = 'http://localhost:8080/user/profile';
@@ -568,6 +600,7 @@
 		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
 		    }
 		}
+
 
 		function navigateToProfilePage(userNum, currentUserNum) {
 		    // 사용자의 프로필 페이지로 이동합니다.
@@ -578,19 +611,29 @@
 		    }
 		}
 
-		document.addEventListener('keydown', function(event) {
-		    if (event.key === 'ArrowUp') {
-		        // 위 방향키를 누르면 이전 비디오로 이동
-		        navigateVideo('[[${prevVideoNum}]]', '[[${videoUser.userNum}]]');
-		    } else if (event.key === 'ArrowDown') {
-		        // 아래 방향키를 누르면 다음 비디오로 이동
-		        navigateVideo('[[${nextVideoNum}]]', '[[${videoUser.userNum}]]');
-		    } else if (event.key === 'Escape') {
-		        // Esc 키를 누르면 프로필 페이지로 이동
-		        navigateToProfile();
-		    }
+	    document.addEventListener('keydown', function(event) {
+	        if (event.key === 'ArrowUp') {
+	            // 위 방향키를 누르면 이전 비디오로 이동
+	            navigateVideo(/*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
+	        } else if (event.key === 'ArrowDown') {
+	            // 아래 방향키를 누르면 다음 비디오로 이동
+	            navigateVideo(/*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
+	        } else if (event.key === 'Escape') {
+	            // Esc 키를 누르면 프로필 페이지로 이동
+	            navigateToProfile();
+	        }
+	    });
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+		    const currentUserNum = /*[[${currentUserNum}]]*/ '[[${currentUserNum}]]';
+		    console.log('Video Number:', videoNum);
+		    console.log('Current User Number:', currentUserNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+		    document.getElementById('videoNum').value = videoNum;
+		    document.getElementById('currentUserNum').value = currentUserNum;
 		});
-
+		
 		function submitComment() {
 		    let commentText = document.getElementById('commentText').value;
 		    const videoNum = document.getElementById('videoNum').value;
@@ -685,6 +728,8 @@
 		    commentsSection.appendChild(commentItem);
 		}
 
+
+
 		function toggleOptions() {
 		    const optionsDropdown = document.querySelector('.options-dropdown');
 		    optionsDropdown.style.display = optionsDropdown.style.display === 'block' ? 'none' : 'block';
@@ -720,6 +765,15 @@
 		        alert('비디오 삭제 중 오류가 발생했습니다.');
 		    });
 		}
+		function navigateToProfilePage(userNum, currentUserNum) {
+		    // 사용자의 프로필 페이지로 이동합니다.
+		    if (userNum === currentUserNum) {
+		        window.location.href = 'http://localhost:8080/user/profile';
+		    } else {
+		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    }
+		}
+		
 
 		function likeComment(commentNum, currentUserNum) {
 		    // 댓글 정보를 가져오기
@@ -831,6 +885,9 @@
 		    });
 		}
 
+
+
+
 		let mentionedUserName = '';
 
 		function toggleReplyForm(event, commentNum, userName) {
@@ -898,75 +955,79 @@
 		    });
 		}
 
+
+
 		function toggleReplies(commentNum) {
-		    const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
-		    let repliesContainer = commentElement.querySelector('.replies-container');
+		          const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+		          let repliesContainer = commentElement.querySelector('.replies-container');
 
-		    if (!repliesContainer) {
-		        repliesContainer = document.createElement('div');
-		        repliesContainer.id = `replies-${commentNum}`;
-		        repliesContainer.className = 'replies-container';
-		        commentElement.appendChild(repliesContainer);
-		    }
+		          if (!repliesContainer) {
+		              repliesContainer = document.createElement('div');
+		              repliesContainer.id = `replies-${commentNum}`;
+		              repliesContainer.className = 'replies-container';
+		              commentElement.appendChild(repliesContainer);
+		          }
 
-		    if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
-		        repliesContainer.style.display = 'block';
-		        fetchReplies(commentNum, repliesContainer);
-		    } else {
-		        repliesContainer.style.display = 'none';
-		        repliesContainer.innerHTML = '';
-		    }
-		}
+		          if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+		              repliesContainer.style.display = 'block';
+		              fetchReplies(commentNum, repliesContainer);
+		          } else {
+		              repliesContainer.style.display = 'none';
+		              repliesContainer.innerHTML = '';
+		          }
+		      }
 
-		function fetchReplies(commentNum, container) {
-		    fetch(`/rcomment/list?commentNum=${commentNum}`)
-		    .then(response => response.json())
-		    .then(data => {
-		        container.innerHTML = ''; // Clear the container
-		        if (data.length === 0) {
-		            container.innerHTML = '<p>No replies yet.</p>';
-		            return;
-		        }
-		        data.forEach(reply => {
-		            const replyElement = document.createElement('div');
-		            replyElement.className = 'reply-item';
-		            replyElement.innerHTML = `
-		                <div class="d-flex align-items-center mb-2">
-		                    <img src="${reply.profilePictureUrl != null ? reply.profilePictureUrl : '/images/default_profile.png'}" alt="사용자 사진" class="rounded-circle" style="width: 40px; height: 40px; margin-right: 10px;" onclick="navigateToProfilePage(${reply.userNum}, ${currentUserNum})">
-		                    <div class="comment-body">
-		                        <strong>${reply.userName}</strong>
-		                        <p>${reply.text}</p>
-		                        <div class="comment-meta">
-		                            <small class="comment-date">${calculateDaysAgo(reply.date)}</small>
-		                            <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${reply.commentNum}, '${reply.userName}')"></a>
-		                        </div>
-		                    </div>
-		                </div>
-		            `;
-		            container.appendChild(replyElement);
-		        });
-		    })
-		    .catch(error => {
-		        console.error('Error fetching replies:', error);
-		        container.innerHTML = '<p>Error loading replies.</p>';
-		    });
-		}
+			  function fetchReplies(commentNum, container) {
+			      fetch(`/rcomment/list?commentNum=${commentNum}`)
+			          .then(response => response.json())
+			          .then(data => {
+			              container.innerHTML = ''; // Clear the container
+			              if (data.length === 0) {
+			                  container.innerHTML = '<p>No replies yet.</p>';
+			                  return;
+			              }
+			              data.forEach(reply => {
+			                  const replyElement = document.createElement('div');
+			                  replyElement.className = 'reply-item';
+			                  replyElement.innerHTML = `
+			                      <div class="d-flex align-items-center mb-2">
+			                          <img src="${reply.profilePictureUrl != null ? reply.profilePictureUrl : '/images/default_profile.png'}" alt="사용자 사진" class="rounded-circle" style="width: 40px; height: 40px; margin-right: 10px;" onclick="navigateToProfilePage(${reply.userNum}, ${currentUserNum})">
+			                          <div class="comment-body">
+			                              <strong>${reply.userName}</strong>
+			                              <p>${reply.text}</p>
+			                              <div class="comment-meta">
+			                                  <small class="comment-date">${calculateDaysAgo(reply.date)}</small>
+			                                  <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${reply.commentNum}, '${reply.userName}')"></a>
+			                              </div>
+			                          </div>
+			                      </div>
+			                  `;
+			                  container.appendChild(replyElement);
+			              });
+			          })
+			          .catch(error => {
+			              console.error('Error fetching replies:', error);
+			              container.innerHTML = '<p>Error loading replies.</p>';
+			          });
+			  }
 
-		function calculateDaysAgo(dateString) {
-		    const now = new Date();
-		    const replyDate = new Date(dateString);
-		    const diffTime = Math.abs(now - replyDate);
-		    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-		    const adjustedDiffDays = diffDays - 1;
+			  function calculateDaysAgo(dateString) {
+			      const now = new Date();
+			      const replyDate = new Date(dateString);
+			      const diffTime = Math.abs(now - replyDate);
+			      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			      const adjustedDiffDays = diffDays - 1;
 
-		    if (adjustedDiffDays === 0) {
-		        return '오늘';
-		    } else if (adjustedDiffDays === 1) {
-		        return '어제';
-		    } else {
-		        return `${adjustedDiffDays}일 전`;
-		    }
-		}
+			      if (adjustedDiffDays === 0) {
+			          return '오늘';
+			      } else if (adjustedDiffDays === 1) {
+			          return '어제';
+			      } else {
+			          return `${adjustedDiffDays}일 전`;
+			      }
+			  }
+
+
 	    /*]]>*/
 	</script>
 
