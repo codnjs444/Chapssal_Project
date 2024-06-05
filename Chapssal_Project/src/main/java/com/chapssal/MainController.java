@@ -1,11 +1,13 @@
 package com.chapssal;
 
 import com.chapssal.topic.SelectedTopicService;
-import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
+import com.chapssal.video.VideoService.VideoWithLikesAndComments;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -17,14 +19,23 @@ public class MainController {
     private final VideoService videoService;
     private final SelectedTopicService selectedTopicService;
 
+//    @ModelAttribute("topicsByVoteCount")
+//    public List<Object[]> topicsByVoteCount() {
+//        return selectedTopicService.findTopicsByVoteCount();
+//    }
+//    랜덤 순서 영상 출력
+    
     @GetMapping("/")
-    public String showMainPage(Model model) {
-        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+    public String viewHomePage(Model model) {
+//        List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
+//        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+
+        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        
+        List<VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosOrderedByLikes();
+        model.addAttribute("videos", videosWithLikesAndComments);
 
-        List<Video> videos = videoService.findAll();
-        model.addAttribute("videos", videos);
-
-        return "home"; // home.html 파일을 렌더링
+        return "home"; // home.html로 매핑
     }
 }

@@ -26,4 +26,22 @@ public class Participant {
     private ChatRoom room;
 
     private LocalDateTime joinDate;
+
+    // Getter and Setter for isLeave
+    @Setter
+    @Getter
+    private Boolean isLeave;
+
+    // 기본 생성자
+    public Participant() {
+        this.isLeave = false;
+    }
+
+    public Participant(ChatRoom room, User user) {
+        this.room = room;
+        this.user = user;
+        this.joinDate = LocalDateTime.now();
+        this.isLeave = false;
+    }
+
 }
