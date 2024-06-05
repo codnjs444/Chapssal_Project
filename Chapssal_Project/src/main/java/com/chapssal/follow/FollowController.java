@@ -1,7 +1,6 @@
 package com.chapssal.follow;
 
 import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class FollowController {
         User followingUser = userRepository.findById(followRequest.getFollowing()).orElseThrow(() -> new IllegalArgumentException("Invalid following ID"));
         
         String message = followerUser.getUserName() + "님이 팔로우했습니다.";
-        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message);
+        notificationService.createNotification(followingUser, NotificationType.FOLLOW, followerUser, message,null);
 
         return ResponseEntity.ok().body("{\"success\": true}");
     }
@@ -51,6 +50,6 @@ public class FollowController {
             return ResponseEntity.ok().body("{\"success\": true}");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"success\": false, \"message\": \"팔로우 관계를 찾을 수 없습니다.\"}");
-        }
+        } 
     }
 }

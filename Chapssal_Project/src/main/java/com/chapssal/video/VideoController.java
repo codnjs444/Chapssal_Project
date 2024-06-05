@@ -1,16 +1,15 @@
 package com.chapssal.video;
 
 import com.chapssal.comment.Comment;
+import com.chapssal.comment.CommentLikeService;
 import com.chapssal.comment.CommentService;
+import com.chapssal.comment.RCommentService;
 import com.chapssal.follow.FollowService;
-import com.chapssal.topic.SelectedTopic;
+import com.chapssal.hashtag.HashtagService;
 import com.chapssal.topic.SelectedTopicService;
-import com.chapssal.topic.Topic;
-import com.chapssal.topic.TopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,8 +31,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +52,11 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
+
+    private final CommentLikeService commentLikeService;
+    
+
+    private final HashtagService hashtagService;
     
     @Autowired
     private FollowService followService;
@@ -61,12 +71,22 @@ public class VideoController {
     private HashtagService hashtagService;
     
     @Autowired
-    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService) {
+    private RCommentService rCommentService;
+    
+    public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, HashtagService hashtagService, CommentLikeService commentLikeService) {
         this.videoService = videoService;
         this.s3Service = s3Service;
         this.userService = userService;
         this.selectedTopicService = selectedTopicService;
+        this.hashtagService = hashtagService;
+        this.commentLikeService = commentLikeService;
     }
+    
+//    @ModelAttribute("topicsByVoteCount")
+//    public List<Object[]> topicsByVoteCount() {
+//        return selectedTopicService.findTopicsByVoteCount();
+//    	return selectedTopicService.getTopicsByVoteCountForLastWeek();
+//    }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/video/upload")
@@ -121,6 +141,9 @@ public class VideoController {
 
             videoService.create(video);
 
+            // 해시태그 처리
+            hashtagService.extractAndSaveHashtags(title, video);
+            
             // 임시 파일 삭제
             Files.delete(videoTempFilePath);
             Files.delete(thumbnailTempFilePath);
@@ -148,19 +171,65 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model) {
-        model.addAttribute("videos", videoService.findAll()); // 모든 비디오를 모델에 추가
-        return "explore"; // explore.html 템플릿을 렌더링
-    }
-
-    @GetMapping("/home")
-    public String viewHomePage(Model model) {
         List<Object[]> topicsByVoteCount = selectedTopicService.findTopicsByVoteCount();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosWithLikeAndCommentCounts();
+        Collections.shuffle(videosWithLikesAndComments); // 영상 리스트를 섞음
+        model.addAttribute("videos", videosWithLikesAndComments); // 섞인 비디오를 모델에 추가
+        return "explore"; // explore.html 템플릿을 렌더링
+    }
+    
 
-        List<Video> videos = videoService.findAll();
-        model.addAttribute("videos", videos);
+    @DeleteMapping("/video/delete/{videoNum}")
+    @ResponseBody
+    public Map<String, Object> deleteVideo(@PathVariable("videoNum") int videoNum) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            videoService.delete(videoNum);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
 
-        return "home"; // home.html로 매핑
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/following")
+    public String viewFollowPage(Model model, Principal principal) {
+        User currentUser = userService.getUser(principal.getName());
+        List<User> followingUsers = followService.getFollowingUsers(currentUser.getUserNum());
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers);
+        model.addAttribute("videos", videosWithLikesAndComments);
+        return "following"; // following.html 템플릿을 렌더링
+    }
+
+    @GetMapping("/bestvideos")
+    public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일
+        LocalDate endOfWeek = startOfWeek.plusDays(6); // 저번 주 일요일
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX);
+
+        List<Object[]> topVideos = videoService.findTopVideosForWeek(startDateTime, endDateTime);
+        List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForWeek(startDateTime, endDateTime);
+
+        int weekOfMonth = (startOfWeek.getDayOfMonth() - 1) / 7 + 1;
+        String currentWeek = String.format("%d년 %02d월 %d주차",
+                startOfWeek.getYear(),
+                startOfWeek.getMonthValue(),
+                weekOfMonth);
+
+        model.addAttribute("topVideos", topVideos);
+        model.addAttribute("topicsByVoteCount", topicsByVoteCount);
+        model.addAttribute("weekOffset", weekOffset);
+        model.addAttribute("currentWeek", currentWeek);
+
+        return "bestvideos";
     }
     
     @GetMapping("/video/{videoNum}")
@@ -223,6 +292,15 @@ public class VideoController {
         
         // 댓글 목록을 모델에 추가
         List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+
+            // 댓글에 답글이 있는지 확인하여 모델에 추가
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
+        }
+        commentService.setLikeCountsForComments(comments);
         model.addAttribute("comments", comments);
         
         // 댓글 수 추가
@@ -239,18 +317,11 @@ public class VideoController {
         return "video"; // video.html로 이동
     }
 
-    @DeleteMapping("/video/delete/{videoNum}")
+    
+    @PostMapping("/video/incrementViewCount")
     @ResponseBody
-    public Map<String, Object> deleteVideo(@PathVariable("videoNum") int videoNum) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            videoService.delete(videoNum);
-            response.put("success", true);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-        }
-        return response;
+    public void incrementViewCount(@RequestBody Map<String, Integer> request) {
+        int videoNum = request.get("videoNum");
+        videoService.incrementViewCount(videoNum);
     }
-
 }
