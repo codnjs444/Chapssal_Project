@@ -3,6 +3,7 @@ package com.chapssal.video;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -51,4 +52,12 @@ public class VideoService {
     public List<Video> searchByTitle(String title) {
         return videoRepository.findByTitleContaining(title);
     }
+
+    public List<String> findTitlesByQuery(String query) {
+        return videoRepository.findByTitleContaining(query)
+                .stream()
+                .map(Video::getTitle)
+                .collect(Collectors.toList());
+    }
+
 }

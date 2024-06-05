@@ -3,6 +3,7 @@ package com.chapssal.user;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -149,7 +150,17 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
+    // 전체 검색 관련
     public List<User> searchByUserName(String userName) {
         return userRepository.findByUserNameContaining(userName);
     }
+
+    public List<String> findUserNamesByQuery(String query) {
+        return userRepository.findByUserNameContaining(query)
+                .stream()
+                .map(User::getUserName)
+                .collect(Collectors.toList());
+    }
+
 }
