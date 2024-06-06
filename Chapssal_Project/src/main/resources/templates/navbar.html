@@ -685,16 +685,26 @@
                 event.stopPropagation();
             });
 
-            fetch('/notifications/unread')
-                .then(response => response.json())
-                .then(data => {
-                    var count = document.getElementById('notificationCount');
-                    count.innerText = data.length;
-                    count.style.display = data.length > 0 ? 'block' : 'none';
+                fetch('/notifications/unread')
+                    .then(response => response.text())
+                    .then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            console.log(data); // 데이터를 콘솔에 출력하여 확인
+                            var count = document.getElementById('notificationCount');
+                            count.innerText = data.length;
+                            count.style.display = data.length > 0 ? 'block' : 'none';
 
-                    updateNotificationList(data);
-                })
-                .catch(error => console.error('Error fetching unread notifications:', error));
+                            updateNotificationList(data);
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            alert('서버에서 알림 데이터를 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching unread notifications:', error);
+                        alert('서버에서 알림 데이터를 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+                    });
 
             const eventSource = new EventSource('/notifications/stream');
             eventSource.onmessage = function(event) {
