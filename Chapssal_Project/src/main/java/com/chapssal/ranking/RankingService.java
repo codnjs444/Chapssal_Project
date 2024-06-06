@@ -5,6 +5,11 @@ import com.chapssal.award.AwardRepository;
 import com.chapssal.school.School;
 import com.chapssal.school.SchoolRepository;
 import com.chapssal.util.MonthUtil;
+import com.chapssal.util.NumberUtil;
+import com.chapssal.video.Video;
+import com.chapssal.video.VideoLike;
+import com.chapssal.video.VideoLikeRepository;
+import com.chapssal.video.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +29,26 @@ public class RankingService {
     @Autowired
     private SchoolRepository schoolRepository;
 
-    // 특정 월의 학교 랭킹을 조회하는 메서드
-    public Map<String, SchoolRanking> getSchoolRankings(LocalDate date) {
-        String formattedMonth = MonthUtil.getPreviousMonthFormatted(date);
+    @Autowired
+    private VideoRepository videoRepository;
 
-        LocalDate startDate = LocalDate.parse(formattedMonth + "-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+    @Autowired
+    private VideoLikeRepository videoLikeRepository;
+
+    // 검색 결과를 기준으로 필터링
+    public Map<String, SchoolRanking> getSchoolRankings(LocalDate date) {
+        return calculateRankings(date, null);
+    }
+
+    public Map<String, SchoolRanking> searchSchoolRankings(LocalDate date, String search) {
+        return calculateRankings(date, search);
+    }
+
+    // 특정 월의 학교 랭킹을 조회하는 메서드
+    private Map<String, SchoolRanking> calculateRankings(LocalDate date, String search) {
+        // 여기서 date는 이미 현재 달의 마지막 날을 가리키고 있음
+        LocalDate startDate = date.withDayOfMonth(1);
+        LocalDate endDate = date.withDayOfMonth(date.lengthOfMonth());
 
         // Award 테이블에서 해당 월에 포함된 모든 수상내역 조회
         List<Award> awards = awardRepository.findByAwardDateBetween(
@@ -57,6 +76,25 @@ public class RankingService {
             School school = schoolRepository.findBySchoolName(schoolName);
             SchoolRanking schoolRanking = new SchoolRanking(schoolName, score, school.getSchoolPictureUrl(), goldCount, silverCount, bronzeCount);
 
+            // Video 관련 집계
+            List<Video> videos = videoRepository.findByUser_School_SchoolNameAndUploadDateBetween(
+                    schoolName, startDate.atStartOfDay(), endDate.atTime(23, 59, 59)
+            );
+
+            int uploadedVideoCount = videos.size();
+            int totalViews = videos.stream().mapToInt(Video::getViewCount).sum();
+
+            // VideoLike 관련 집계
+            List<VideoLike> videoLikes = videoLikeRepository.findByVideo_User_School_SchoolNameAndLikeDateBetween(
+                    schoolName, startDate.atStartOfDay(), endDate.atTime(23, 59, 59)
+            );
+
+            int totalLikes = videoLikes.size();
+
+            schoolRanking.setUploadedVideoCount(uploadedVideoCount);
+            schoolRanking.setTotalViewsFormatted(NumberUtil.formatNumber(totalViews));
+            schoolRanking.setTotalLikes(totalLikes);
+
             schoolRankings.put(schoolName, schoolRanking);
         }
 
@@ -69,7 +107,7 @@ public class RankingService {
             sortedRankings.get(i).setRank(i + 1);
         }
 
-        return sortedRankings.stream().collect(
+        Map<String, SchoolRanking> finalRankings = sortedRankings.stream().collect(
                 Collectors.toMap(
                         SchoolRanking::getSchoolName,
                         sr -> sr,
@@ -77,5 +115,18 @@ public class RankingService {
                         LinkedHashMap::new
                 )
         );
+
+        if (search != null) {
+            finalRankings = finalRankings.entrySet().stream()
+                    .filter(entry -> entry.getKey().contains(search))
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (e1, e2) -> e1,
+                            LinkedHashMap::new
+                    ));
+        }
+
+        return finalRankings;
     }
 }

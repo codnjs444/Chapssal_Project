@@ -13,9 +13,9 @@ public class SchoolRanking {
     private int silverCount;
     private int bronzeCount;
     private int rank;
-//    private int uploadedVideoCount;
-//    private int totalViews;
-//    private int totalLikes;
+    private int uploadedVideoCount;
+    private String totalViewsFormatted;
+    private int totalLikes;
 
 
 
