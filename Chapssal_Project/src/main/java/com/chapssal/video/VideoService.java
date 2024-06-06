@@ -164,6 +164,7 @@ public class VideoService {
                     Integer topic = (Integer) result[5];
                     int likeCount = ((Number) result[6]).intValue();
                     int recentLikeCount = ((Number) result[7]).intValue();
+                    int viewCount = ((Number) result[8]).intValue(); // viewCount 추가
 
                     Video video = new Video();
                     video.setVideoNum(videoNum);
@@ -171,6 +172,7 @@ public class VideoService {
                     video.setVideoUrl(videoUrl);
                     video.setThumbnailUrl(thumbnailUrl);
                     video.setTopic(topic);
+                    video.setViewCount(viewCount); // viewCount 설정
                     // User 객체는 필요한 경우 UserService를 통해 가져와야 합니다.
                     User user = userService.findByUserNum(userNum);
                     video.setUser(user);

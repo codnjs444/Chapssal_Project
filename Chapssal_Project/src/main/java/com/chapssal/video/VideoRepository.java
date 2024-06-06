@@ -40,12 +40,12 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "ORDER BY likeCount DESC", nativeQuery = true)
     List<Object[]> findTopVideosByLikesInLastHour();
 
-    @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user, v.topic, COUNT(vl.vlikeNum) as likeCount, " +
-            "SUM(CASE WHEN vl.likeDate >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) as recentLikeCount " +
-            "FROM video v LEFT JOIN videolike vl ON v.videoNum = vl.video " +
-            "GROUP BY v.videoNum " +
-            "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
-    List<Object[]> findAllVideosOrderedByLikes();
+    @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user.userNum, v.topic, COUNT(vl) AS likeCount, " +
+            "SUM(CASE WHEN vl.likeDate >= CURRENT_DATE - 7 THEN 1 ELSE 0 END) AS recentLikeCount, v.viewCount " +
+            "FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video.videoNum " +
+            "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user.userNum, v.topic, v.viewCount " +
+            "ORDER BY likeCount DESC", nativeQuery = true)
+     List<Object[]> findAllVideosOrderedByLikes();
 
     @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
             "LEFT JOIN VideoLike vl ON v = vl.video " +
