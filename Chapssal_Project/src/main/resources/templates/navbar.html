@@ -30,13 +30,12 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;">
-				<input id="searchInput" class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search">
-				<div id="searchSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-				<button class="btn btn-outline-success rounded-pill" type="submit">
-				    <i class="bi bi-search"></i>
-				</button>
-            </form>
+			<form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;" action="/message/search" method="get">
+			      <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search" name="query">
+			      <button class="btn btn-outline-success rounded-pill" type="submit">
+			          <i class="bi bi-search"></i>
+			      </button>
+			  </form>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <div class="upload-container" data-bs-toggle="modal" data-bs-target="#uploadModal">
@@ -46,9 +45,10 @@
                         </button>
                     </div>
                 </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link center-icon"  th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
-                </li>
+				<li class="nav-item" sec:authorize="isAuthenticated()">
+				    <a class="nav-link center-icon" th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
+				    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;;"></span>
+				</li>
 				<!-- 알림 아이콘 -->
 				<li class="nav-item" sec:authorize="isAuthenticated()">
 				    <a class="nav-link center-icon notification-icon" href="#">

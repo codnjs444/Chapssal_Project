@@ -32,5 +32,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.userName LIKE CONCAT('%', :query, '%')")
     List<User> searchByUserName(@Param("query") String query);
+    
+    @Query("SELECT u FROM User u WHERE u.userNum = :userNum")
+    Optional<User> findByUserNum(@Param("userNum") int userNum);
 
 }

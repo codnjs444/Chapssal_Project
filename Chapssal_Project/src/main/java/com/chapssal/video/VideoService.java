@@ -126,16 +126,6 @@ public class VideoService {
                 .collect(Collectors.toList());
     }
     
-    public List<VideoWithLikesAndComments> getAllVideosOrderedByUploadDate() {
-        return videoRepository.findAllVideosOrderByUploadDateDesc().stream()
-                .map(video -> {
-                    int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
-                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
-                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
-                })
-                .collect(Collectors.toList());
-    }
-    
     public List<VideoWithLikesAndComments> getTopVideosByLikesInLastHour() {
         return videoRepository.findTopVideosByLikesInLastHour().stream()
                 .map(result -> {
@@ -209,6 +199,27 @@ public class VideoService {
                     LocalDateTime uploadStartOfWeek = startOfUploadWeek.atStartOfDay();
                     LocalDateTime uploadEndOfWeek = endOfUploadWeek.atTime(LocalTime.MAX);
                     return !(startDate.isAfter(uploadEndOfWeek) || endDate.isBefore(uploadStartOfWeek));
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<Video> searchByTitle(String title) {
+        return videoRepository.findByTitleContaining(title);
+    }
+
+    public List<String> findTitlesByQuery(String query) {
+        return videoRepository.findByTitleContaining(query)
+                .stream()
+                .map(Video::getTitle)
+                .collect(Collectors.toList());
+    }
+    
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByUploadDate() {
+        return videoRepository.findAllVideosOrderByUploadDateDesc().stream()
+                .map(video -> {
+                    int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
                 })
                 .collect(Collectors.toList());
     }

@@ -48,6 +48,8 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
            "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
+    List<Video> findByTitleContaining(String title);
+    
     @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
     List<Video> findAllVideosOrderByUploadDateDesc();
 }

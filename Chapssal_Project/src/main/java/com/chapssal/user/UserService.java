@@ -12,7 +12,7 @@ import com.chapssal.school.School;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -160,5 +160,17 @@ public class UserService {
 
     public List<User> getUserSuggestions(String query) {
         return userRepository.findByUserNameContaining(query); // 수정된 부분
+    }
+    
+    // 전체 검색 관련
+    public List<User> searchByUserName(String userName) {
+        return userRepository.findByUserNameContaining(userName);
+    }
+
+    public List<String> findUserNamesByQuery(String query) {
+        return userRepository.findByUserNameContaining(query)
+                .stream()
+                .map(User::getUserName)
+                .collect(Collectors.toList());
     }
 }
