@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -357,6 +357,7 @@
 
 <div th:replace="~{navbar :: uploadModalScript}"></div>
 <div th:replace="~{home :: homeVideoScript}"></div>
+<div th:replace="~{following :: followingVideoScript}"></div>
 <div th:replace="~{explore :: exploreVideoScript}"></div>
 <div th:replace="~{bestvideos :: bestVideoScript}"></div>
 
@@ -619,7 +620,7 @@
             document.getElementById('profilePic').focus();
         }
     </script>
-<!--    <div th:replace="~{message/fragments/msgAlert :: msgAlert}"></div> -->
+	<!--<div th:replace="~{message/fragments/msgAlert :: msgAlert}"></div>-->
 </div>
 </body>
 </html>

@@ -30,7 +30,7 @@ public class VideoLikeService {
         String message = user.getUserName() + "님이 " + video.getTitle() + " 영상에 좋아요를 눌렀습니다.";
         notificationService.createNotification(video.getUser(), NotificationType.LIKE_VIDEO, user, message, video);
     }
-
+    
     public boolean isLikedByUser(Integer videoId, Integer userId) {
         Video video = new Video();
         video.setVideoNum(videoId);
@@ -38,7 +38,7 @@ public class VideoLikeService {
         user.setUserNum(userId);
         return videoLikeRepository.existsByVideoAndUser(video, user);
     }
-
+    
     public int countLikesByVideoId(Integer videoId) {
         Video video = new Video();
         video.setVideoNum(videoId);

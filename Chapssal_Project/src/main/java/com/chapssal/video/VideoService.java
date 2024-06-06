@@ -46,15 +46,15 @@ public class VideoService {
     public List<Video> findAll() {
         return videoRepository.findAll();
     }
-
+    
     public int countVideosByUserNum(Integer userNum) {
         return videoRepository.countByUser_UserNum(userNum);
     }
-
+    
     public List<Video> getVideosByUserNum(Integer userNum) {
         return videoRepository.findByUser_UserNumOrderByUploadDateDesc(userNum);
     }
-
+    
     public int getPrevVideoId(int videoNum, int userNum) {
         Optional<Video> prevVideo = videoRepository.findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(userNum, videoNum);
         return prevVideo.map(Video::getVideoNum).orElse(0);
@@ -64,11 +64,11 @@ public class VideoService {
         Optional<Video> nextVideo = videoRepository.findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(userNum, videoNum);
         return nextVideo.map(Video::getVideoNum).orElse(0);
     }
-
+    
     public void delete(int videoNum) {
         videoRepository.deleteById(videoNum);
     }
-
+    
     @Transactional
     public void incrementViewCount(int videoNum) {
         Video video = videoRepository.findById(videoNum).orElseThrow(() -> new IllegalArgumentException("Invalid video ID"));
@@ -91,7 +91,7 @@ public class VideoService {
     public List<Video> getTopVideosByTopic(Integer topic) {
         return videoRepository.findTopVideosByTopic(topic);
     }
-
+    
     @Getter
     @Setter
     public static class VideoWithLikesAndComments {
@@ -115,7 +115,7 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-
+    
     public List<VideoWithLikesAndComments> getVideosWithLikeAndCommentCounts(List<User> users) {
         return videoRepository.findByUserInOrderByVideoNumDesc(users).stream()
                 .map(video -> {
@@ -125,7 +125,7 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-
+    
     public List<VideoWithLikesAndComments> getTopVideosByLikesInLastHour() {
         return videoRepository.findTopVideosByLikesInLastHour().stream()
                 .map(result -> {
@@ -152,7 +152,7 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-
+    
     public List<VideoWithLikesAndComments> getAllVideosOrderedByLikes() {
         return videoRepository.findAllVideosOrderedByLikes().stream()
                 .map(result -> {
@@ -182,7 +182,7 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-
+    
     public List<Object[]> findTopVideosForWeek(LocalDateTime startDate, LocalDateTime endDate) {
         return videoRepository.findTopVideosForWeek(startDate, endDate);
     }
@@ -204,7 +204,7 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-
+    
     public List<Video> searchByTitle(String title) {
         return videoRepository.findByTitleContaining(title);
     }
@@ -213,6 +213,16 @@ public class VideoService {
         return videoRepository.findByTitleContaining(query)
                 .stream()
                 .map(Video::getTitle)
+                .collect(Collectors.toList());
+    }
+    
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByUploadDate() {
+        return videoRepository.findAllVideosOrderByUploadDateDesc().stream()
+                .map(video -> {
+                    int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
+                })
                 .collect(Collectors.toList());
     }
     public int getNextVideoIdByTopic(int videoNum, int topicNum) {

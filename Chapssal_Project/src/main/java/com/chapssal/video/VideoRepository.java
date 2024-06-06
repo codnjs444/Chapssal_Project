@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 import com.chapssal.user.User;
 
 public interface VideoRepository extends JpaRepository<Video, Integer> {
-    int countByUser_UserNum(Integer userNum);
+
+	int countByUser_UserNum(Integer userNum);
     List<Video> findByUserInOrderByVideoNumDesc(List<User> users);
     List<Video> findByUser_UserNum(Integer userNum);
     List<Video> findByUser_UserNumOrderByUploadDateDesc(Integer userNum);
@@ -32,14 +33,14 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 
     @Query("SELECT v FROM Video v WHERE v.user IN :users")
     List<Video> findVideosByUsers(@Param("users") List<User> users);
-
+    
     @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user, v.topic, COUNT(vl.vlikeNum) as likeCount " +
             "FROM video v LEFT JOIN videolike vl ON v.videoNum = vl.video " +
             "WHERE vl.likeDate >= NOW() - INTERVAL 1 HOUR " +
             "GROUP BY v.videoNum " +
             "ORDER BY likeCount DESC", nativeQuery = true)
     List<Object[]> findTopVideosByLikesInLastHour();
-
+    
     @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, COUNT(vl.vlikeNum) as likeCount, " +
             "SUM(CASE WHEN vl.likeDate >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) AS recentLikeCount, v.viewCount " +
             "FROM video v LEFT JOIN videolike vl ON v.videoNum = vl.video " +
@@ -62,7 +63,11 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideosForWeekAndTopic(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("topic") int topic);
 
-
     List<Video> findByTitleContaining(String title);
+
+
     List<Video> findByTopicOrderByVideoNumAsc(int topic);
+    
+    @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
+    List<Video> findAllVideosOrderByUploadDateDesc();
 }

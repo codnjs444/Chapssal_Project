@@ -10,18 +10,19 @@ import org.springframework.data.repository.query.Param;
 import com.chapssal.user.User;
 
 public interface VideoLikeRepository extends JpaRepository<VideoLike, Integer> {
-    boolean existsByVideoAndUser(Video video, User user);
-    VideoLike findOneByVideoAndUser(Video video, User user);
-
+	boolean existsByVideoAndUser(Video video, User user);
+    VideoLike findOneByVideoAndUser(Video video, User  user);
+    
     @Query("SELECT COUNT(vl) FROM VideoLike vl WHERE vl.video = :videoId")
     int countByVideoId(@Param("videoId") Integer videoId);
-
-    int countByVideo(Video video);
+    
+    int countByVideo(Video Video);
     List<VideoLike> findByVideoAndUser(Video video, User user);
     void deleteByVideoAndUser(Video video, User user); // 추가된 부분
-
+    
     @Query("SELECT vl.video, COUNT(vl) as likeCount FROM VideoLike vl " +
-            "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
-            "GROUP BY vl.video ORDER BY likeCount DESC")
-    List<Object[]> findLikeCountForVideosInWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+	       "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
+	       "GROUP BY vl.video ORDER BY likeCount DESC")
+	List<Object[]> findLikeCountForVideosInWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    
 }
