@@ -40,25 +40,25 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "ORDER BY likeCount DESC", nativeQuery = true)
     List<Object[]> findTopVideosByLikesInLastHour();
 
-    @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user.userNum, v.topic, COUNT(vl) AS likeCount, " +
-            "SUM(CASE WHEN vl.likeDate >= CURRENT_DATE - 7 THEN 1 ELSE 0 END) AS recentLikeCount, v.viewCount " +
-            "FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video.videoNum " +
-            "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, v.user.userNum, v.topic, v.viewCount " +
-            "ORDER BY likeCount DESC", nativeQuery = true)
-     List<Object[]> findAllVideosOrderedByLikes();
+    @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, COUNT(vl.vlikeNum) as likeCount, " +
+            "SUM(CASE WHEN vl.likeDate >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) AS recentLikeCount, v.viewCount " +
+            "FROM video v LEFT JOIN videolike vl ON v.videoNum = vl.video " +
+            "LEFT JOIN user u ON v.user = u.userNum " +
+            "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, v.viewCount " +
+            "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
+    List<Object[]> findAllVideosOrderedByLikes();
 
     @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
             "LEFT JOIN VideoLike vl ON v = vl.video " +
-            "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
-            "AND v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
+            "AND vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
+            "WHERE v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
             "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-
     @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
             "LEFT JOIN VideoLike vl ON v = vl.video " +
-            "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
-            "AND v.uploadDate >= :startDate AND v.uploadDate < :endDate AND v.topic = :topic " +
+            "AND vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
+            "WHERE v.uploadDate >= :startDate AND v.uploadDate < :endDate AND v.topic = :topic " +
             "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideosForWeekAndTopic(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("topic") int topic);
 

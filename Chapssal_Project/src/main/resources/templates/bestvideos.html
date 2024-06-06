@@ -169,108 +169,104 @@
     </style>
 </head>
 <body>
-<div layout:fragment="content" class="container">
-
-	<!-- 화살표 추가 -->
-	<div class="ranking-header">
-	    <button type="button" class="ranking-arrow border-0 bg-white" id="left-arrow">&lt;</button>
-	    <div>
-	        <h4 th:text="${currentWeek}"></h4>
-	        <p>베스트 영상</p>
+	<div layout:fragment="content" class="container">
+	    <!-- 화살표 추가 -->
+	    <div class="ranking-header">
+	        <button type="button" class="ranking-arrow border-0 bg-white" id="left-arrow">&lt;</button>
+	        <div>
+	            <h4 th:text="${currentWeek}"></h4>
+	            <p>베스트 영상</p>
+	        </div>
+	        <button type="button" class="ranking-arrow border-0 bg-white" id="right-arrow">&gt;</button>
 	    </div>
-	    <button type="button" class="ranking-arrow border-0 bg-white" id="right-arrow">&gt;</button>
-	</div>
-	
-    <!-- 네비게이션 탭 -->
-    <nav class="container nav-center p-0">
-        <div class="nav nav-pills center p-0" id="nav-tab" role="tablist">
-			<button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-			<button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}"
-			        th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
-			        th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
-			        th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
-			</button>
-        </div>
-    </nav>
-    <br>
-    <br>
-    <!-- 비디오 목록 -->
-	<div class="tab-content" id="nav-tabContent">
-	    <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
-	        <div class="video-grid">
-				<div th:if="${topVideos != null}" th:each="videoLike, iterStat : ${topVideos}" class="video-item">
-				    <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
-				    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-				        <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?weekOffset=${weekOffset}|}">
-				            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
-				            <div class="video-info">
-				                <i class="bi bi-play-fill"></i>
-				                <span class="view-count" th:text="${videoLike[1]}">0</span>
-				            </div>
-				        </a>
-				    </div>
-				    <div class="video-content">
-				        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-				        <div class="row">
-				            <div class="col">
-				                <div class="user-profile">
-				                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
-				                    <p th:text="${videoLike[0].user.userName}"></p>
-				                </div>
-				            </div>
-				            <div class="col text-end">
-				                <div class="like-container text-end">
-				                    <i class="bi bi-heart"></i>
-				                    <p th:text="${videoLike[1]}"></p>
-				                </div>
-				            </div>
-				        </div>
-				    </div>
-				</div>
-	            <div th:if="${topVideos == null}">
-	                <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	    
+	    <nav class="container nav-center p-0">
+	        <div class="nav nav-pills center p-0" id="nav-tab" role="tablist">
+	            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+	            <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}"
+	                    th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
+	                    th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
+	                    th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
+	            </button>
+	        </div>
+	    </nav>
+	    <br>
+	    <br>
+	    <div class="tab-content" id="nav-tabContent">
+	        <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
+	            <div class="video-grid">
+	                <div th:if="${topVideos != null}" th:each="videoLike, iterStat : ${topVideos}" class="video-item">
+	                    <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
+	                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+	                        <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?weekOffset=${weekOffset}|}">
+	                            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+	                            <div class="video-info">
+	                                <i class="bi bi-play-fill"></i>
+	                                <span class="view-count" th:text="${videoLike[0].viewCount}"></span>
+	                            </div>
+	                        </a>
+	                    </div>
+	                    <div class="video-content">
+	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+	                        <div class="row">
+	                            <div class="col">
+	                                <div class="user-profile">
+	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+	                                    <p th:text="${videoLike[0].user.userName}"></p>
+	                                </div>
+	                            </div>
+	                            <div class="col text-end">
+	                                <div class="like-container text-end">
+	                                    <i class="bi bi-heart"></i>
+	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div th:if="${topVideos == null}">
+	                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	                </div>
+	            </div>
+	        </div>
+	        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+	            <div class="video-grid" th:id="'video-grid-' + ${topic[0].topicNum}">
+	                <div th:each="videoLike, iterStat : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
+	                    <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
+	                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+	                        <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?topicNum=${topic[0].topicNum}&weekOffset=${weekOffset}|}">
+	                            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+	                            <div class="video-info">
+	                                <i class="bi bi-play-fill"></i>
+	                                <span class="view-count" th:text="${videoLike[0].viewCount}"></span>
+	                            </div>
+	                        </a>
+	                    </div>
+	                    <div class="video-content">
+	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+	                        <div class="row">
+	                            <div class="col">
+	                                <div class="user-profile">
+	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+	                                    <p th:text="${videoLike[0].user.userName}"></p>
+	                                </div>
+	                            </div>
+	                            <div class="col text-end">
+	                                <div class="like-container text-end">
+	                                    <i class="bi bi-heart"></i>
+	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div th:if="${topVideos == null}">
+	                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	                </div>
 	            </div>
 	        </div>
 	    </div>
-		<!-- 주제 탭 비디오 목록 -->
-		<div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
-		    <div class="video-grid" th:id="'video-grid-' + ${topic[0].topicNum}">
-		        <div th:each="videoLike, iterStat : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
-		            <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
-		            <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
-		                <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?topicNum=${topic[0].topicNum}&weekOffset=${weekOffset}|}">
-		                    <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
-		                    <div class="video-info">
-		                        <i class="bi bi-play-fill"></i>
-		                        <span class="view-count" th:text="${videoLike[1]}">0</span>
-		                    </div>
-		                </a>
-		            </div>
-		            <div class="video-content">
-		                <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
-		                <div class="row">
-		                    <div class="col">
-		                        <div class="user-profile">
-		                            <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
-		                            <p th:text="${videoLike[0].user.userName}"></p>
-		                        </div>
-		                    </div>
-		                    <div class="col text-end">
-		                        <div class="like-container text-end">
-		                            <i class="bi bi-heart"></i>
-		                            <p th:text="${videoLike[1]}"></p>
-		                        </div>
-		                    </div>
-		                </div>
-		            </div>
-		        </div>
-		        <div th:if="${topVideos == null}">
-		            <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-		        </div>
-		    </div>
-		</div>
 	</div>
-</div>
 
 <th:block th:fragment="bestVideoScript">
     <script>
