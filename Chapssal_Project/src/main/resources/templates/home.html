@@ -55,6 +55,19 @@
 			    justify-content: center;
 			    cursor: pointer;
 			}
+			
+			.modal-action-btn {
+			    background-color: white;
+			    border: none;
+			    color: black;
+			    border-radius: 50%;
+			    width: 50px;
+			    height: 50px;
+			    display: flex;
+			    align-items: center;
+			    justify-content: center;
+			    cursor: pointer;
+			}
 				
 	        .video-content {
 	            font-size: 14px;
@@ -99,6 +112,122 @@
 
 			.follow-btn:hover {
 			    background-color: #0056b3;
+			}
+	
+	        /* Modal styles */
+	        .home-modal {
+	            display: none;
+	            position: fixed;
+	            z-index: 1050;
+	            left: 0;
+	            top: 0;
+	            width: 100%;
+	            height: 100%;
+	            overflow: auto;
+	            background-color: rgba(0,0,0,0.7);
+	        }
+	
+	        .home-modal-content {
+	            margin: 5% auto;
+	            padding: 20px;
+	            width: 80%;
+	            max-width: 1000px;
+	            background-color: white;
+	        }
+	
+	        .home-close {
+	            position: absolute;
+	            top: 15px;
+	            right: 35px;
+	            color: #f1f1f1;
+	            font-size: 40px;
+	            font-weight: bold;
+	            transition: 0.3s;
+	            cursor: pointer;
+	        }
+	
+	        .home-close:hover,
+	        .home-close:focus {
+	            color: #bbb;
+	            text-decoration: none;
+	            cursor: pointer;
+	        }
+	        
+	        .home-modal-video-container {
+	            position: relative;
+	            width: 51%;
+	            padding-bottom: 90.67%; /* 16:9 aspect ratio */
+	            background-color: black;
+	            overflow: hidden;
+	            max-height: 70%; /* 비디오 컨테이너의 최대 높이를 70%로 설정 */
+	        }
+	
+	        .home-modal-video-container video {
+	            position: absolute;
+	            top: 50%;
+	            left: 50%;
+	            width: 100%;
+	            height: 100%;
+	            transform: translate(-50%, -50%);
+	        }
+	
+			.home-modal-video-content {
+			    font-size: 14px;
+			    text-align: left;
+			    width: 100%;
+				display: flex; /* flex 컨테이너로 설정 */
+				flex-direction: column; /* 세로 정렬 */
+				height: 98vh; /* 모달의 전체 높이 설정 */
+				overflow-y: auto; /* 컨텐츠가 넘칠 때 세로 스크롤만 추가 */
+				overflow-x: hidden; /* 가로 스크롤 숨김 */ 
+				padding-left: 15px; /* 패딩 추가 */
+				box-sizing: border-box; /* 스크롤바 너비 포함 */
+			}
+			
+			.home-modal-video-content .uploader-info {
+			    margin-bottom: 10px;
+			    padding-bottom: 10px;
+			    border-bottom: 1px solid #ccc;
+			}
+
+			.home-modal-video-content .uploader-info img {
+			    width: 74px;
+			    height: 50px;
+			    border-radius: 50%;
+			}
+
+			.home-modal-video-content .uploader-info p {
+			    display: inline;
+			    vertical-align: middle;
+			}
+	
+	        .home-modal-video-content p {
+	            margin: 0;
+	        }
+
+			.comment-list {
+				flex: 1; /* 남은 공간을 차지 */
+				overflow-y: auto; /* 스크롤 추가 */
+				overflow-x: hidden;
+				padding-right: 5%;
+			}
+
+			.comment-form {
+				border-top: 1px solid #ccc;
+				padding-top: 10px;
+				margin-top: 10px;
+			}
+			
+			.modal-profile {
+			    width: 10vw;
+			    height: 10vw;
+			    max-width: 74px; /* Ensure the image doesn't grow too large */
+			    max-height: 50px;
+			    object-fit: cover; /* Ensures the image covers the element without distorting */
+			}
+			
+			body.modal-open {
+			    overflow: hidden;
 			}
 			
 			.nav-center {
@@ -162,7 +291,7 @@
 					                </div>
 					            </div>
 					            <br>
-					            <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+					            <div class="video-container"  th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
 					                <video controls autoplay muted>
 					                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
 					                    Your browser does not support the video tag.
@@ -208,7 +337,7 @@
 				                </div>
 				            </div>
 				            <br>
-				            <div class="video-container"  th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+				            <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
 				                <video controls autoplay muted>
 				                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
 				                    Your browser does not support the video tag.
@@ -232,15 +361,63 @@
 				</div>
 			</div>
 		</div>
+	
+
 	    
 	    <!-- 홈 스크립트 -->
 	    <th:block th:fragment="homeVideoScript">
 	        <script>
 				function styleSpecialChars(text) {
-				    return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
-				               .replace(/@(\S+)/g, '<strong>@$1</strong>');
-				}
-				
+								    return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
+								               .replace(/@(\S+)/g, '<strong>@$1</strong>');
+								}
+								
+								$(document).ready(function() {
+									// 모든 video.title 요소를 찾아서 스타일 변경
+									$('.video-content p').each(function() {
+									    const originalText = $(this).text();
+									    const styledText = styleSpecialChars(originalText);
+									    $(this).html(styledText);
+									});
+
+									/*// 저장된 탭 정보를 로드하고 해당 탭을 활성화
+									let savedTabId = localStorage.getItem('selectedTab');
+									if (savedTabId) {
+									    $('#' + savedTabId).tab('show');
+									}
+
+									// 탭 클릭 시 로컬 스토리지에 탭 ID 저장
+									$('#nav-tab button').on('click', function() {
+									    let selectedTabId = $(this).attr('id');
+									    localStorage.setItem('selectedTab', selectedTabId);
+									});*/
+									
+								    let options = {
+								        root: null,
+								        rootMargin: '0px',
+								        threshold: 0.5
+								    };
+
+								    let observer = new IntersectionObserver(function(entries, observer) {
+								        entries.forEach(entry => {
+								            if (entry.isIntersecting) {
+								                let video = entry.target.querySelector('video');
+								                if (video) {
+								                    video.play();
+								                }
+								            } else {
+								                let video = entry.target.querySelector('video');
+								                if (video) {
+								                    video.pause();
+								                }
+								            }
+								        });
+								    }, options);
+
+								    document.querySelectorAll('.video-item').forEach(item => {
+								        observer.observe(item);
+								    });
+								});
 	        </script>
 	    </th:block>
 	</body>
