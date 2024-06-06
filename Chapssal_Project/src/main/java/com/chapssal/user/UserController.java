@@ -167,7 +167,7 @@ public class UserController {
     public String getUserProfile(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
         }
         
         String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
