@@ -297,12 +297,12 @@
             <i class="bi bi-x"></i>
         </button>
         <div class="navigation-btns">
-            <button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${userNum} + ', ' + ${weekOffset} + ')'" th:disabled="${nextVideoNum} == 0">
-                <i class="bi bi-chevron-up"></i>
-            </button>
-            <button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${userNum} + ', ' + ${weekOffset} + ')'" th:disabled="${prevVideoNum} == 0">
-                <i class="bi bi-chevron-down"></i>
-            </button>
+			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${nextVideoNum} == 0">
+			    <i class="bi bi-chevron-up"></i>
+			</button>
+			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${prevVideoNum} == 0">
+			    <i class="bi bi-chevron-down"></i>
+			</button>
         </div>
     </div>
     <div class="info-section">
@@ -324,22 +324,22 @@
                 </button>
             </div>
             <p th:text="${videoTitle}"></p>
-            <div class="d-flex justify-content-around mt-3">
-                <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-link"
-                            th:classappend="${isLiked} ? 'text-danger' : 'text-muted'"
-                            th:attr="onclick=|likeVideo(${videoNum}, ${currentUserNum}, '${isLiked}')|">
-                        <i th:classappend="${isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-                    </button>
-                    <span class="like-count ms-0" th:text="${likeCount}"></span>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div><i class="bi bi-chat"></i> <span th:text="${commentCount}"></span></div>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div><i class="bi bi-share"></i> 593</div>
-                </div>
-            </div>
+			<div class="d-flex justify-content-around mt-3">
+			    <div class="d-flex align-items-center">
+			        <button type="button" class="btn btn-link"
+			                th:classappend="${isLiked} ? 'text-danger' : 'text-muted'"
+			                th:attr="onclick=|likeVideo(${videoNum}, ${currentUserNum}, '${isLiked}')|">
+			            <i th:classappend="${isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+			        </button>
+			        <span class="like-count ms-0" th:text="${likeCount}"></span>
+			    </div>
+			    <div class="d-flex align-items-center">
+			        <div><i class="bi bi-chat"></i> <span th:text="${commentCount}"></span></div>
+			    </div>
+			    <div class="d-flex align-items-center">
+			        <div><i class="bi bi-share"></i> 593</div>
+			    </div>
+			</div>
         </div>
 
         <div class="comments-section">
@@ -518,13 +518,17 @@
                 }, 3000);
             }
 
-            function navigateVideo(videoNum, userNum, weekOffset) {
-                if (videoNum === 0) {
-                    alert("더 이상의 영상이 없습니다.");
-                } else {
-                    window.location.href = '/bestvideos/video/' + videoNum + '?userNum=' + userNum + '&weekOffset=' + weekOffset;
-                }
-            }
+			function navigateVideo(videoNum, weekOffset, topicNum) {
+			    if (videoNum === 0) {
+			        alert("더 이상의 영상이 없습니다.");
+			    } else {
+			        let url = `/bestvideos/video/${videoNum}?weekOffset=${weekOffset}`;
+			        if (topicNum !== null) {
+			            url += `&topicNum=${topicNum}`;
+			        }
+			        window.location.href = url;
+			    }
+			}
 
             function navigateToBestVideos(weekOffset) {
                 window.location.href = '/bestvideos?weekOffset=' + weekOffset;

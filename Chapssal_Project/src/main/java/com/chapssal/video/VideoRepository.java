@@ -11,8 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.chapssal.user.User;
 
 public interface VideoRepository extends JpaRepository<Video, Integer> {
-
-	int countByUser_UserNum(Integer userNum);
+    int countByUser_UserNum(Integer userNum);
     List<Video> findByUserInOrderByVideoNumDesc(List<User> users);
     List<Video> findByUser_UserNum(Integer userNum);
     List<Video> findByUser_UserNumOrderByUploadDateDesc(Integer userNum);
@@ -20,10 +19,15 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     Optional<Video> findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(int userNum, int videoNum);
     Optional<Video> findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(int userNum, int videoNum);
 
-    @Query("SELECT v FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video WHERE v.topic = :topic GROUP BY v.videoNum ORDER BY COUNT(vl) DESC")
-    List<Video> findTopVideosByTopic(@Param("topic") Integer topic);
+    @Query("SELECT v FROM Video v " +
+            "LEFT JOIN VideoLike vl ON v = vl.video " +
+            "WHERE v.topic = :topic " +
+            "GROUP BY v.videoNum ORDER BY COUNT(vl) DESC")
+    List<Video> findTopVideosByTopic(Integer topic);
 
-    @Query("SELECT v, COUNT(vl) as likeCount FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video GROUP BY v.videoNum ORDER BY likeCount DESC")
+    @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
+            "LEFT JOIN VideoLike vl ON v = vl.video " +
+            "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideos();
 
     @Query("SELECT v FROM Video v WHERE v.user IN :users")
@@ -43,19 +47,22 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
     List<Object[]> findAllVideosOrderedByLikes();
 
-//  @Query("SELECT v, COUNT(vl) as likeCount FROM Video v LEFT JOIN VideoLike vl ON v.videoNum = vl.video " +
-//  "WHERE v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
-//  "GROUP BY v.videoNum ORDER BY likeCount DESC")
-//List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
+            "LEFT JOIN VideoLike vl ON v = vl.video " +
+            "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
+            "AND v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
+            "GROUP BY v.videoNum ORDER BY likeCount DESC")
+    List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-	@Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
-		  "LEFT JOIN VideoLike vl ON v.videoNum = vl.video " +
-		  "AND vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
-		  "WHERE v.uploadDate >= :startDate AND v.uploadDate < :endDate " +
-		  "GROUP BY v.videoNum ORDER BY likeCount DESC")
-	List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT v, COUNT(vl) as likeCount FROM Video v " +
+            "LEFT JOIN VideoLike vl ON v = vl.video " +
+            "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
+            "AND v.uploadDate >= :startDate AND v.uploadDate < :endDate AND v.topic = :topic " +
+            "GROUP BY v.videoNum ORDER BY likeCount DESC")
+    List<Object[]> findTopVideosForWeekAndTopic(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("topic") int topic);
+
 
     List<Video> findByTitleContaining(String title);
-	List<Video> findByTopicOrderByVideoNumAsc(int topic);
-    
+    List<Video> findByTopicOrderByVideoNumAsc(int topic);
 }

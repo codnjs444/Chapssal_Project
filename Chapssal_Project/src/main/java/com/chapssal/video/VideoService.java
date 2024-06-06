@@ -232,4 +232,9 @@ public class VideoService {
         }
         return 0; // 이전 영상이 없을 경우 0 반환
     }
+    
+
+    public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
+        return videoRepository.findTopVideosForWeekAndTopic(startDate, endDate, topic);
+    }
 }

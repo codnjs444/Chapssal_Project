@@ -314,8 +314,9 @@ public class VideoController {
     }
     
     @GetMapping("/bestvideos/video/{videoNum}")
-    public String getBestVideosVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum,
-                                         @RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+    public String getBestVideosVideoPage(@PathVariable("videoNum") int videoNum,
+                                         @RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset,
+                                         @RequestParam(value = "topicNum", required = false) Integer topicNum, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";  // 로그인 페이지로 리다이렉트
@@ -334,10 +335,7 @@ public class VideoController {
         User currentUser = currentUserOptional.get();
         Integer currentUserNum = currentUser.getUserNum();
         Video video = videoOptional.get();
-        User user = userService.findByUserNum(userNum);
-        if (user == null) {
-            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
-        }
+        User user = video.getUser();
 
         String userName = user.getUserName();
         String schoolName = user.getSchool().getSchoolName();
@@ -346,18 +344,18 @@ public class VideoController {
         model.addAttribute("userName", userName);
         model.addAttribute("schoolName", schoolName);
         model.addAttribute("profilePictureUrl", profilePictureUrl);
-        model.addAttribute("userNum", userNum);
+        model.addAttribute("userNum", user.getUserNum());
         model.addAttribute("videoUrl", video.getVideoUrl());
         model.addAttribute("videoTitle", video.getTitle());
         model.addAttribute("videoUser", video.getUser());
         model.addAttribute("weekOffset", weekOffset);
 
-        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        boolean isFollowing = followService.isFollowing(currentUserNum, user.getUserNum());
         model.addAttribute("isFollowing", isFollowing);
         model.addAttribute("currentUserNum", currentUserNum);
 
-        List<User> followingUsers = followService.getFollowingUsers(userNum);
-        List<User> followerUsers = followService.getFollowerUsers(userNum);
+        List<User> followingUsers = followService.getFollowingUsers(user.getUserNum());
+        List<User> followerUsers = followService.getFollowerUsers(user.getUserNum());
         model.addAttribute("followingUsers", followingUsers);
         model.addAttribute("followerUsers", followerUsers);
 
@@ -386,7 +384,8 @@ public class VideoController {
         LocalDateTime startDateTime = startOfWeek.atStartOfDay();
         LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX);
 
-        List<Object[]> topVideos = videoService.findTopVideosForWeek(startDateTime, endDateTime);
+        List<Object[]> topVideos = topicNum == null ? videoService.findTopVideosForWeek(startDateTime, endDateTime)
+                : videoService.findTopVideosForWeekAndTopic(startDateTime, endDateTime, topicNum);
         int currentIndex = -1;
         for (int i = 0; i < topVideos.size(); i++) {
             if (((Video) topVideos.get(i)[0]).getVideoNum() == videoNum) {
@@ -400,9 +399,11 @@ public class VideoController {
 
         model.addAttribute("prevVideoNum", prevVideoNum);
         model.addAttribute("nextVideoNum", nextVideoNum);
+        model.addAttribute("topicNum", topicNum); // 추가
 
         return "bestvideos_video"; // bestvideos_video.html로 이동
     }
+
 
 
     @PostMapping("/video/incrementViewCount")
