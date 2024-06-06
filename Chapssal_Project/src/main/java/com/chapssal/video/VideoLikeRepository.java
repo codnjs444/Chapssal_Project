@@ -10,8 +10,6 @@ import org.springframework.data.repository.query.Param;
 public interface VideoLikeRepository extends JpaRepository<VideoLike, Integer> {
 	boolean existsByVideoAndUser(Integer video, Integer user);
     VideoLike findByVideoAndUser(Integer video, Integer user);
-    List<VideoLike> findByVideo_User_School_SchoolNameAndLikeDateBetween(String schoolName, LocalDateTime startDate, LocalDateTime endDate);
-   
     
     @Query("SELECT COUNT(vl) FROM VideoLike vl WHERE vl.video = :videoId")
     int countByVideoId(@Param("videoId") Integer videoId);

@@ -16,8 +16,6 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     List<Video> findByUserInOrderByVideoNumDesc(List<User> users);
     List<Video> findByUser_UserNum(Integer userNum);
     List<Video> findByUser_UserNumOrderByUploadDateDesc(Integer userNum);
-    
-    List<Video> findByUser_School_SchoolNameAndUploadDateBetween(String schoolName, LocalDateTime startDate, LocalDateTime endDate);
 
     Optional<Video> findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(int userNum, int videoNum);
     Optional<Video> findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(int userNum, int videoNum);
@@ -50,9 +48,8 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
            "GROUP BY v.videoNum ORDER BY likeCount DESC")
     List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
+    List<Video> findByTitleContaining(String title);
+    
     @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
     List<Video> findAllVideosOrderByUploadDateDesc();
-    
-
-     List<Video> findByTitleContaining(String title);
 }

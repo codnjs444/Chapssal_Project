@@ -16,9 +16,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.userId = :userId")
     Optional<User> findByUserId2(@Param("userId") String userId);
 
-    @Query("SELECT u FROM User u WHERE u.userNum = :userNum")
-    Optional<User> findByUserNum(@Param("userNum") int userNum);
-
 	@Query("SELECT u.userName FROM User u WHERE u.userId = :userId")
     Optional<String> findUserNameByUserId(@Param("userId") String userId);
 	
@@ -35,5 +32,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.userName LIKE CONCAT('%', :query, '%')")
     List<User> searchByUserName(@Param("query") String query);
+    
+    @Query("SELECT u FROM User u WHERE u.userNum = :userNum")
+    Optional<User> findByUserNum(@Param("userNum") int userNum);
 
 }

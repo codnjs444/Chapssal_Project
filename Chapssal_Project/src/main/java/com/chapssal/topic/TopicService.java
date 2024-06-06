@@ -101,10 +101,7 @@ public class TopicService {
     // 이 부분부터 토픽 투표 자동 추천 부분
     // 투표 횟수에 따른 상위 3개 토픽 반환
     public List<Topic> findTopTopicsByVotes() {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-
-        return selectedTopicRepository.findAllByCreateDateBetween(startOfWeek, endOfWeek).stream()
+        return selectedTopicRepository.findAll().stream()
                 .collect(Collectors.groupingBy(SelectedTopic::getTopic, Collectors.counting()))
                 .entrySet().stream()
                 .sorted(Map.Entry.<Topic, Long>comparingByValue().reversed())
@@ -115,10 +112,7 @@ public class TopicService {
 
     // 투표 횟수에 따른 특정 query로 시작하는 상위 3개 토픽 반환
     public List<Topic> findTopTopicsByVotes(String query) {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-
-        return selectedTopicRepository.findAllByCreateDateBetween(startOfWeek, endOfWeek).stream()
+        return selectedTopicRepository.findAll().stream()
                 .filter(st -> st.getTopic().getTitle().startsWith(query))
                 .collect(Collectors.groupingBy(SelectedTopic::getTopic, Collectors.counting()))
                 .entrySet().stream()
@@ -130,10 +124,7 @@ public class TopicService {
 
     // 검색 결과를 가져오는 서비스 메서드
     public List<Topic> searchTopicsByVotes(String query) {
-        LocalDateTime startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
-        LocalDateTime endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23, 59, 59);
-
-        return selectedTopicRepository.findAllByCreateDateBetween(startOfWeek, endOfWeek).stream()
+        return selectedTopicRepository.findAll().stream()
                 .filter(st -> st.getTopic().getTitle().contains(query))
                 .collect(Collectors.groupingBy(SelectedTopic::getTopic, Collectors.counting()))
                 .entrySet().stream()

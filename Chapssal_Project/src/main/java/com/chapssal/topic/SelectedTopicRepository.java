@@ -11,8 +11,6 @@ import org.springframework.data.repository.query.Param;
 public interface SelectedTopicRepository extends JpaRepository<SelectedTopic, Integer> {
     List<SelectedTopic> findByUser(User user);
     List<SelectedTopic> findByTopic(Topic topic);
-    List<SelectedTopic> findAllByCreateDateBetween(LocalDateTime start, LocalDateTime end);
-    
     
     @Query("SELECT st.topic, COUNT(st.topic) as topicCount FROM SelectedTopic st GROUP BY st.topic ORDER BY topicCount DESC LIMIT 10")
     List<Object[]> findTopicsByVoteCount();

@@ -1,11 +1,8 @@
 package com.chapssal.hashtag;
 
-import com.chapssal.video.Video;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Table(name = "hashtag")
@@ -23,7 +20,4 @@ public class Hashtag {
 
     @Column(name = "hashtagCount", nullable = false)
     private Integer hashtagCount;
-
-    @ManyToMany(mappedBy = "hashtags")
-    private List<Video> videos;
 }

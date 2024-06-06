@@ -4,9 +4,8 @@ import com.chapssal.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import com.chapssal.hashtag.Hashtag;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "video")
@@ -43,12 +42,5 @@ public class Video {
 
     @Transient // This field is not persisted in the database
     private Long likeCount;
-    
-    @ManyToMany
-    @JoinTable(
-            name = "VideoHashtag",
-            joinColumns = @JoinColumn(name = "video"),
-            inverseJoinColumns = @JoinColumn(name = "hashtag")
-    )
-    private List<Hashtag> hashtags; // List of hashtags
 }
+
