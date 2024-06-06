@@ -1,3 +1,4 @@
+
 package com.chapssal.award;
 
 import com.chapssal.user.User;
@@ -30,8 +31,8 @@ public class Award {
     private String awardName;
 
     @Column(nullable = false)
-    private int awardType;
+    private int awardType; 
 
     @Column(nullable = false)
-    private LocalDateTime awardDate;
+    private LocalDateTime awardDate;  
 }

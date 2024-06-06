@@ -1,41 +1,41 @@
 <head>
-    <style>
-        body {
-            font-size: 15px; /* 기본 폰트 크기를 설정 */
-        }
+<style>
+    body {
+        font-size: 15px; /* 기본 폰트 크기를 설정 */
+    }
 
-        .list-group-item-action {
-            cursor: pointer;
-        }
+    .list-group-item-action {
+        cursor: pointer;
+    }
 
-        #hashtagSuggestions,
-        #userSuggestions {
-            position: absolute;
-            z-index: 1000;
-            background-color: white;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-    </style>
+	#hashtagSuggestions,
+	#userSuggestions {
+	    position: absolute;
+	    z-index: 1000;
+	    background-color: white;
+	    width: 100%;
+	    max-height: 200px;
+	    overflow-y: auto;
+	    border: 1px solid #ccc;
+	    border-radius: 5px;
+	}
+</style>
 </head>
 <div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
         <a class="navbar-brand" href="/"><img th:src="${'/images/chapssal_logo.png'}" style="width: 96px; height: 54px;"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;" action="/message/search" method="get">
-                <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search" name="query">
-                <button class="btn btn-outline-success rounded-pill" type="submit">
-                    <i class="bi bi-search"></i>
-                </button>
-            </form>
+			<form class="d-flex ms-auto" role="search" style="width: 35%; margin-left: 20%;" action="/message/search" method="get">
+			      <input class="form-control rounded-pill me-2" type="search" placeholder="검색" aria-label="Search" name="query">
+			      <button class="btn btn-outline-success rounded-pill" type="submit">
+			          <i class="bi bi-search"></i>
+			      </button>
+			  </form>
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <div class="upload-container" data-bs-toggle="modal" data-bs-target="#uploadModal">
@@ -45,17 +45,17 @@
                         </button>
                     </div>
                 </li>
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link center-icon" th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
-                    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;;"></span>
-                </li>
-                <!-- 알림 아이콘 -->
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <a class="nav-link center-icon notification-icon" href="#">
-                        <i class="bi bi-bell"></i>
-                        <span id="notificationCount" class="badge bg-danger" style="display: none;"></span>
-                    </a>
-                </li>
+				<li class="nav-item" sec:authorize="isAuthenticated()">
+				    <a class="nav-link center-icon" th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
+				    <span id="messageNotificationIndicator" class="badge bg-danger" style="display: none; max-width: 5px; margin-left: 22px;;"></span>
+				</li>
+				<!-- 알림 아이콘 -->
+				<li class="nav-item" sec:authorize="isAuthenticated()">
+				    <a class="nav-link center-icon notification-icon" href="#">
+				        <i class="bi bi-bell"></i>
+				        <span id="notificationCount" class="badge bg-danger" style="display: none;"></span>
+				    </a>
+				</li>
                 <li class="nav-item">
                     <a class="nav-link" sec:authorize="isAnonymous()" th:href="@{/user/login}">로그인</a>
                 </li>
@@ -69,18 +69,18 @@
 
 
 <div th:fragment="uploadModalFragment">
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content pt-0" style="max-height: 750px; overflow-y: hidden;">
-                <form id="uploadForm" method="post" action="/video/upload" enctype="multipart/form-data" onsubmit="return prepareThumbnail()">
-                    <div class="section1" style="display: block; width: 750px;">
-                        <div class="modal-header d-flex justify-content-between align-items-center border-1">
-                            <button type="button" class="btn text-primary" data-bs-dismiss="modal" aria-label="Close">Close</button>
-                            <h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
-                            <button type="button" id="nextButton1" class="btn border-0 text-primary" disabled>Next</button>
-                        </div>
-                        <div class="modal-body pt-0">
-                            <div id="dropZone" class="p-3 text-center" style="
+	<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content pt-0" style="max-height: 750px; overflow-y: hidden;">
+				<form id="uploadForm" method="post" action="/video/upload" enctype="multipart/form-data" onsubmit="return prepareThumbnail()">
+					<div class="section1" style="display: block; width: 750px;">
+						<div class="modal-header d-flex justify-content-between align-items-center border-1">
+							<button type="button" class="btn text-primary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+							<h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
+							<button type="button" id="nextButton1" class="btn border-0 text-primary" disabled>Next</button>
+						</div>
+						<div class="modal-body pt-0">
+							<div id="dropZone" class="p-3 text-center" style="
 									display: flex;
 								    flex-direction: column;
 								    justify-content: center;
@@ -88,102 +88,102 @@
 								    border: 2px dashed #ccc; /* 드롭존 스타일을 추가 */
 								    height: 600px;
 									margin-bottom: 80px;">
-                                <p>동영상을 여기에 드래그 앤 드롭 하세요</p>
-                                <button type="button" class="btn btn-primary">컴퓨터에서 선택</button>
-                            </div>
-                            <input type="file" name="file" class="form-control d-none" id="fileInput" accept="video/*" required>
-                            <div id="previewContainer" class="mt-3 position-relative bg-black" style="height: 600px;">
-                                <video id="videoPreview" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none;">
-                                    <source id="videoSource" src="" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="section2" style="display: none; width: 750px;">
-                        <div class="modal-header d-flex justify-content-between align-items-center border-1">
-                            <button type="button" class="btn text-primary">Prev</button>
-                            <h5 class="modal-title" id="uploadModalLabel">커버 사진</h5>
-                            <button type="button" class="btn text-primary">Next</button>
-                        </div>
-                        <div class="modal-body" style="overflow-y: hidden;">
-                            <div class="row">
-                                <div class="col-8">
-                                    <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
-                                        <video id="videoPreview2" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle">
-                                            <source id="videoSource2" src="" type="video/mp4">
-                                            Your browser does not support the video tag.
-                                        </video>
-                                        <img id="thumbnailImagePreview" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
-                                        <input type="hidden" name="thumbnail" id="thumbnailInput">
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="thumbnailSlider" class="form-label">썸네일 선택</label>
-                                    <input type="range" class="form-range" id="thumbnailSlider" min="0" max="100" step="1">
-                                    <button type="button" id="selectThumbnailButton" class="btn btn-primary mt-3">컴퓨터에서 선택</button>
-                                    <input type="file" id="thumbnailInputFile" class="form-control d-none" accept="image/*">
-                                    <button type="button" id="removeThumbnailButton" class="btn btn-danger mt-3" style="display: none;">썸네일 제거</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="section3" style="display: none; width: 750px; height: 650px;">
-                        <div class="modal-header d-flex justify-content-between align-items-center border-1">
-                            <button type="button" class="btn text-primary">Prev</button>
-                            <h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
-                            <button type="submit" class="btn text-primary p-0">게시하기</button>
-                        </div>
-                        <div class="modal-body" style="overflow-y: hidden; height: 590px;">
-                            <div class="row">
-                                <!-- 왼쪽: 영상 미리보기 -->
-                                <div class="col-6">
-                                    <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
-                                        <video id="videoPreview3" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle">
-                                            <source id="videoSource3" src="" type="video/mp4">
-                                            Your browser does not support the video tag.
-                                        </video>
-                                        <img id="thumbnailImagePreview3" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
-                                    </div>
-                                </div>
-                                <!-- 오른쪽: 주제 선택과 내용 작성 -->
-                                <div class="col-6">
-                                    <select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
-                                        <option>(영상 카테고리)</option>
-                                        <option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
-                                    </select>
-                                    <br>
-                                    <br>
-                                    <textarea name="title" id="title" class="form-control" placeholder="내용을 입력해주세요." style="resize:none; height: 200px;"></textarea>
-                                    <div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-                                    <div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 경고창 HTML 추가 -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">게시물을 삭제하시겠어요?</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    지금 나가면 수정 사항이 저장되지 않습니다.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-danger" id="confirmDelete">삭제</button>
-                </div>
-            </div>
-        </div>
-    </div>
+							    <p>동영상을 여기에 드래그 앤 드롭 하세요</p>
+								<button type="button" class="btn btn-primary">컴퓨터에서 선택</button>
+							</div>
+							<input type="file" name="file" class="form-control d-none" id="fileInput" accept="video/*" required>
+							<div id="previewContainer" class="mt-3 position-relative bg-black" style="height: 600px;">
+							    <video id="videoPreview" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none;">
+							        <source id="videoSource" src="" type="video/mp4">
+							        Your browser does not support the video tag.
+							    </video>
+							</div>
+						</div>
+					</div>
+					<div class="section2" style="display: none; width: 750px;">
+						<div class="modal-header d-flex justify-content-between align-items-center border-1">
+							<button type="button" class="btn text-primary">Prev</button>
+							<h5 class="modal-title" id="uploadModalLabel">커버 사진</h5>
+							<button type="button" class="btn text-primary">Next</button>
+						</div>
+						<div class="modal-body" style="overflow-y: hidden;">
+							<div class="row">
+								<div class="col-8">
+								    <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
+								        <video id="videoPreview2" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle">
+								            <source id="videoSource2" src="" type="video/mp4">
+								            Your browser does not support the video tag.
+								        </video>
+										<img id="thumbnailImagePreview" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
+										<input type="hidden" name="thumbnail" id="thumbnailInput">
+								    </div>
+								</div>
+								<div class="col-4">
+								    <label for="thumbnailSlider" class="form-label">썸네일 선택</label>
+								    <input type="range" class="form-range" id="thumbnailSlider" min="0" max="100" step="1">
+								    <button type="button" id="selectThumbnailButton" class="btn btn-primary mt-3">컴퓨터에서 선택</button>
+								    <input type="file" id="thumbnailInputFile" class="form-control d-none" accept="image/*">
+									<button type="button" id="removeThumbnailButton" class="btn btn-danger mt-3" style="display: none;">썸네일 제거</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="section3" style="display: none; width: 750px; height: 650px;">
+					    <div class="modal-header d-flex justify-content-between align-items-center border-1">
+					        <button type="button" class="btn text-primary">Prev</button>
+					        <h5 class="modal-title" id="uploadModalLabel">영상 업로드</h5>
+					        <button type="submit" class="btn text-primary p-0">게시하기</button>
+					    </div>
+					    <div class="modal-body" style="overflow-y: hidden; height: 590px;">
+					        <div class="row">
+					            <!-- 왼쪽: 영상 미리보기 -->
+					            <div class="col-6">
+					                <div id="videoPreviewContainer" class="position-relative bg-black" style="height: 600px;">
+					                    <video id="videoPreview3" controls class="w-100 h-100 position-absolute top-50 start-50 translate-middle">
+					                        <source id="videoSource3" src="" type="video/mp4">
+					                        Your browser does not support the video tag.
+					                    </video>
+					                    <img id="thumbnailImagePreview3" class="w-100 h-100 position-absolute top-50 start-50 translate-middle" style="display: none; object-fit: contain; width: 100%; height: 100%;">
+					                </div>
+					            </div>
+					            <!-- 오른쪽: 주제 선택과 내용 작성 -->
+					            <div class="col-6">
+					                <select name="topic" class="form-control text-center" id="topic" required style="height: 100px; font-size: 16px;">
+					                    <option>(영상 카테고리)</option>
+					                    <option th:each="topic : ${topicsByVoteCount}" th:value="${topic[0].topicNum}" th:text="${topic[0].title}"></option>
+					                </select>
+					                <br>
+					                <br>
+					                <textarea name="title" id="title" class="form-control" placeholder="내용을 입력해주세요." style="resize:none; height: 200px;"></textarea>
+					                <div id="hashtagSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+					                <div id="userSuggestions" class="list-group position-absolute" style="z-index: 1000;"></div>
+					            </div>
+					        </div>
+					    </div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 경고창 HTML 추가 -->
+	<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="confirmModalLabel">게시물을 삭제하시겠어요?</h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                지금 나가면 수정 사항이 저장되지 않습니다.
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+	                <button type="button" class="btn btn-danger" id="confirmDelete">삭제</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 </div>
 
 <!-- 스크립트를 별도의 프래그먼트로 분리 -->
@@ -204,10 +204,10 @@
 			const titleInput = document.getElementById('title');
 			const hashtagSuggestions = document.getElementById('hashtagSuggestions');
 			const userSuggestions = document.getElementById('userSuggestions');
-
+			
             const thumbnailCanvas = document.createElement('canvas'); // 썸네일 캔버스를 동적으로 생성
             const thumbnailInput = document.getElementById('thumbnailInput');
-
+			
 			const section1 = document.querySelector('.section1');
 			const section2 = document.querySelector('.section2');
 			const section3 = document.querySelector('.section3');
@@ -225,7 +225,7 @@
 			function enableThumbnailSlider() {
 			    thumbnailSlider.disabled = false;
 			}
-
+			
 			// 모달이 숨겨질 때 초기화
 			document.getElementById('uploadModal').addEventListener('hidden.bs.modal', function () {
 				fileInput.value = ''; // 파일 입력 초기화
@@ -324,7 +324,7 @@
 			    section2.style.display = 'block';
 				modalContent.style.height = '750px';
 			});
-
+			
 			// 슬라이더 최대값을 비디오 길이로 설정
 			videoPreview2.addEventListener('loadedmetadata', function() {
 			    thumbnailSlider.max = videoPreview2.duration;
@@ -514,7 +514,7 @@
 					modalContent.style.height = '550px';
 		        }
 		    });
-
+			
 			const uploadModal = document.getElementById('uploadModal');
 			const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
 			const confirmDeleteButton = document.getElementById('confirmDelete');
@@ -542,303 +542,293 @@
 
 <!-- 알림 패널 -->
 <div th:fragment="notificationPanelFragment">
-    <div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 400px;">
-        <div class="notification-header">
-            <h5>알림</h5>
-            <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
-        </div>
-        <div class="notification-body">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a id="allTab" class="nav-link active" href="#" onclick="showNotifications('all')">모든 활동</a>
-                </li>
-                <li class="nav-item">
-                    <a id="likeVideoTab" class="nav-link" href="#" onclick="showNotifications('like_video')">좋아요</a>
-                </li>
-                <li class="nav-item">
-                    <a id="followTab" class="nav-link" href="#" onclick="showNotifications('follow')">팔로우</a>
-                </li>
-            </ul>
-            <ul id="notificationList" class="mt-3">
-                <!-- 알림 항목이 여기에 추가됩니다 -->
-            </ul>
-            <!-- 알림이 없을 때 표시할 아이콘과 텍스트 -->
-            <div id="noNotifications" class="text-center mt-5" style="display: none;">
-                <i class="bi bi-bell-slash" style="font-size: 3rem; color: #aaa;"></i>
-                <p class="mt-3">계정에 대한 알림은 여기에 표시됩니다.</p>
-            </div>
-        </div>
-    </div>
+	<div id="notificationPanel" class="notification-panel" style="display: none; position: absolute; right: 10px; top: 60px; background-color: white; border: 1px solid #ddd; padding: 10px; width: 400px;">
+	    <div class="notification-header">
+	        <h5>알림</h5>
+	        <button type="button" class="btn-close" aria-label="Close" onclick="toggleNotifications()"></button>
+	    </div>
+	    <div class="notification-body">
+	        <ul class="nav nav-tabs">
+	            <li class="nav-item">
+	                <a id="allTab" class="nav-link active" href="#" onclick="showNotifications('all')">모든 활동</a>
+	            </li>
+	            <li class="nav-item">
+	                <a id="likeVideoTab" class="nav-link" href="#" onclick="showNotifications('like_video')">좋아요</a>
+	            </li>
+	            <li class="nav-item">
+	                <a id="followTab" class="nav-link" href="#" onclick="showNotifications('follow')">팔로우</a>
+	            </li>
+	        </ul>
+	        <ul id="notificationList" class="mt-3">
+	            <!-- 알림 항목이 여기에 추가됩니다 -->
+	        </ul>
+	        <!-- 알림이 없을 때 표시할 아이콘과 텍스트 -->
+	        <div id="noNotifications" class="text-center mt-5" style="display: none;">
+	            <i class="bi bi-bell-slash" style="font-size: 3rem; color: #aaa;"></i>
+	            <p class="mt-3">계정에 대한 알림은 여기에 표시됩니다.</p>
+	        </div>
+	    </div>
+	</div>
 </div>
 
 <!-- 알림 패널 스크립트를 별도의 프래그먼트로 분리 -->
 <th:block th:fragment="notificationPanelScript">
     <style>
-        .notification-panel {
-            font-family: Arial, sans-serif;
-        }
+		.notification-panel {
+		    font-family: Arial, sans-serif;
+		}
 
-        .notification-header h6 {
-            font-size: 14px;
-            margin: 0;
-        }
+		.notification-header h6 {
+		    font-size: 14px;
+		    margin: 0;
+		}
 
-        .notification-body .nav-tabs .nav-link {
-            color: #000;
-            font-size: 12px;
-            border: none;
-            border-bottom: 2px solid transparent;
-        }
+		.notification-body .nav-tabs .nav-link {
+		    color: #000;
+		    font-size: 12px;
+		    border: none;
+		    border-bottom: 2px solid transparent;
+		}
 
-        .notification-body .nav-tabs .nav-link.active {
-            font-weight: bold;
-            border-bottom: 2px solid #000; /* 검정색 구분선 */
-        }
+		.notification-body .nav-tabs .nav-link.active {
+		    font-weight: bold;
+		    border-bottom: 2px solid #000; /* 검정색 구분선 */
+		}
 
-        .notification-body ul {
-            padding: 0;
-            list-style: none;
-            margin-top: 10px;
-        }
+		.notification-body ul {
+		    padding: 0;
+		    list-style: none;
+		    margin-top: 10px;
+		}
 
-        .notification-body ul li {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-        }
+		.notification-body ul li {
+		    padding: 5px 0;
+		    border-bottom: 1px solid #eee;
+		    display: flex;
+		    align-items: center;
+		}
 
-        .notification-body ul li span {
-            font-size: 12px;
-        }
+		.notification-body ul li span {
+		    font-size: 12px;
+		}
 
-        .notification-body ul li button {
-            font-size: 10px;
-            padding: 2px 5px;
-            margin-left: 10px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 3px;
-        }
+		.notification-body ul li button {
+		    font-size: 10px;
+		    padding: 2px 5px;
+		    margin-left: 10px;
+		    border: none;
+		    background-color: #007bff;
+		    color: white;
+		    border-radius: 3px;
+		}
 
-        .notification-body ul li button:hover {
-            background-color: #0056b3;
-        }
+		.notification-body ul li button:hover {
+		    background-color: #0056b3;
+		}
 
-        .notification-profile-image {
-            width: 30px;
-            height: 30px;
-            object-fit: cover;
-        }
+		.notification-profile-image {
+		    width: 30px;
+		    height: 30px;
+		    object-fit: cover;
+		}
 
-        .notification-tooltip {
-            position: absolute;
-            top: 30px;
-            right: 0;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            width: 320px;
-            display: none;
-        }
+		.notification-tooltip {
+		    position: absolute;
+		    top: 30px;
+		    right: 0;
+		    background-color: #fff;
+		    border: 1px solid #ddd;
+		    border-radius: 5px;
+		    padding: 10px;
+		    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		    z-index: 1000;
+		    width: 320px;
+		    display: none;
+		}
 
-        .notification-tooltip::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            right: 10px;
-            border-width: 10px;
-            border-style: solid;
-            border-color: #fff transparent transparent transparent;
-        }
+		.notification-tooltip::after {
+		    content: '';
+		    position: absolute;
+		    bottom: -10px;
+		    right: 10px;
+		    border-width: 10px;
+		    border-style: solid;
+		    border-color: #fff transparent transparent transparent;
+		}
 
 
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function toggleNotifications() {
-                var panel = document.getElementById('notificationPanel');
-                if (panel.style.display === 'none' || panel.style.display === '') {
-                    panel.style.display = 'block';
-                } else {
-                    panel.style.display = 'none';
-                }
-            }
+		document.addEventListener('DOMContentLoaded', function() {
+		    function toggleNotifications() {
+		        var panel = document.getElementById('notificationPanel');
+		        if (panel.style.display === 'none' || panel.style.display === '') {
+		            panel.style.display = 'block';
+		        } else {
+		            panel.style.display = 'none';
+		        }
+		    }
 
-            document.querySelector('.notification-icon').addEventListener('click', function(event) {
-                event.stopPropagation();
-                toggleNotifications();
-            });
+		    document.querySelector('.notification-icon').addEventListener('click', function(event) {
+		        event.stopPropagation();
+		        toggleNotifications();
+		    });
 
-            document.addEventListener('click', function(event) {
-                var panel = document.getElementById('notificationPanel');
-                if (!panel.contains(event.target) && panel.style.display === 'block') {
-                    panel.style.display = 'none';
-                }
-            });
+		    document.addEventListener('click', function(event) {
+		        var panel = document.getElementById('notificationPanel');
+		        if (!panel.contains(event.target) && panel.style.display === 'block') {
+		            panel.style.display = 'none';
+		        }
+		    });
 
-            document.getElementById('notificationPanel').addEventListener('click', function(event) {
-                event.stopPropagation();
-            });
+		    document.getElementById('notificationPanel').addEventListener('click', function(event) {
+		        event.stopPropagation();
+		    });
 
-                fetch('/notifications/unread')
-                    .then(response => response.text())
-                    .then(text => {
-                        try {
-                            const data = JSON.parse(text);
-                            console.log(data); // 데이터를 콘솔에 출력하여 확인
-                            var count = document.getElementById('notificationCount');
-                            count.innerText = data.length;
-                            count.style.display = data.length > 0 ? 'block' : 'none';
+		    fetch('/notifications/unread')
+		        .then(response => response.json())
+		        .then(data => {
+		            var count = document.getElementById('notificationCount');
+		            count.innerText = data.length;
+		            count.style.display = data.length > 0 ? 'block' : 'none';
 
-                            updateNotificationList(data);
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                            alert('서버에서 알림 데이터를 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching unread notifications:', error);
-                        alert('서버에서 알림 데이터를 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
-                    });
+		            updateNotificationList(data);
+		        })
+		        .catch(error => console.error('Error fetching unread notifications:', error));
 
-            const eventSource = new EventSource('/notifications/stream');
-            eventSource.onmessage = function(event) {
-                const notification = JSON.parse(event.data);
-                addNotification(notification);
-                updateNotificationCount(1);
-                // 실시간 알림이 도착했을 때 3초 동안 화면에 표시
-                showAlert('', generateMessage(notification));
-            };
+		    const eventSource = new EventSource('/notifications/stream');
+		    eventSource.onmessage = function(event) {
+		        const notification = JSON.parse(event.data);
+		        addNotification(notification);
+		        updateNotificationCount(1);
+		        // 실시간 알림이 도착했을 때 3초 동안 화면에 표시
+		        showAlert('', generateMessage(notification));
+		    };
 
-            function addNotification(notification) {
-                var notificationList = document.getElementById('notificationList');
-                var noNotifications = document.getElementById('noNotifications');
-                noNotifications.style.display = 'none';
+			function addNotification(notification) {
+			    var notificationList = document.getElementById('notificationList');
+			    var noNotifications = document.getElementById('noNotifications');
+			    noNotifications.style.display = 'none';
 
-                var listItem = document.createElement('li');
-                listItem.id = 'notification-' + notification.notiNum;
+			    var listItem = document.createElement('li');
+			    listItem.id = 'notification-' + notification.notiNum;
 
-                var messageSpan = document.createElement('span');
-                switch (notification.type.toLowerCase()) {
-                    case 'follow':
-                        messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
-                        break;
-                    case 'like_video':
-                        messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 <a href="/video/${notification.video.videoNum}?userNum=${notification.user.userNum}" class="video-link">당신의 동영상</a>을 좋아합니다.`;
-                        break;
-                    default:
-                        messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
-                        break;
-                }
+			    var messageSpan = document.createElement('span');
+			    switch (notification.type.toLowerCase()) {
+			        case 'follow':
+			            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 당신을 팔로우했습니다.`;
+			            break;
+			        case 'like_video':
+			            messageSpan.innerHTML = `<a href="/user/profile/${notification.sender.userNum}" class="notification-user-link"><img src="${notification.sender.profilePictureUrl}" class="rounded-circle" style="width: 30px; height: 30px;"> ${notification.sender.userName}</a>님이 <a href="/video/${notification.video.videoNum}?userNum=${notification.user.userNum}" class="video-link">당신의 동영상</a>을 좋아합니다.`;
+			            break;
+			        default:
+			            messageSpan.innerHTML = `알 수 없는 알림 유형입니다.`;
+			            break;
+			    }
 
-                var confirmButton = document.createElement('button');
-                confirmButton.textContent = '확인';
-                confirmButton.onclick = function() {
-                    confirmNotification(notification.notiNum);
-                    listItem.remove();
-                    updateNotificationCount(-1);
-                };
+			    var confirmButton = document.createElement('button');
+			    confirmButton.textContent = '확인';
+			    confirmButton.onclick = function() {
+			        confirmNotification(notification.notiNum);
+			        listItem.remove();
+			        updateNotificationCount(-1);
+			    };
 
-                listItem.appendChild(messageSpan);
-                listItem.appendChild(confirmButton);
-                notificationList.appendChild(listItem);
+			    listItem.appendChild(messageSpan);
+			    listItem.appendChild(confirmButton);
+			    notificationList.appendChild(listItem);
 
-                var userLink = listItem.querySelector('.notification-user-link');
-                if (userLink) {
-                    userLink.addEventListener('click', function(event) {
-                        document.getElementById('notificationPanel').style.display = 'none';
-                    });
-                }
-            }
+			    var userLink = listItem.querySelector('.notification-user-link');
+			    if (userLink) {
+			        userLink.addEventListener('click', function(event) {
+			            document.getElementById('notificationPanel').style.display = 'none';
+			        });
+			    }
+			}
 
 
 
-            function confirmNotification(notificationId) {
-                fetch('/notifications/mark-as-read/' + notificationId, {
-                    method: 'POST'
-                }).then(response => {
-                    if (!response.ok) {
-                        console.error('Error marking notification as read');
-                    } else {
-                        document.querySelectorAll(`[id^='notification-']`).forEach(function(element) {
-                            if (element.id.includes(notificationId)) {
-                                element.remove();
-                            }
-                        });
-                    }
-                });
-            }
+		    function confirmNotification(notificationId) {
+		        fetch('/notifications/mark-as-read/' + notificationId, {
+		            method: 'POST'
+		        }).then(response => {
+		            if (!response.ok) {
+		                console.error('Error marking notification as read');
+		            } else {
+		                document.querySelectorAll(`[id^='notification-']`).forEach(function(element) {
+		                    if (element.id.includes(notificationId)) {
+		                        element.remove();
+		                    }
+		                });
+		            }
+		        });
+		    }
 
-            function updateNotificationCount(change) {
-                var countElement = document.getElementById('notificationCount');
-                var count = parseInt(countElement.innerText);
+		    function updateNotificationCount(change) {
+		        var countElement = document.getElementById('notificationCount');
+		        var count = parseInt(countElement.innerText);
 
-                count += change;
-                countElement.innerText = count;
+		        count += change;
+		        countElement.innerText = count;
 
-                countElement.style.display = count > 0 ? 'block' : 'none';
-            }
+		        countElement.style.display = count > 0 ? 'block' : 'none';
+		    }
 
-            function showAlert(title, message) {
-                const notificationIcon = document.querySelector('.notification-icon');
-                const tooltip = document.createElement('div');
-                tooltip.className = 'notification-tooltip';
-                tooltip.innerHTML = `<strong>${title}</strong> ${message}`;
-                notificationIcon.appendChild(tooltip);
-                tooltip.style.display = 'block';
+		    function showAlert(title, message) {
+		        const notificationIcon = document.querySelector('.notification-icon');
+		        const tooltip = document.createElement('div');
+		        tooltip.className = 'notification-tooltip';
+		        tooltip.innerHTML = `<strong>${title}</strong> ${message}`;
+		        notificationIcon.appendChild(tooltip);
+		        tooltip.style.display = 'block';
 
-                setTimeout(() => {
-                    tooltip.remove();
-                }, 3000); // 3초 후에 알람을 자동으로 제거
-            }
+		        setTimeout(() => {
+		            tooltip.remove();
+		        }, 3000); // 3초 후에 알람을 자동으로 제거
+		    }
 
-            function generateMessage(notification) {
-                switch (notification.type.toLowerCase()) {
-                    case 'follow':
-                        return `${notification.sender.userName}님이 당신을 팔로우했습니다.`;
-                    case 'like_video':
-                        return `${notification.sender.userName}님이 당신의 동영상을 좋아합니다.`;
-                    default:
-                        return `알 수 없는 알림 유형입니다.`;
-                }
-            }
+		    function generateMessage(notification) {
+		        switch (notification.type.toLowerCase()) {
+		            case 'follow':
+		                return `${notification.sender.userName}님이 당신을 팔로우했습니다.`;
+		            case 'like_video':
+		                return `${notification.sender.userName}님이 당신의 동영상을 좋아합니다.`;
+		            default:
+		                return `알 수 없는 알림 유형입니다.`;
+		        }
+		    }
 
-            function updateNotificationList(notifications) {
-                var notificationList = document.getElementById('notificationList');
-                var noNotifications = document.getElementById('noNotifications');
-                notificationList.innerHTML = '';
+		    function updateNotificationList(notifications) {
+		        var notificationList = document.getElementById('notificationList');
+		        var noNotifications = document.getElementById('noNotifications');
+		        notificationList.innerHTML = '';
 
-                if (notifications.length === 0) {
-                    noNotifications.style.display = 'block';
-                } else {
-                    noNotifications.style.display = 'none';
-                    notifications.forEach(notification => {
-                        addNotification(notification);
-                    });
-                }
-            }
+		        if (notifications.length === 0) {
+		            noNotifications.style.display = 'block';
+		        } else {
+		            noNotifications.style.display = 'none';
+		            notifications.forEach(notification => {
+		                addNotification(notification);
+		            });
+		        }
+		    }
 
-            window.showNotifications = function(type) {
-                fetch('/notifications/unread')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (type === 'all') {
-                            updateNotificationList(data);
-                        } else {
-                            const filteredNotifications = data.filter(notification => notification.type.toLowerCase() === type.toLowerCase());
-                            updateNotificationList(filteredNotifications);
-                        }
-                    })
-                    .catch(error => console.error('Error fetching notifications:', error));
-            };
+		    window.showNotifications = function(type) {
+		        fetch('/notifications/unread')
+		            .then(response => response.json())
+		            .then(data => {
+		                if (type === 'all') {
+		                    updateNotificationList(data);
+		                } else {
+		                    const filteredNotifications = data.filter(notification => notification.type.toLowerCase() === type.toLowerCase());
+		                    updateNotificationList(filteredNotifications);
+		                }
+		            })
+		            .catch(error => console.error('Error fetching notifications:', error));
+		    };
 
-            window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
-        });
+		    window.toggleNotifications = toggleNotifications; // toggleNotifications 함수를 전역으로 설정
+		});
 
 
     </script>

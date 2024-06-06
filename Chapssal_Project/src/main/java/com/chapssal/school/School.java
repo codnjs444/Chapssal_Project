@@ -35,8 +35,4 @@ public class School {
     @Column(length = 255, nullable = false, unique = true)
     private String schoolCode;
 
-    // 새로 추가된 schoolPictureUrl 칼럼
-    @Column(length = 255, nullable = true)
-    private String schoolPictureUrl;
-
 }
