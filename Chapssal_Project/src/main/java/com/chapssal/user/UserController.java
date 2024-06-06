@@ -289,7 +289,7 @@ public class UserController {
     public String getUserProfile(@PathVariable("userNum") Integer userNum, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
         }
 
         // 현재 로그인한 사용자의 정보를 가져옴
