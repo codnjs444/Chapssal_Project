@@ -56,4 +56,6 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
 	List<Object[]> findTopVideosForWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     List<Video> findByTitleContaining(String title);
+	List<Video> findByTopicOrderByVideoNumAsc(int topic);
+    
 }

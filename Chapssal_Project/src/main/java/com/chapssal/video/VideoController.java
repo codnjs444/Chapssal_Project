@@ -312,6 +312,97 @@ public class VideoController {
 
         return "video"; // video.html로 이동
     }
+    
+    @GetMapping("/bestvideos/video/{videoNum}")
+    public String getBestVideosVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum,
+                                         @RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        Optional<Video> videoOptional = videoService.findById(videoNum);
+
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        if (!videoOptional.isPresent()) {
+            return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
+        }
+
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum();
+        Video video = videoOptional.get();
+        User user = userService.findByUserNum(userNum);
+        if (user == null) {
+            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
+        }
+
+        String userName = user.getUserName();
+        String schoolName = user.getSchool().getSchoolName();
+        String profilePictureUrl = user.getProfilePictureUrl();
+
+        model.addAttribute("userName", userName);
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("profilePictureUrl", profilePictureUrl);
+        model.addAttribute("userNum", userNum);
+        model.addAttribute("videoUrl", video.getVideoUrl());
+        model.addAttribute("videoTitle", video.getTitle());
+        model.addAttribute("videoUser", video.getUser());
+        model.addAttribute("weekOffset", weekOffset);
+
+        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("currentUserNum", currentUserNum);
+
+        List<User> followingUsers = followService.getFollowingUsers(userNum);
+        List<User> followerUsers = followService.getFollowerUsers(userNum);
+        model.addAttribute("followingUsers", followingUsers);
+        model.addAttribute("followerUsers", followerUsers);
+
+        boolean isLiked = videoLikeService.isLikedByUser(videoNum, currentUserNum);
+        model.addAttribute("isLiked", isLiked);
+        int likeCount = videoLikeService.countLikesByVideoId(videoNum);
+        model.addAttribute("likeCount", likeCount);
+
+        List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
+        }
+        commentService.setLikeCountsForComments(comments);
+        model.addAttribute("comments", comments);
+        int commentCount = commentService.countCommentsByVideoNum(videoNum);
+        model.addAttribute("commentCount", commentCount);
+
+        // 베스트 비디오 목록을 가져와서 이전 및 다음 비디오를 설정
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.atTime(LocalTime.MAX);
+
+        List<Object[]> topVideos = videoService.findTopVideosForWeek(startDateTime, endDateTime);
+        int currentIndex = -1;
+        for (int i = 0; i < topVideos.size(); i++) {
+            if (((Video) topVideos.get(i)[0]).getVideoNum() == videoNum) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int prevVideoNum = currentIndex > 0 ? ((Video) topVideos.get(currentIndex - 1)[0]).getVideoNum() : 0;
+        int nextVideoNum = currentIndex < topVideos.size() - 1 ? ((Video) topVideos.get(currentIndex + 1)[0]).getVideoNum() : 0;
+
+        model.addAttribute("prevVideoNum", prevVideoNum);
+        model.addAttribute("nextVideoNum", nextVideoNum);
+
+        return "bestvideos_video"; // bestvideos_video.html로 이동
+    }
 
 
     @PostMapping("/video/incrementViewCount")

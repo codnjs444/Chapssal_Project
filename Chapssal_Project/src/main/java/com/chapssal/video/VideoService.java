@@ -213,5 +213,23 @@ public class VideoService {
                 .map(Video::getTitle)
                 .collect(Collectors.toList());
     }
+    public int getNextVideoIdByTopic(int videoNum, int topicNum) {
+        List<Video> videos = videoRepository.findByTopicOrderByVideoNumAsc(topicNum);
+        for (int i = 0; i < videos.size(); i++) {
+            if (videos.get(i).getVideoNum() == videoNum && i < videos.size() - 1) {
+                return videos.get(i + 1).getVideoNum();
+            }
+        }
+        return 0; // 다음 영상이 없을 경우 0 반환
+    }
 
+    public int getPrevVideoIdByTopic(int videoNum, int topicNum) {
+        List<Video> videos = videoRepository.findByTopicOrderByVideoNumAsc(topicNum);
+        for (int i = 0; i < videos.size(); i++) {
+            if (videos.get(i).getVideoNum() == videoNum && i > 0) {
+                return videos.get(i - 1).getVideoNum();
+            }
+        }
+        return 0; // 이전 영상이 없을 경우 0 반환
+    }
 }
