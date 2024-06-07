@@ -10,13 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,29 +43,15 @@ public class MessageController {
     }
 
     @GetMapping("/unread-count")
-    public ResponseEntity<Map<String, Integer>> getUnreadMessageCount(Principal principal) {
-        if (principal == null) {
+    public ResponseEntity<Map<String, Integer>> getUnreadMessageCount(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String username = extractUsername(principal);
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        String username = userDetails.getUsername();
         int count = messageService.countUnreadMessagesForUser(username);
         Map<String, Integer> response = new HashMap<>();
         response.put("count", count);
         return ResponseEntity.ok(response);
-    }
-
-    private String extractUsername(Principal principal) {
-        if (principal instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) principal;
-            return oauthToken.getName();
-        } else if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername();
-        } else {
-            return null;
-        }
     }
 
     public void sendSseEventToUser(int userId, String messageContent) {
@@ -84,32 +69,15 @@ public class MessageController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<User> getUserInfo(Principal principal) {
-        if (principal == null) {
-            System.out.println("Principal is null");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String username = extractUsername(principal);
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public ResponseEntity<User> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
         User user = userRepository.findByUserId(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/subscribe")
-    public ResponseEntity<SseEmitter> subscribe(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String username = extractUsername(principal);
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+    public SseEmitter subscribe(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
         User user = userRepository.findByUserId(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         int userId = user.getUserNum();
 
@@ -126,6 +94,6 @@ public class MessageController {
             emitter.completeWithError(e);
         }
 
-        return ResponseEntity.ok(emitter);
+        return emitter;
     }
 }

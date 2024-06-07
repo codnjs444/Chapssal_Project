@@ -242,9 +242,9 @@
 		<div layout:fragment="content" class="container">
 		    <div class="video-list">
 		        <div th:if="${videos != null}">
-					<div th:if="${videos.isEmpty()}">
-					    <p>팔로우 중인 유저가 없습니다.</p>
-					</div>
+		            <div th:if="${videos.isEmpty()}">
+		                <p>팔로우 중인 유저가 없습니다.</p>
+		            </div>
 		            <div th:each="videoData : ${videos}" class="video-item">
 		                <div class="video-content">
 		                    <div class="row">
@@ -261,7 +261,7 @@
 		                    </div>
 		                </div>
 		                <br>
-		                <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+		                <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
 		                    <video controls autoplay muted>
 		                        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
 		                        Your browser does not support the video tag.
@@ -287,60 +287,9 @@
 		        </div>
 		    </div>
 		</div>
-
-        <!-- 홈 영상 디테일 모달 -->
-        <th:block th:fragment="followingModalFragment">
-            <div id="videoModal" class="modal home-modal">
-                <span class="close home-close" onclick="closeModal()">&times;</span>
-                <div class="modal-content home-modal-content my-2 p-0">
-                    <div class="row">
-                        <div class="col home-modal-video-container">
-                            <video id="modalVideo" controls>
-                                <source id="modalVideoSource" src="" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                        <div class="col home-modal-video-content">
-                            <!-- 업로더의 프로필, 이름, 글 내용 출력 -->
-                            <div class="comment-item row uploader-info border-0 pt-3 pb-0 mb-0">
-                                <img id="modalUploaderProfile" class="rounded-circle profile-pic uploader-modal-profile col-2" alt="프로필 사진">
-                                <div class="col">
-                                    <p id="modalUploaderName"><strong></strong></p>
-                                    <p id="modalTitle"></p>
-                                </div>
-                            </div>
-                            <hr style="width: 470px;">
-                            <!-- 댓글 리스트 -->
-                            <div id="comments-list" class="comment-list">
-                                <!-- 댓글 목록이 표시될 영역 -->
-                            </div>
-                            <!-- 댓글 등록 폼 -->
-                            <hr class="mb-0" style="width: 470px;">
-                            <div class="comment-form p-0 border-0 mt-0">
-                                <div class="row pt-1 pb-0">
-                                    <button class="modal-action-btn"><i class="bi bi-heart col"></i></button>
-                                    <button class="modal-action-btn"><i class="bi bi-bookmark col"></i></button>
-                                    <button class="modal-action-btn"><i class="bi bi-share col"></i></button>
-                                </div>
-                                <p>동영상 좋아요 수</p>
-                                <p>업로드 날짜</p>
-                                <hr style="width: 470px;">
-                                <form id="commentForm">
-                                    <input type="hidden" id="videoNum" name="videoNum" />
-                                    <div class="row mx-0 mb-2" style="width: 100%;">
-                                        <textarea name="text" placeholder="댓글 달기..." class="col-10 border-0" style="height: 29px; max-height: 300px; overflow-y: auto; resize: none;"></textarea>
-                                        <button type="submit" class="col-2 bg-white border-0 text-primary">게시</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </th:block>
         
         <!-- 홈 스크립트 -->
-        <th:block th:fragment="homeVideoScript">
+        <th:block th:fragment="followingVideoScript">
             <script>
                 function styleSpecialChars(text) {
                     return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
@@ -379,118 +328,7 @@
                     document.querySelectorAll('.video-item').forEach(item => {
                         observer.observe(item);
                     });
-
-                    $(document).keydown(function(event) {
-                        if (event.key === "Escape") {
-                            closeModal();
-                        }
-                    });
-
-                    $('#commentForm').submit(function (event) {
-                        event.preventDefault();
-                        submitComment();
-                    });
-
-                    $('#commentForm textarea[name="text"]').keydown(function (event) {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            event.preventDefault();
-                            submitComment();
-                        }
-                    });
-
-                    function submitComment() {
-                        const videoNum = $('#videoNum').val();
-                        const text = $('#commentForm').find('textarea[name="text"]').val();
-
-                        $.ajax({
-                            url: '/comment/add',
-                            type: 'POST',
-                            contentType: 'application/json',
-                            data: JSON.stringify({video: {videoNum: videoNum}, text: text}),
-                            success: function (response) {
-                                fetchComments(videoNum);
-                                $('#commentForm').find('textarea[name="text"]').val('');
-                            },
-                            error: function () {
-                                alert('댓글 등록 실패');
-                            }
-                        });
-                    }
-
-                    function autoResizeTextarea(textarea) {
-                        textarea.style.height = 'auto';
-                        textarea.style.height = textarea.scrollHeight + 'px';
-                    }
-
-                    const commentTextarea = $('#commentForm textarea[name="text"]');
-                    commentTextarea.on('input', function() {
-                        autoResizeTextarea(this);
-                    });
                 });
-
-                $('.modal-open').on('click', function() {
-                    const videoContainer = $(this).closest('.video-item').find('.video-container')[0];
-                    showModal(videoContainer);
-                });
-
-                function showModal(videoContainer) {
-                    const modal = $('#videoModal');
-                    const videoNum = $(videoContainer).attr('data-video-id');
-                    const title = $(videoContainer).attr('data-title');
-                    const username = $(videoContainer).attr('data-username');
-                    const views = $(videoContainer).attr('data-views');
-                    const videoUrl = $(videoContainer).attr('data-videourl');
-
-                    const profilePicUrl = $(videoContainer).siblings('.video-content').find('img').attr('src') || '/images/default_profile.png';
-                    $('#modalUploaderProfile').attr('src', profilePicUrl);
-                    $('#modalUploaderName').text(username);
-                    $('#modalTitle').html(styleSpecialChars(title));
-                    $('#videoNum').val(videoNum);
-
-                    $('#modalVideoSource').attr('src', videoUrl);
-                    $('#modalVideo')[0].load();
-
-                    fetchComments(videoNum);
-
-                    modal.css('display', 'block');
-                    $('body').addClass('modal-open');
-                }
-
-                function closeModal() {
-                    const modal = $('#videoModal');
-                    modal.css('display', 'none');
-                    $('#modalVideo')[0].pause();
-                    $('body').removeClass('modal-open');
-                }
-
-                $(window).click(function(event) {
-                    const modal = $('#videoModal');
-                    if (event.target == modal[0]) {
-                        closeModal();
-                    }
-                });
-
-                function fetchComments(videoNum) {
-                    $.ajax({
-                        url: `/comment/video/${videoNum}`,
-                        type: 'GET',
-                        success: function(comments) {
-                            const commentsDiv = $('#comments-list');
-                            commentsDiv.empty();
-                            comments.forEach(comment => {
-                                const commentElement = $('<div>').addClass('comment-item row');
-                                const profilePic = $('<img>').attr('src', comment.user.profilePictureUrl || '/images/default_profile.png').addClass('rounded-circle profile-pic modal-profile col-2');
-                                const testElement1 = $('<div>').addClass('col p-0');
-                                const userNameAndText = $('<p>').html('<strong>' + comment.user.userName + '</strong> ' + comment.text).addClass('col');
-                                const commentLike = $('<button>').html('좋아요').addClass('row m-0 border-0 bg-white');
-
-                                testElement1.append(userNameAndText, commentLike);
-                                commentElement.append(profilePic, testElement1);
-                                commentsDiv.append(commentElement, '<br>', '<br>');
-                            });
-                        }
-                    });
-                }
             </script>
         </th:block>
     </body>

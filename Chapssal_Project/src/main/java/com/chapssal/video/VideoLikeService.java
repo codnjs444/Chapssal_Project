@@ -21,8 +21,8 @@ public class VideoLikeService {
 
     public void likeVideo(Video video, User user) {
         VideoLike videoLike = new VideoLike();
-        videoLike.setVideo(video.getVideoNum());
-        videoLike.setUser(user.getUserNum());
+        videoLike.setVideo(video);
+        videoLike.setUser(user);
         videoLike.setLikeDate(LocalDateTime.now());
         videoLikeRepository.save(videoLike);
 
@@ -32,19 +32,33 @@ public class VideoLikeService {
     }
     
     public boolean isLikedByUser(Integer videoId, Integer userId) {
-        return videoLikeRepository.existsByVideoAndUser(videoId, userId);
+        Video video = new Video();
+        video.setVideoNum(videoId);
+        User user = new User();
+        user.setUserNum(userId);
+        return videoLikeRepository.existsByVideoAndUser(video, user);
     }
     
     public int countLikesByVideoId(Integer videoId) {
-        return videoLikeRepository.countByVideoId(videoId);
+        Video video = new Video();
+        video.setVideoNum(videoId);
+        return videoLikeRepository.countByVideo(video);
     }
-    
+
     public List<VideoLike> findByVideoAndUser(int videoId, int userId) {
-        return videoLikeRepository.findByVideoAndUser(videoId, userId);
+        Video video = new Video();
+        video.setVideoNum(videoId);
+        User user = new User();
+        user.setUserNum(userId);
+        return videoLikeRepository.findByVideoAndUser(video, user);
     }
-    
+
     @Transactional // 트랜잭션 활성화
     public void deleteByVideoAndUser(int videoId, int userId) {
-        videoLikeRepository.deleteByVideoAndUser(videoId, userId);
+        Video video = new Video();
+        video.setVideoNum(videoId);
+        User user = new User();
+        user.setUserNum(userId);
+        videoLikeRepository.deleteByVideoAndUser(video, user);
     }
 }
