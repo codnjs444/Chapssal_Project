@@ -344,83 +344,6 @@
 	<th:block th:fragment="homeVideoScript">
 		<script>
 		    $(document).ready(function() {
-		        // 모든 video.title 요소를 찾아서 스타일 변경
-		        $('.video-content p').each(function() {
-		            const originalText = $(this).text();
-		            const styledText = styleSpecialChars(originalText);
-		            $(this).html(styledText);
-		        });
-
-		        let options = {
-		            root: null,
-		            rootMargin: '0px',
-		            threshold: 0.5
-		        };
-
-		        let observer = new IntersectionObserver(function(entries, observer) {
-		            entries.forEach(entry => {
-		                if (entry.isIntersecting) {
-		                    let video = entry.target.querySelector('video');
-		                    if (video) {
-		                        video.play();
-		                    }
-		                } else {
-		                    let video = entry.target.querySelector('video');
-		                    if (video) {
-		                        video.pause();
-		                    }
-		                }
-		            });
-		        }, options);
-
-		        document.querySelectorAll('.video-item').forEach(item => {
-		            observer.observe(item);
-		        });
-
-		        // 커스텀 컨트롤 핸들링
-		        $('.video-container').each(function() {
-		            const video = $(this).find('video')[0];
-		            const playPauseBtn = $(this).find('.play-pause-btn');
-		            const progressBar = $(this).find('.progress-bar');
-		            const progressContainer = $(this).find('.progress-container');
-		            const timeDisplay = $(this).find('.time-display');
-
-		            if (video) {  // video 요소가 존재하는지 확인
-		                playPauseBtn.on('click', function() {
-		                    if (video.paused) {
-		                        video.play();
-		                        playPauseBtn.text('⏸️'); // 일시정지 아이콘
-		                    } else {
-		                        video.pause();
-		                        playPauseBtn.text('▶️'); // 재생 아이콘
-		                    }
-		                });
-
-		                video.addEventListener('timeupdate', function() {
-		                    const progress = (video.currentTime / video.duration) * 100;
-		                    progressBar.css('width', progress + '%');
-
-		                    const currentTimeFormatted = formatTime(video.currentTime);
-		                    const durationFormatted = formatTime(video.duration);
-		                    timeDisplay.text(currentTimeFormatted + ' / ' + durationFormatted);
-		                });
-
-		                progressContainer.on('click', function(e) {
-		                    const offsetX = e.offsetX;
-		                    const totalWidth = $(this).width();
-		                    const clickRatio = offsetX / totalWidth;
-		                    video.currentTime = clickRatio * video.duration;
-		                });
-
-		                function formatTime(seconds) {
-		                    const minutes = Math.floor(seconds / 60);
-		                    const secs = Math.floor(seconds % 60);
-		                    return minutes + ':' + (secs < 10 ? '0' : '') + secs;
-		                }
-		            }
-		        });
-
-		        // 팔로우 상태 확인 및 버튼 업데이트
 		        const currentUserNum = $('#currentUserNum').val();
 
 		        $('.follow-btn').each(function() {
@@ -444,70 +367,79 @@
 		        });
 
 		        function updateFollowButton(followBtn, isFollowing) {
+		            const userNum = followBtn.attr('data-usernum');
+		            const videoNum = followBtn.attr('data-videonum'); // 비디오 번호 추가
+		            console.log('updateFollowButton - isFollowing:', isFollowing); // 팔로우 상태 출력
 		            if (isFollowing) {
-		                followBtn.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4'); // 핑크색 팔로잉
-		                followBtn.attr('onclick', `handleFollowButtonClick(${currentUserNum}, ${followBtn.attr('data-usernum')}, 'true')`);
+		                followBtn.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4');
+		                followBtn.off('click').on('click', function() {
+		                    handleFollowButtonClick(currentUserNum, userNum, videoNum, true); // 팔로우 상태와 함께 전달
+		                });
 		            } else {
-		                followBtn.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff'); // 푸른색 팔로우
-		                followBtn.attr('onclick', `handleFollowButtonClick(${currentUserNum}, ${followBtn.attr('data-usernum')}, 'false')`);
+		                followBtn.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff');
+		                followBtn.off('click').on('click', function() {
+		                    handleFollowButtonClick(currentUserNum, userNum, videoNum, false); // 팔로우 상태와 함께 전달
+		                });
 		            }
+		        }
+
+		        function handleFollowButtonClick(currentUserNum, userNum, videoNum, isFollowing) {
+		            console.log('handleFollowButtonClick - currentUserNum:', currentUserNum);
+		            console.log('handleFollowButtonClick - userNum:', userNum);
+		            console.log('handleFollowButtonClick - videoNum:', videoNum);
+		            console.log('handleFollowButtonClick - isFollowing:', isFollowing);
+		            followUserHome(currentUserNum, userNum, isFollowing);
+		        }
+
+		        function followUserHome(currentUserNum, userNum, isFollowing) {
+		            let url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
+		            let method = isFollowing ? 'DELETE' : 'POST';
+		            let options = {
+		                method: method,
+		                headers: {
+		                    'Content-Type': 'application/json'
+		                }
+		            };
+
+		            if (method === 'POST') {
+		                options.body = JSON.stringify({
+		                    follower: currentUserNum,
+		                    following: userNum
+		                });
+		            }
+
+		            fetch(url, options)
+		            .then(response => {
+		                if (!response.ok) {
+		                    return response.json().then(errorInfo => Promise.reject(errorInfo));
+		                }
+		                return response.json();
+		            })
+		            .then(data => {
+		                if (data.success) {
+		                    const followButton = $(`.follow-btn[data-usernum="${userNum}"]`);
+		                    if (isFollowing) {
+		                        followButton.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff');
+		                        followButton.off('click').on('click', function() {
+		                            followUserHome(currentUserNum, userNum, false); // 팔로우 상태와 함께 전달
+		                        });
+		                    } else {
+		                        followButton.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4');
+		                        followButton.off('click').on('click', function() {
+		                            followUserHome(currentUserNum, userNum, true); // 팔로우 상태와 함께 전달
+		                        });
+		                    }
+		                    alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+		                } else {
+		                    alert('작업 실패: ' + data.message);
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Error:', error);
+		                alert('작업 중 오류가 발생했습니다.');
+		            });
 		        }
 		    });
-
-		    function styleSpecialChars(text) {
-		        return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
-		                   .replace(/@(\S+)/g, '<strong>@$1</strong>');
-		    }
-
-		    function handleFollowButtonClick(currentUserNum, userNum, isFollowing) {
-		        // 알림 표시 및 사용자 확인
-		        let message = isFollowing === 'true' ? '팔로우를 취소하시겠습니까?' : '팔로우 하시겠습니까?';
-		        if (confirm(message)) {
-		            // 팔로우/언팔로우 처리
-		            followUser(currentUserNum, userNum, isFollowing);
-		        }
-		    }
-
-		    function followUser(currentUserNum, userNum, isFollowing) {
-		        let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
-		        let method = isFollowing === 'true' ? 'DELETE' : 'POST';
-
-		        fetch(url, {
-		            method: method,
-		            headers: {
-		                'Content-Type': 'application/json'
-		            },
-		            body: JSON.stringify({
-		                follower: currentUserNum,
-		                following: userNum
-		            })
-		        })
-		        .then(response => response.json())
-		        .then(data => {
-		            if (data.success) {
-		                const followButton = document.querySelector(`button[onclick*="handleFollowButtonClick(${currentUserNum}, ${userNum}"]`);
-		                if (isFollowing === 'true') {
-		                    followButton.classList.remove('following');
-		                    followButton.classList.add('not-following');
-		                    followButton.innerHTML = '팔로우';
-		                    followButton.style.backgroundColor = '#007bff'; // 푸른색 팔로우
-		                    followButton.setAttribute('onclick', `handleFollowButtonClick(${currentUserNum}, ${userNum}, 'false')`);
-		                } else {
-		                    followButton.classList.remove('not-following');
-		                    followButton.classList.add('following');
-		                    followButton.innerHTML = '팔로잉';
-		                    followButton.style.backgroundColor = '#ff69b4'; // 핑크색 팔로잉
-		                    followButton.setAttribute('onclick', `handleFollowButtonClick(${currentUserNum}, ${userNum}, 'true')`);
-		                }
-		            } else {
-		                alert('작업 실패: ' + data.message);
-		            }
-		        })
-		        .catch(error => {
-		            console.error('Error:', error);
-		            alert('작업 중 오류가 발생했습니다.');
-		        });
-		    }
 		</script>
 
 	</th:block>
