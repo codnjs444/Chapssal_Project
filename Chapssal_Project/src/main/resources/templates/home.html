@@ -210,13 +210,13 @@
 </head>
 <body>
     <div layout:fragment="content" class="container">
-        <nav class="container nav-center p-0">
-            <div class="nav nav-pills center" id="nav-tab" role="tablist">
-                <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-                <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
-            </div>
-			<input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
-        </nav>
+		<nav class="container nav-center p-0">
+		    <div class="nav nav-pills center" id="nav-tab" role="tablist">
+		        <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true" onclick="setLastSelectedTab('nav-all')">전체</button>
+		        <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}" th:onclick="|setLastSelectedTab('nav-' + ${topic[0].topicNum})|"></button>
+		    </div>
+		    <input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
+		</nav>
         <br>
         <br>
         <div class="tab-content" id="nav-tabContent">
@@ -348,9 +348,27 @@
 	<!-- 홈 스크립트 -->
 	<th:block th:fragment="homeVideoScript">
 		<script>
-			$(document).ready(function() {
-			    const currentUserNum = $('#currentUserNum').val();
-				const videoNumToShow = window.location.hash.substring(1); // 해시(#)를 이용해 특정 비디오 ID 가져오기
+		    $(document).ready(function() {
+		        const currentUserNum = $('#currentUserNum').val();
+		        const videoNumToShow = window.location.hash.substring(1); // 해시(#)를 이용해 특정 비디오 ID 가져오기
+
+		        // 마지막 선택된 탭을 로컬 스토리지에 저장하는 함수
+		        window.setLastSelectedTab = function(tabId) {
+		            localStorage.setItem('lastSelectedTab', tabId);
+		        };
+
+		        // 페이지가 로드될 때 마지막으로 선택된 탭을 복원
+		        function restoreLastSelectedTab() {
+		            const lastSelectedTab = localStorage.getItem('lastSelectedTab');
+		            if (lastSelectedTab) {
+		                const tabButton = $(`#${lastSelectedTab}-tab`);
+		                if (tabButton.length) {
+		                    tabButton.tab('show');
+		                }
+		            }
+		        }
+
+		        restoreLastSelectedTab(); // 페이지 로드 시 복원
 				
 				// 특정 비디오로 스크롤
 				if (videoNumToShow) {
