@@ -343,9 +343,91 @@
 	<!-- 홈 스크립트 -->
 	<th:block th:fragment="homeVideoScript">
 		<script>
-		    $(document).ready(function() {
-		        const currentUserNum = $('#currentUserNum').val();
+			$(document).ready(function() {
+			    const currentUserNum = $('#currentUserNum').val();
 
+			    // 좋아요 상태를 확인하여 버튼 업데이트
+			    $('.video-item').each(function() {
+			        const videoItem = $(this);
+			        const videoNum = videoItem.find('.video-container').data('video-id');
+
+			        $.ajax({
+			            url: '/video/isLiked',
+			            type: 'GET',
+			            data: {
+			                video: videoNum,
+			                user: currentUserNum
+			            },
+			            success: function(response) {
+			                updateLikeButton(videoItem, response.isLiked, response.likeCount);
+			            },
+			            error: function(xhr, status, error) {
+			                console.error('좋아요 상태 확인 중 오류 발생:', xhr.responseText);
+			            }
+			        });
+			    });
+
+			    function updateLikeButton(videoItem, isLiked, likeCount) {
+			        const likeButton = videoItem.find('.button-container .action-btn i.bi-heart-fill'); // 좋아요 하트 아이콘만 선택
+			        const likeCountElem = videoItem.find('.button-container .video-btn-count'); // 좋아요 개수 요소 선택
+
+			        if (isLiked) {
+			            likeButton.css('color', '#ff69b4'); // 분홍색으로 변경
+			        } else {
+			            likeButton.css('color', '#ffffff'); // 흰색으로 변경
+			        }
+
+			        // 좋아요 개수 업데이트
+			        likeCountElem.text(likeCount);
+
+			        // 클릭 이벤트 바인딩
+			        videoItem.find('.button-container .action-btn').off('click').on('click', function() {
+			            handleLikeButtonClick(videoItem, isLiked, likeCountElem);
+			        });
+			    }
+
+			    function handleLikeButtonClick(videoItem, isLiked, likeCountElem) {
+			        const videoNum = videoItem.find('.video-container').data('video-id');
+			        const url = isLiked ? '/video/unlike' : '/video/like';
+			        const method = isLiked ? 'DELETE' : 'POST';
+			        const options = {
+			            method: method,
+			            headers: {
+			                'Content-Type': 'application/json'
+			            },
+			            body: JSON.stringify({
+			                video: videoNum,
+			                user: currentUserNum
+			            })
+			        };
+
+			        fetch(url, options)
+			        .then(response => {
+			            if (!response.ok) {
+			                return response.json().then(errorInfo => Promise.reject(errorInfo));
+			            }
+			            return response.json();
+			        })
+			        .then(data => {
+			            if (data.success) {
+			                const currentLikeCount = parseInt(likeCountElem.text()) || 0; // 현재 좋아요 수
+			                const newLikeCount = isLiked ? currentLikeCount - 1 : currentLikeCount + 1; // 좋아요 수 업데이트
+
+			                // 좋아요 상태와 좋아요 개수를 함께 업데이트
+			                updateLikeButton(videoItem, !isLiked, newLikeCount);
+
+			                alert(isLiked ? '좋아요를 취소하였습니다.' : '좋아요하였습니다.');
+			            } else {
+			                alert('작업 실패: ' + data.message);
+			            }
+			        })
+			        .catch(error => {
+			            console.error('Error:', error);
+			            alert('작업 중 오류가 발생했습니다.');
+			        });
+			    }
+
+		        // 팔로우 상태를 확인하여 버튼 업데이트
 		        $('.follow-btn').each(function() {
 		            const followBtn = $(this);
 		            const userNum = followBtn.attr('data-usernum');
