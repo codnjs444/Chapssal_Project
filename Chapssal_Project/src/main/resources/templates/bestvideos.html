@@ -210,14 +210,14 @@
 	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
 	                        <div class="row">
 	                            <div class="col">
-	                                <div class="user-profile">
+	                                <div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike[0].user.userNum}, ${currentUserNum})|">
 	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
 	                                    <p th:text="${videoLike[0].user.userName}"></p>
 	                                </div>
 	                            </div>
 	                            <div class="col text-end">
 	                                <div class="like-container text-end">
-	                                    <i class="bi bi-heart"></i>
+									<i th:classappend="${likedVideosThisWeek[videoLike[0].videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
 	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
 	                                </div>
 	                            </div>
@@ -246,14 +246,14 @@
 	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
 	                        <div class="row">
 	                            <div class="col">
-	                                <div class="user-profile">
+	                                <div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike[0].user.userNum}, ${currentUserNum})|">
 	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
 	                                    <p th:text="${videoLike[0].user.userName}"></p>
 	                                </div>
 	                            </div>
 	                            <div class="col text-end">
 	                                <div class="like-container text-end">
-	                                    <i class="bi bi-heart"></i>
+									<i th:classappend="${likedVideosThisWeek[videoLike[0].videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
 	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
 	                                </div>
 	                            </div>
@@ -339,6 +339,14 @@
 	            window.location.href = url;
 	        }
 	    });
+		
+		function navigateToProfilePage(userNum, currentUserNum) {
+	        if (userNum === currentUserNum) {
+	            window.location.href = 'http://localhost:8080/user/profile';
+	        } else {
+	            window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+	        }
+	    }
     </script>
 </th:block>
 </body>

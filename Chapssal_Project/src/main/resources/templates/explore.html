@@ -132,25 +132,29 @@
 		                <div th:if="${videos != null}" th:each="videoLike : ${videos}" class="video-item">
 		                    <!-- 썸네일 -->
 		                    <div class="thumbnail-container" th:data-video-id="${videoLike.video.videoNum}">
-		                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
-		                        <div class="video-info">
-		                            <i class="bi bi-play-fill"></i>
-		                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
-		                        </div>
+								<a th:href="@{|/explore/video/${videoLike.video.videoNum}|}">
+			                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
+			                        <div class="video-info">
+			                            <i class="bi bi-play-fill"></i>
+			                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
+			                        </div>
+								</a>
 		                    </div>
 		                    <!-- 영상 콘텐츠 -->
 		                    <div class="video-content">
 		                        <p th:text="${videoLike.video.title}" style="font-size: 15px;"></p>
 		                        <div class="row">
 		                            <div class="col">
-										<div class="user-profile">
+										<div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike.video.user.userNum}, ${currentUserNum})|">
 											<img th:src="${videoLike.video.user.profilePictureUrl != null ? videoLike.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
 		                                	<p th:text="${videoLike.video.user.userName}"></p>
 										</div>
 		                            </div>
 		                            <div class="col text-end">
 		                                <div class="like-container text-end">
-		                                    <i class="bi bi-heart"></i>
+											<i th:classappend="${likedVideos[videoLike.video.videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"
+											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}')|">
+											</i>
 		                                    <p th:text="${videoLike.likeCount}"></p>
 		                                </div>
 		                            </div>
@@ -167,25 +171,29 @@
 		                <div th:each="videoLike : ${videos}" th:if="${videoLike.video.topic != null and videoLike.video.topic == topic[0].topicNum}" class="video-item">
 		                    <!-- 썸네일 -->
 		                    <div class="thumbnail-container" th:data-video-id="${videoLike.video.videoNum}">
-		                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
-		                        <div class="video-info">
-		                            <i class="bi bi-play-fill"></i>
-		                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
-		                        </div>
+								<a th:href="@{|/explore/video/${videoLike.video.videoNum}?topic=${topic[0].topicNum}|}">
+			                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
+			                        <div class="video-info">
+			                            <i class="bi bi-play-fill"></i>
+			                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
+			                        </div>
+								</a>
 		                    </div>
 		                    <!-- 영상 콘텐츠 -->
 							<div class="video-content">
 							    <p th:text="${videoLike.video.title}" style="font-size: 15px;"></p>
 							    <div class="row">
 							        <div class="col">
-										<div class="user-profile">
+										<div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike.video.user.userNum}, ${currentUserNum})|">
 											<img th:src="${videoLike.video.user.profilePictureUrl != null ? videoLike.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
 							            	<p th:text="${videoLike.video.user.userName}"></p>
 										</div>
 							        </div>
 							        <div class="col text-end">
 							            <div class="like-container text-end">
-							                <i class="bi bi-heart"></i>
+											<i th:classappend="${likedVideos[videoLike.video.videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"
+											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}')|">
+											</i>
 							                <p th:text="${videoLike.likeCount}"></p>
 							            </div>
 							        </div>
@@ -199,7 +207,53 @@
 		
 		<th:block th:fragment="exploreVideoScript">
 			<script>
-				// JavaScript for tab handling can be added here if needed
+				function navigateToProfilePage(userNum, currentUserNum) {
+			        if (userNum === currentUserNum) {
+			            window.location.href = 'http://localhost:8080/user/profile';
+			        } else {
+			            window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+			        }
+			    }
+				function toggleLike(videoNum, currentUserNum, isLiked) {
+				    let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
+				    let method = isLiked === 'true' ? 'DELETE' : 'POST';
+
+				    fetch(url, {
+				        method: method,
+				        headers: {
+				            'Content-Type': 'application/json'
+				        },
+				        body: JSON.stringify({
+				            video: videoNum,
+				            user: currentUserNum
+				        })
+				    })
+				    .then(response => response.json())
+				    .then(data => {
+				        if (data.success) {
+				            const likeIcon = document.querySelector(`i[onclick="toggleLike(${videoNum}, ${currentUserNum}, '${isLiked}')"]`);
+				            const likeCountSpan = likeIcon.nextElementSibling;
+
+				            if (isLiked === 'true') {
+				                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+				                likeIcon.classList.add('bi-heart');
+				                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1;
+				            } else {
+				                likeIcon.classList.remove('bi-heart');
+				                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+				                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
+				            }
+
+				            likeIcon.setAttribute('onclick', `toggleLike(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}')`);
+				        } else {
+				            alert('좋아요 처리 실패: ' + data.message);
+				        }
+				    })
+				    .catch(error => {
+				        console.error('Error:', error);
+				        alert('좋아요 처리 중 오류가 발생했습니다.');
+				    });
+				}
 			</script>
 		</th:block>
 	</body>
