@@ -215,6 +215,7 @@
                 <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
                 <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
             </div>
+			<input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
         </nav>
         <br>
         <br>
@@ -231,14 +232,15 @@
                                 </video>
                                 <div class="video-details">
                                     <div class="video-details-top">
-                                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-                                        <p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
+										<img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+										<p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
                                         <!-- 팔로우 버튼 -->
-                                        <button class="follow-btn" 
-                                            th:data-videonum="${videoData.video.videoNum}" 
-                                            th:data-usernum="${videoData.video.user.userNum}">
-                                            팔로우
-                                        </button>
+										<button class="follow-btn" 
+										        th:if="${currentUserNum != videoData.video.user.userNum}"
+										        th:data-videonum="${videoData.video.videoNum}" 
+										        th:data-usernum="${videoData.video.user.userNum}">
+										    팔로우
+										</button>
                                     </div>
                                     <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
                                 </div>
@@ -269,6 +271,7 @@
                                 </div>
                             </div>
                             <br>
+							
                             <hr style="width: 700px;">
                             <br>
                         </div>
@@ -292,11 +295,13 @@
                                 <div class="video-details-top">
                                     <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
                                     <p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
-                                    <button class="follow-btn" 
-                                        th:data-videonum="${videoData.video.videoNum}" 
-                                        th:data-usernum="${videoData.video.user.userNum}">
-                                        팔로우
-                                    </button>
+									<!-- 팔로우 버튼 -->
+									<button class="follow-btn" 
+									        th:if="${currentUserNum != videoData.video.user.userNum}"
+									        th:data-videonum="${videoData.video.videoNum}" 
+									        th:data-usernum="${videoData.video.user.userNum}">
+									    팔로우
+									</button>
                                 </div>
                                 <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
                             </div>
@@ -335,146 +340,177 @@
         </div>
     </div>
 
-    <!-- 홈 스크립트 -->
-    <th:block th:fragment="homeVideoScript">
-        <script>
-            function styleSpecialChars(text) {
-                return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
-                           .replace(/@(\S+)/g, '<strong>@$1</strong>');
-            }
-            
-            $(document).ready(function() {
-                // 모든 video.title 요소를 찾아서 스타일 변경
-                $('.video-content p').each(function() {
-                    const originalText = $(this).text();
-                    const styledText = styleSpecialChars(originalText);
-                    $(this).html(styledText);
-                });
+	<!-- 홈 스크립트 -->
+	<th:block th:fragment="homeVideoScript">
+		<script>
+		    $(document).ready(function() {
+		        // 모든 video.title 요소를 찾아서 스타일 변경
+		        $('.video-content p').each(function() {
+		            const originalText = $(this).text();
+		            const styledText = styleSpecialChars(originalText);
+		            $(this).html(styledText);
+		        });
 
-                let options = {
-                    root: null,
-                    rootMargin: '0px',
-                    threshold: 0.5
-                };
+		        let options = {
+		            root: null,
+		            rootMargin: '0px',
+		            threshold: 0.5
+		        };
 
-                let observer = new IntersectionObserver(function(entries, observer) {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            let video = entry.target.querySelector('video');
-                            if (video) {
-                                video.play();
-                            }
-                        } else {
-                            let video = entry.target.querySelector('video');
-                            if (video) {
-                                video.pause();
-                            }
-                        }
-                    });
-                }, options);
+		        let observer = new IntersectionObserver(function(entries, observer) {
+		            entries.forEach(entry => {
+		                if (entry.isIntersecting) {
+		                    let video = entry.target.querySelector('video');
+		                    if (video) {
+		                        video.play();
+		                    }
+		                } else {
+		                    let video = entry.target.querySelector('video');
+		                    if (video) {
+		                        video.pause();
+		                    }
+		                }
+		            });
+		        }, options);
 
-                document.querySelectorAll('.video-item').forEach(item => {
-                    observer.observe(item);
-                });
+		        document.querySelectorAll('.video-item').forEach(item => {
+		            observer.observe(item);
+		        });
 
-                // 커스텀 컨트롤 핸들링
-                $('.video-container').each(function() {
-                    const video = $(this).find('video')[0];
-                    const playPauseBtn = $(this).find('.play-pause-btn');
-                    const progressBar = $(this).find('.progress-bar');
-                    const progressContainer = $(this).find('.progress-container');
-                    const timeDisplay = $(this).find('.time-display');
+		        // 커스텀 컨트롤 핸들링
+		        $('.video-container').each(function() {
+		            const video = $(this).find('video')[0];
+		            const playPauseBtn = $(this).find('.play-pause-btn');
+		            const progressBar = $(this).find('.progress-bar');
+		            const progressContainer = $(this).find('.progress-container');
+		            const timeDisplay = $(this).find('.time-display');
 
-                    playPauseBtn.on('click', function() {
-                        if (video.paused) {
-                            video.play();
-                            playPauseBtn.text('⏸️'); // 일시정지 아이콘
-                        } else {
-                            video.pause();
-                            playPauseBtn.text('▶️'); // 재생 아이콘
-                        }
-                    });
+		            if (video) {  // video 요소가 존재하는지 확인
+		                playPauseBtn.on('click', function() {
+		                    if (video.paused) {
+		                        video.play();
+		                        playPauseBtn.text('⏸️'); // 일시정지 아이콘
+		                    } else {
+		                        video.pause();
+		                        playPauseBtn.text('▶️'); // 재생 아이콘
+		                    }
+		                });
 
-                    video.addEventListener('timeupdate', function() {
-                        const progress = (video.currentTime / video.duration) * 100;
-                        progressBar.css('width', progress + '%');
+		                video.addEventListener('timeupdate', function() {
+		                    const progress = (video.currentTime / video.duration) * 100;
+		                    progressBar.css('width', progress + '%');
 
-                        const currentTimeFormatted = formatTime(video.currentTime);
-                        const durationFormatted = formatTime(video.duration);
-                        timeDisplay.text(currentTimeFormatted + ' / ' + durationFormatted);
-                    });
+		                    const currentTimeFormatted = formatTime(video.currentTime);
+		                    const durationFormatted = formatTime(video.duration);
+		                    timeDisplay.text(currentTimeFormatted + ' / ' + durationFormatted);
+		                });
 
-                    progressContainer.on('click', function(e) {
-                        const offsetX = e.offsetX;
-                        const totalWidth = $(this).width();
-                        const clickRatio = offsetX / totalWidth;
-                        video.currentTime = clickRatio * video.duration;
-                    });
+		                progressContainer.on('click', function(e) {
+		                    const offsetX = e.offsetX;
+		                    const totalWidth = $(this).width();
+		                    const clickRatio = offsetX / totalWidth;
+		                    video.currentTime = clickRatio * video.duration;
+		                });
 
-                    function formatTime(seconds) {
-                        const minutes = Math.floor(seconds / 60);
-                        const secs = Math.floor(seconds % 60);
-                        return minutes + ':' + (secs < 10 ? '0' : '') + secs;
-                    }
-                });
-            });
-            
-            
-            $(document).ready(function() {
-                // 기존 스크립트 ...
+		                function formatTime(seconds) {
+		                    const minutes = Math.floor(seconds / 60);
+		                    const secs = Math.floor(seconds % 60);
+		                    return minutes + ':' + (secs < 10 ? '0' : '') + secs;
+		                }
+		            }
+		        });
 
-                // 커스텀 컨트롤 핸들링
-                $('.video-container').each(function() {
-                    const video = $(this).find('video')[0];
-                    const playPauseBtn = $(this).find('.play-pause-btn');
-                    const progressBar = $(this).find('.progress-bar');
-                    const progressContainer = $(this).find('.progress-container');
-                    const timeDisplay = $(this).find('.time-display');
+		        // 팔로우 상태 확인 및 버튼 업데이트
+		        const currentUserNum = $('#currentUserNum').val();
 
-                    if (video) {  // video 요소가 존재하는지 확인
-                        playPauseBtn.on('click', function() {
-                            if (video.paused) {
-                                video.play();
-                                playPauseBtn.text('⏸️'); // 일시정지 아이콘
-                            } else {
-                                video.pause();
-                                playPauseBtn.text('▶️'); // 재생 아이콘
-                            }
-                        });
+		        $('.follow-btn').each(function() {
+		            const followBtn = $(this);
+		            const userNum = followBtn.attr('data-usernum');
 
-                        video.addEventListener('timeupdate', function() {
-                            const progress = (video.currentTime / video.duration) * 100;
-                            progressBar.css('width', progress + '%');
+		            $.ajax({
+		                url: '/checkFollowStatus',
+		                type: 'GET',
+		                data: {
+		                    currentUserNum: currentUserNum,
+		                    userNum: userNum
+		                },
+		                success: function(isFollowing) {
+		                    updateFollowButton(followBtn, isFollowing);
+		                },
+		                error: function(xhr, status, error) {
+		                    console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
+		                }
+		            });
+		        });
 
-                            const currentTimeFormatted = formatTime(video.currentTime);
-                            const durationFormatted = formatTime(video.duration);
-                            timeDisplay.text(currentTimeFormatted + ' / ' + durationFormatted);
-                        });
+		        function updateFollowButton(followBtn, isFollowing) {
+		            if (isFollowing) {
+		                followBtn.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4'); // 핑크색 팔로잉
+		                followBtn.attr('onclick', `handleFollowButtonClick(${currentUserNum}, ${followBtn.attr('data-usernum')}, 'true')`);
+		            } else {
+		                followBtn.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff'); // 푸른색 팔로우
+		                followBtn.attr('onclick', `handleFollowButtonClick(${currentUserNum}, ${followBtn.attr('data-usernum')}, 'false')`);
+		            }
+		        }
+		    });
 
-                        progressContainer.on('click', function(e) {
-                            const offsetX = e.offsetX;
-                            const totalWidth = $(this).width();
-                            const clickRatio = offsetX / totalWidth;
-                            video.currentTime = clickRatio * video.duration;
-                        });
+		    function styleSpecialChars(text) {
+		        return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
+		                   .replace(/@(\S+)/g, '<strong>@$1</strong>');
+		    }
 
-                        function formatTime(seconds) {
-                            const minutes = Math.floor(seconds / 60);
-                            const secs = Math.floor(seconds % 60);
-                            return minutes + ':' + (secs < 10 ? '0' : '') + secs;
-                        }
-                    }
-                });
+		    function handleFollowButtonClick(currentUserNum, userNum, isFollowing) {
+		        // 알림 표시 및 사용자 확인
+		        let message = isFollowing === 'true' ? '팔로우를 취소하시겠습니까?' : '팔로우 하시겠습니까?';
+		        if (confirm(message)) {
+		            // 팔로우/언팔로우 처리
+		            followUser(currentUserNum, userNum, isFollowing);
+		        }
+		    }
 
-                // 팔로우 버튼 클릭 핸들러
-                $(document).on('click', '.follow-btn', function() {
-                    const videoNum = $(this).attr('data-videonum');
-                    const userNum = $(this).attr('data-usernum');
-                    alert('VideoNum: ' + videoNum + '\nUserNum: ' + userNum);
-                });
-            });
+		    function followUser(currentUserNum, userNum, isFollowing) {
+		        let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+		        let method = isFollowing === 'true' ? 'DELETE' : 'POST';
 
-        </script>
-    </th:block>
+		        fetch(url, {
+		            method: method,
+		            headers: {
+		                'Content-Type': 'application/json'
+		            },
+		            body: JSON.stringify({
+		                follower: currentUserNum,
+		                following: userNum
+		            })
+		        })
+		        .then(response => response.json())
+		        .then(data => {
+		            if (data.success) {
+		                const followButton = document.querySelector(`button[onclick*="handleFollowButtonClick(${currentUserNum}, ${userNum}"]`);
+		                if (isFollowing === 'true') {
+		                    followButton.classList.remove('following');
+		                    followButton.classList.add('not-following');
+		                    followButton.innerHTML = '팔로우';
+		                    followButton.style.backgroundColor = '#007bff'; // 푸른색 팔로우
+		                    followButton.setAttribute('onclick', `handleFollowButtonClick(${currentUserNum}, ${userNum}, 'false')`);
+		                } else {
+		                    followButton.classList.remove('not-following');
+		                    followButton.classList.add('following');
+		                    followButton.innerHTML = '팔로잉';
+		                    followButton.style.backgroundColor = '#ff69b4'; // 핑크색 팔로잉
+		                    followButton.setAttribute('onclick', `handleFollowButtonClick(${currentUserNum}, ${userNum}, 'true')`);
+		                }
+		            } else {
+		                alert('작업 실패: ' + data.message);
+		            }
+		        })
+		        .catch(error => {
+		            console.error('Error:', error);
+		            alert('작업 중 오류가 발생했습니다.');
+		        });
+		    }
+		</script>
+
+	</th:block>
+
 </body>
 </html>

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody; // 추가 필요
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Controller
@@ -55,6 +57,23 @@ public class MainController {
     
     @GetMapping("/")
     public String viewHomePage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+        
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        
+        // 현재 로그인한 사용자의 정보를 가져옴
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
+        
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일
@@ -71,50 +90,21 @@ public class MainController {
                 startOfWeek.getYear(),
                 startOfWeek.getMonthValue(),
                 weekOfMonth);
-        
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
-        }
-        
-        String username = authentication.getName();  // 로그인한 사용자의 이름 가져오기
-        User user = userService.getUser(username);
-        String schoolName = userService.getSchoolNameByUserId(username);
-        String userName = userService.getUserNameByUserId(username);
-        String bio = userService.getUserBioByUserId(username);
-        String profilePictureUrl = user.getProfilePictureUrl();
-        
-        model.addAttribute("schoolName", schoolName);
-        model.addAttribute("userName", userName);
-        model.addAttribute("bio", bio);
-        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
-        
-        Integer userNum = userService.getUserNumByUserId(username);
-        int followingCount = followService.countFollowingByUserNum(userNum);
-        int followerCount = followService.countFollowerByUserNum(userNum);
-        int videoCount = videoService.countVideosByUserNum(userNum);  // 게시글 수 추가
-        
-        model.addAttribute("followingCount", followingCount);
-        model.addAttribute("followerCount", followerCount);
-        model.addAttribute("videoCount", videoCount); // 게시글 수 모델에 추가
-        
-        List<User> followingUsers = followService.getFollowingUsers(userNum);
-        List<User> followerUsers = followService.getFollowerUsers(userNum);
-        
-        model.addAttribute("followingUsers", followingUsers);
-        model.addAttribute("followerUsers", followerUsers);
-        
-        model.addAttribute("currentUserNum", userNum); // 현재 사용자의 userNum 추가
-        
-        List<Video> userVideos = videoService.getVideosByUserNum(userNum);
-        model.addAttribute("userVideos", userVideos);
 
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
         model.addAttribute("videos", videosWithLikesAndComments);
         model.addAttribute("weekOffset", weekOffset);
         model.addAttribute("currentWeek", currentWeek);
+        model.addAttribute("currentUserNum", currentUserNum); // currentUserNum을 모델에 추가
 
         return "home"; // home.html로 매핑
+    }
+
+    @GetMapping("/checkFollowStatus")
+    @ResponseBody
+    public boolean checkFollowStatus(@RequestParam("currentUserNum") Integer currentUserNum,
+                                     @RequestParam("userNum") Integer userNum) {
+        return followService.isFollowing(currentUserNum, userNum);
     }
 
 }
