@@ -297,10 +297,10 @@
             <i class="bi bi-x"></i>
         </button>
         <div class="navigation-btns">
-			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${prevVideoNum} == 0">
+			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${userNum} + ')'" th:disabled="${prevVideoNum} == 0">
 			    <i class="bi bi-chevron-up"></i>
 			</button>
-			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${nextVideoNum} == 0">
+			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${userNum} + ')'" th:disabled="${nextVideoNum} == 0">
 			    <i class="bi bi-chevron-down"></i>
 			</button>
         </div>
@@ -311,6 +311,8 @@
                 <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
                 <div class="profile-info-container">
                     <div>
+						<!-- hidden 필드를 추가하여 userNum을 포함 -->
+						<input type="hidden" id="hiddenUserNum" th:value="${userNum}"/>
                         <h5 th:text="${userName != null ? userName : '사용자'}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></h5>
                         <small th:text="${schoolName}"></small>
                     </div>
@@ -386,28 +388,29 @@
 			document.addEventListener('DOMContentLoaded', function() {
 			    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
 			    const currentUserNum = '[[${currentUserNum}]]';
-			    const prevVideoNum = /*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]';
-			    const nextVideoNum = /*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]';
+				const prevVideoNum = /*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]';
+				const nextVideoNum = /*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]';
 			    const weekOffset = /*[[${weekOffset}]]*/ '[[${weekOffset}]]';
 			    const topicNum = /*[[${topicNum}]]*/ '[[${topicNum}]]' || null;
+				const userNum = document.getElementById('hiddenUserNum').value; // hidden 필드에서 userNum 가져오기
 
 			    // 시청 중이었던 비디오 정보 저장
 			    window.history.replaceState({ videoNum: videoNum }, '', window.location.href);
 
 			    // 키보드 이벤트 리스너 추가
-			    document.addEventListener('keydown', function(event) {
-			        if (event.key === 'ArrowUp') {
-			            if (prevVideoNum != 0) {
-			                navigateVideo(prevVideoNum, weekOffset, topicNum);
-			            }
-			        } else if (event.key === 'ArrowDown') {
-			            if (nextVideoNum != 0) {
-			                navigateVideo(nextVideoNum, weekOffset, topicNum);
-			            }
-			        } else if (event.key === 'Escape') {
-			            returnToHome();
-			        }
-			    });
+				document.addEventListener('keydown', function(event) {
+					if (event.key === 'ArrowUp') {
+					    if (prevVideoNum != 0) {
+					        navigateVideo(prevVideoNum, userNum);
+					    }
+					} else if (event.key === 'ArrowDown') {
+					    if (nextVideoNum != 0) {
+					        navigateVideo(nextVideoNum, userNum);
+					    }
+				    } else if (event.key === 'Escape') {
+				        returnToHome();
+				    }
+				});
 
 			    // X 아이콘 클릭 이벤트 리스너 추가
 			    document.getElementById('closeButton').addEventListener('click', returnToHome);
@@ -548,17 +551,14 @@
                 }, 3000);
             }
 
-			function navigateVideo(videoNum, weekOffset, topicNum) {
+			function navigateVideo(videoNum, userNum) {
 			    if (videoNum === 0) {
 			        alert("더 이상의 영상이 없습니다.");
 			    } else {
-			        let url = `/bestvideos/video/${videoNum}?weekOffset=${weekOffset}`;
-			        if (topicNum !== null) {
-			            url += `&topicNum=${topicNum}`;
-			        }
-			        window.location.href = url;
+			        window.location.href = `/home_video/${videoNum}?userNum=${userNum}`;
 			    }
 			}
+
 
             function navigateToBestVideos(weekOffset) {
                 window.location.href = '/bestvideos?weekOffset=' + weekOffset;

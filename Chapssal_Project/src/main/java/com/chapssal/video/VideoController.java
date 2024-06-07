@@ -405,7 +405,7 @@ public class VideoController {
     }
     
     @GetMapping("/home_video/{videoNum}")
-    public String getVideoPage2(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+    public String getVideoPage2(@PathVariable("videoNum") int videoNum, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";  // 로그인 페이지로 리다이렉트
@@ -425,7 +425,12 @@ public class VideoController {
         Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
         Video video = videoOptional.get();
 
-        // 프로필 페이지의 사용자 정보를 가져옴
+        Integer userNum = videoService.getUserNumByVideoNum(videoNum); // userNum 가져오기
+
+        if (userNum == null) {
+            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
+        }
+
         User user = userService.findByUserNum(userNum);
         if (user == null) {
             return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
@@ -480,14 +485,16 @@ public class VideoController {
         model.addAttribute("commentCount", commentCount);
         
         // 이전 및 다음 비디오 ID 설정
-        int prevVideoNum = videoService.getPrevVideoId(videoNum, userNum);
-        int nextVideoNum = videoService.getNextVideoId(videoNum, userNum);
+        int prevVideoNum = videoService.getPrevHomeVideoId(videoNum);
+        int nextVideoNum = videoService.getNextHomeVideoId(videoNum);
 
         model.addAttribute("prevVideoNum", prevVideoNum);
         model.addAttribute("nextVideoNum", nextVideoNum);
 
         return "home_video"; // video.html로 이동
     }
+
+
     
     @PostMapping("/video/incrementViewCount")
     @ResponseBody

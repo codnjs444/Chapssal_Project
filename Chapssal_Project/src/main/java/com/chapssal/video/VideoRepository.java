@@ -70,4 +70,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     
     @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
     List<Video> findAllVideosOrderByUploadDateDesc();
+    
+    @Query("SELECT v.user.userNum FROM Video v WHERE v.videoNum = :videoNum")
+    Integer findUserNumByVideoNum(@Param("videoNum") int videoNum);
 }

@@ -249,4 +249,32 @@ public class VideoService {
     public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
         return videoRepository.findTopVideosForWeekAndTopic(startDate, endDate, topic);
     }
+    
+    // 홈 페이지를 위한 이전 비디오 ID 찾기
+    public int getPrevHomeVideoId(int videoNum) {
+        List<Video> videos = videoRepository.findAllVideosOrderByUploadDateDesc();
+        for (int i = 0; i < videos.size(); i++) {
+            if (videos.get(i).getVideoNum() == videoNum && i > 0) {
+                return videos.get(i - 1).getVideoNum();
+            }
+        }
+        return 0; // 이전 비디오가 없을 경우 0 반환
+    }
+
+    // 홈 페이지를 위한 다음 비디오 ID 찾기
+    public int getNextHomeVideoId(int videoNum) {
+        List<Video> videos = videoRepository.findAllVideosOrderByUploadDateDesc();
+        for (int i = 0; i < videos.size(); i++) {
+            if (videos.get(i).getVideoNum() == videoNum && i < videos.size() - 1) {
+                return videos.get(i + 1).getVideoNum();
+            }
+        }
+        return 0; // 다음 비디오가 없을 경우 0 반환
+    }
+    
+    public Integer getUserNumByVideoNum(int videoNum) {
+        return videoRepository.findUserNumByVideoNum(videoNum);
+    }
+    
+    
 }
