@@ -225,11 +225,11 @@
                 <div class="video-list">
                     <div th:if="${videos != null}">
                         <div th:each="videoData : ${videos}" class="video-item">
-                            <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}" th:data-usernum="${videoData.video.user.userNum}">
-                                <video autoplay muted loop playsinline>
-                                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
+							<div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}" th:data-usernum="${videoData.video.user.userNum}" onclick="navigateToHomeVideo(this)">
+							    <video autoplay muted loop playsinline>
+							        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+							        Your browser does not support the video tag.
+							    </video>
                                 <div class="video-details">
                                     <div class="video-details-top">
 										<img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
@@ -238,7 +238,8 @@
 										<button class="follow-btn" 
 										        th:if="${currentUserNum != videoData.video.user.userNum}"
 										        th:data-videonum="${videoData.video.videoNum}" 
-										        th:data-usernum="${videoData.video.user.userNum}">
+										        th:data-usernum="${videoData.video.user.userNum}" 
+										        onclick="handleFollowButtonClick(event, this)">
 										    팔로우
 										</button>
                                     </div>
@@ -369,6 +370,13 @@
 				        window.location.href = `/home_video/${videoNum}?userNum=${userNum}`;
 				    });
 				
+					function navigateToHomeVideo(videoContainer) {
+					    const videoNum = videoContainer.getAttribute('data-video-id');
+					    const userNum = videoContainer.getAttribute('data-usernum');
+					    window.location.href = `/home_video/${videoNum}?userNum=${userNum}`;
+					}
+
+					
 			    // 좋아요 상태를 확인하여 버튼 업데이트
 			    $('.video-item').each(function() {
 			        const videoItem = $(this);
@@ -452,177 +460,154 @@
 			        });
 			    }
 
-		        // 팔로우 상태를 확인하여 버튼 업데이트
-		        $('.follow-btn').each(function() {
-		            const followBtn = $(this);
-		            const userNum = followBtn.attr('data-usernum');
+				// 팔로우 상태를 확인하여 버튼 업데이트
+				$('.follow-btn').each(function() {
+				    const followBtn = $(this);
+				    const userNum = followBtn.attr('data-usernum');
 
-		            $.ajax({
-		                url: '/checkFollowStatus',
-		                type: 'GET',
-		                data: {
-		                    currentUserNum: currentUserNum,
-		                    userNum: userNum
-		                },
-		                success: function(isFollowing) {
-		                    updateFollowButton(followBtn, isFollowing);
-		                },
-		                error: function(xhr, status, error) {
-		                    console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
-		                }
-		            });
-		        });
+				    $.ajax({
+				        url: '/checkFollowStatus',
+				        type: 'GET',
+				        data: {
+				            currentUserNum: currentUserNum,
+				            userNum: userNum
+				        },
+				        success: function(isFollowing) {
+				            updateFollowButton(followBtn, isFollowing);
+				        },
+				        error: function(xhr, status, error) {
+				            console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
+				        }
+				    });
+				});
 
-		        function updateFollowButton(followBtn, isFollowing) {
-		            const userNum = followBtn.attr('data-usernum');
-		            const videoNum = followBtn.attr('data-videonum'); // 비디오 번호 추가
-		            console.log('updateFollowButton - isFollowing:', isFollowing); // 팔로우 상태 출력
-		            if (isFollowing) {
-		                followBtn.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4');
-		                followBtn.off('click').on('click', function() {
-		                    handleFollowButtonClick(currentUserNum, userNum, videoNum, true); // 팔로우 상태와 함께 전달
-		                });
-		            } else {
-		                followBtn.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff');
-		                followBtn.off('click').on('click', function() {
-		                    handleFollowButtonClick(currentUserNum, userNum, videoNum, false); // 팔로우 상태와 함께 전달
-		                });
-		            }
-		        }
+				function updateFollowButton(followBtn, isFollowing) {
+				    const userNum = followBtn.attr('data-usernum');
+				    const videoNum = followBtn.attr('data-videonum'); // 비디오 번호 추가
+				    if (isFollowing) {
+				        followBtn.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4');
+				        followBtn.off('click').on('click', function(event) {
+				            handleFollowButtonClick(event, followBtn, userNum, videoNum, true); // 팔로우 상태와 함께 전달
+				        });
+				    } else {
+				        followBtn.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff');
+				        followBtn.off('click').on('click', function(event) {
+				            handleFollowButtonClick(event, followBtn, userNum, videoNum, false); // 팔로우 상태와 함께 전달
+				        });
+				    }
+				}
 
-		        function handleFollowButtonClick(currentUserNum, userNum, videoNum, isFollowing) {
-		            console.log('handleFollowButtonClick - currentUserNum:', currentUserNum);
-		            console.log('handleFollowButtonClick - userNum:', userNum);
-		            console.log('handleFollowButtonClick - videoNum:', videoNum);
-		            console.log('handleFollowButtonClick - isFollowing:', isFollowing);
-		            followUserHome(currentUserNum, userNum, isFollowing);
-		        }
+				function handleFollowButtonClick(event, followBtn, userNum, videoNum, isFollowing) {
+				    event.stopPropagation(); // 클릭 이벤트가 비디오 컨테이너에 전달되지 않도록 함
+				    followUserHome(followBtn, userNum, videoNum, isFollowing);
+				}
 
-		        function followUserHome(currentUserNum, userNum, isFollowing) {
-		            let url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
-		            let method = isFollowing ? 'DELETE' : 'POST';
-		            let options = {
-		                method: method,
-		                headers: {
-		                    'Content-Type': 'application/json'
-		                }
-		            };
+				function followUserHome(followBtn, userNum, videoNum, isFollowing) {
+				    let url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
+				    let method = isFollowing ? 'DELETE' : 'POST';
+				    let options = {
+				        method: method,
+				        headers: {
+				            'Content-Type': 'application/json'
+				        }
+				    };
 
-		            if (method === 'POST') {
-		                options.body = JSON.stringify({
-		                    follower: currentUserNum,
-		                    following: userNum
-		                });
-		            }
+				    if (method === 'POST') {
+				        options.body = JSON.stringify({
+				            follower: currentUserNum,
+				            following: userNum
+				        });
+				    }
 
-		            fetch(url, options)
-		            .then(response => {
-		                if (!response.ok) {
-		                    return response.json().then(errorInfo => Promise.reject(errorInfo));
-		                }
-		                return response.json();
-		            })
-		            .then(data => {
-		                if (data.success) {
-		                    const followButton = $(`.follow-btn[data-usernum="${userNum}"]`);
-		                    if (isFollowing) {
-		                        followButton.removeClass('following').addClass('not-following').text('팔로우').css('background-color', '#007bff');
-		                        followButton.off('click').on('click', function() {
-		                            followUserHome(currentUserNum, userNum, false); // 팔로우 상태와 함께 전달
-		                        });
-		                    } else {
-		                        followButton.removeClass('not-following').addClass('following').text('팔로잉').css('background-color', '#ff69b4');
-		                        followButton.off('click').on('click', function() {
-		                            followUserHome(currentUserNum, userNum, true); // 팔로우 상태와 함께 전달
-		                        });
-		                    }
-		                    alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
-		                } else {
-		                    alert('작업 실패: ' + data.message);
-		                }
-		            })
-		            .catch(error => {
-		                console.error('Error:', error);
-		                alert('작업 중 오류가 발생했습니다.');
-		            });
-		        }
-
+				    fetch(url, options)
+				    .then(response => {
+				        if (!response.ok) {
+				            return response.json().then(errorInfo => Promise.reject(errorInfo));
+				        }
+				        return response.json();
+				    })
+				    .then(data => {
+				        if (data.success) {
+				            updateFollowButton(followBtn, !isFollowing);
+				            alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+				        } else {
+				            alert('작업 실패: ' + data.message);
+				        }
+				    })
+				    .catch(error => {
+				        console.error('Error:', error);
+				        alert('작업 중 오류가 발생했습니다.');
+				    });
+				}
 		        // 동영상 재생 및 일시정지 기능 추가
 		        const videoContainers = document.querySelectorAll('.video-container');
 
-		        videoContainers.forEach(container => {
-		            const video = container.querySelector('video');
-		            const playPauseButton = container.querySelector('.play-pause-btn');
+				// 비디오 컨테이너 클릭 시 home_video 페이지로 이동
+				   $('.video-container').on('click', function(e) {
+				       const videoContainer = $(this);
+				       const videoNum = videoContainer.data('video-id');
+				       const userNum = videoContainer.data('usernum');
 
-		            // 비디오가 클릭될 때 재생 및 일시정지 기능
-		            video.addEventListener('click', () => {
-		                if (video.paused) {
-		                    video.play().catch(error => {
-		                        console.error('비디오 재생 오류:', error);
-		                    });
-		                    playPauseButton.innerText = '⏸️';
-		                } else {
-		                    video.pause();
-		                    playPauseButton.innerText = '▶️';
-		                }
-		            });
+				       // 클릭된 요소가 재생/일시정지 버튼인 경우 home_video로 이동하지 않음
+				       if ($(e.target).hasClass('play-pause-btn') || $(e.target).closest('.play-pause-btn').length) {
+				           return;
+				       }
 
-		            // playPauseButton 클릭 시 재생 및 일시정지
-		            playPauseButton.addEventListener('click', () => {
-		                if (video.paused) {
-		                    video.play().catch(error => {
-		                        console.error('비디오 재생 오류:', error);
-		                    });
-		                    playPauseButton.innerText = '⏸️';
-		                } else {
-		                    video.pause();
-		                    playPauseButton.innerText = '▶️';
-		                }
-		            });
+				       // videoNum과 userNum을 이용하여 URL로 이동
+				       window.location.href = `/home_video/${videoNum}?userNum=${userNum}`;
+				   });
 
-		            // 비디오 재생 시 playPauseButton 업데이트
-		            video.addEventListener('play', () => {
-		                playPauseButton.innerText = '⏸️';
-		            });
+				   // 재생/일시정지 기능을 play-pause-btn 클릭에 한정
+				   $('.play-pause-btn').on('click', function(e) {
+				       e.stopPropagation(); // 클릭 이벤트가 비디오 컨테이너에 전달되지 않도록 함
+				       const playPauseButton = $(this);
+				       const video = playPauseButton.closest('.video-container').find('video')[0];
 
-		            // 비디오 일시정지 시 playPauseButton 업데이트
-		            video.addEventListener('pause', () => {
-		                playPauseButton.innerText = '▶️';
-		            });
+				       if (video.paused) {
+				           video.play().catch(error => {
+				               console.error('비디오 재생 오류:', error);
+				           });
+				           playPauseButton.text('⏸️');
+				       } else {
+				           video.pause();
+				           playPauseButton.text('▶️');
+				       }
+				   });
 
-		            // 비디오 재생 시간 업데이트
-		            video.addEventListener('timeupdate', () => {
-		                const progressBar = container.querySelector('.progress-bar');
-		                const timeDisplay = container.querySelector('.time-display');
-		                const currentTime = video.currentTime;
-		                const duration = video.duration;
+				   // 비디오 재생 시간 업데이트
+				   $('.video-container video').on('timeupdate', function() {
+				       const video = $(this)[0];
+				       const container = $(this).closest('.video-container');
+				       const progressBar = container.find('.progress-bar');
+				       const timeDisplay = container.find('.time-display');
+				       const currentTime = video.currentTime;
+				       const duration = video.duration;
 
-		                if (progressBar) {
-		                    const progress = (currentTime / duration) * 100;
-		                    progressBar.style.width = `${progress}%`;
-		                }
+				       if (progressBar.length) {
+				           const progress = (currentTime / duration) * 100;
+				           progressBar.css('width', `${progress}%`);
+				       }
 
-		                if (timeDisplay) {
-		                    const formatTime = (time) => {
-		                        const minutes = Math.floor(time / 60);
-		                        const seconds = Math.floor(time % 60);
-		                        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-		                    };
-		                    timeDisplay.innerText = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-		                }
-		            });
+				       if (timeDisplay.length) {
+				           const formatTime = (time) => {
+				               const minutes = Math.floor(time / 60);
+				               const seconds = Math.floor(time % 60);
+				               return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+				           };
+				           timeDisplay.text(`${formatTime(currentTime)} / ${formatTime(duration)}`);
+				       }
+				   });
 
-		            // 비디오 컨트롤바 클릭 시 시간 변경
-		            const progressContainer = container.querySelector('.progress-container');
-		            if (progressContainer) {
-		                progressContainer.addEventListener('click', (e) => {
-		                    const rect = progressContainer.getBoundingClientRect();
-		                    const offsetX = e.clientX - rect.left;
-		                    const newTime = (offsetX / rect.width) * video.duration;
-		                    video.currentTime = newTime;
-		                });
-		            }
-		        });
+				   // 비디오 컨트롤바 클릭 시 시간 변경
+				   $('.progress-container').on('click', function(e) {
+				       e.stopPropagation(); // 클릭 이벤트가 비디오 컨테이너에 전달되지 않도록 함
+				       const progressContainer = $(this);
+				       const video = progressContainer.closest('.video-container').find('video')[0];
+				       const rect = progressContainer[0].getBoundingClientRect();
+				       const offsetX = e.clientX - rect.left;
+				       const newTime = (offsetX / rect.width) * video.duration;
+				       video.currentTime = newTime;
+				   });
 		    });
 		</script>
 
