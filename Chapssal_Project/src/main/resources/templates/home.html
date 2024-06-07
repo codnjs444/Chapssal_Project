@@ -290,49 +290,52 @@
 			                   <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item">
 			                       <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
 			                           <video autoplay muted loop playsinline>
-			                               <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-			                               Your browser does not support the video tag.
-			                           </video>
-			                           <div class="video-details">
-			                               <div class="video-details-top">
-			                                   <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-			                                   <p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
-											<!-- 팔로우 버튼 -->
-											<button class="follow-btn" 
-											        th:if="${currentUserNum != videoData.video.user.userNum}"
-											        th:data-videonum="${videoData.video.videoNum}" 
-											        th:data-usernum="${videoData.video.user.userNum}">
-											    팔로우
-											</button>
-			                               </div>
-			                               <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
-			                           </div>
-			                           <div class="custom-controls">
-			                               <button class="play-pause-btn">⏸️</button> <!-- 기본 상태는 일시정지 아이콘 -->
-			                               <div class="progress-container">
-			                                   <div class="progress-bar"></div>
-			                               </div>
-			                               <div class="time-display">0:00 / 0:00</div> <!-- 시간 표시 -->
-			                           </div>
-			                           <div class="video-buttons">
-			                               <div class="button-container">
-			                                   <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
-			                                   <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
-			                               </div>
-			                               <div class="button-container">
-			                                   <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
-			                                   <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
-			                               </div>
-			                               <div class="button-container">
-			                                   <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
-			                                   <p class="video-btn-count m-0">362</p>
-			                               </div>
-			                               <div class="button-container">
-			                                   <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-			                                   <p class="video-btn-count m-0">228</p>
-			                               </div>
-			                           </div>
-			                       </div>
+										        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+										        Your browser does not support the video tag.
+										    </video>
+										    <div class="video-details">
+										        <div class="video-details-top">
+													<img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+													<p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
+										            <!-- 팔로우 버튼 -->
+													<button class="follow-btn" 
+													        th:if="${currentUserNum != videoData.video.user.userNum}"
+													        th:data-videonum="${videoData.video.videoNum}" 
+													        th:data-usernum="${videoData.video.user.userNum}" 
+													        onclick="handleFollowButtonClick(event, this)">
+													    팔로우
+													</button>
+										        </div>
+										        <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
+										    </div>
+										    <div class="custom-controls">
+										        <button class="play-pause-btn">⏸️</button> <!-- 기본 상태는 일시정지 아이콘 -->
+										        <div class="progress-container">
+										            <div class="progress-bar"></div>
+										        </div>
+										        <div class="time-display">0:00 / 0:00</div> <!-- 시간 표시 -->
+										    </div>
+										</div>
+										<div class="video-buttons">
+											<div class="button-container like-container">
+											    <button class="action-btn like-btn"><i class="bi bi-heart-fill"></i></button>
+											    <p class="video-btn-count m-0 like-count" th:text="${videoData.likeCount}"></p>
+											</div>
+											<div class="button-container">
+											    <button class="action-btn comment-btn" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}">
+											        <i class="bi bi-chat-dots-fill"></i>
+											    </button>
+											    <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+											</div>
+										    <div class="button-container">
+										        <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+										        <p class="video-btn-count m-0">362</p>
+										    </div>
+										    <div class="button-container">
+										        <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+										        <p class="video-btn-count m-0">228</p>
+										    </div>
+										</div>
 			                       <br>
 			                       <hr style="width: 700px;">
 			                       <br>
