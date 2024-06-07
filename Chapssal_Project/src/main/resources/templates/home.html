@@ -439,8 +439,86 @@
 		                alert('작업 중 오류가 발생했습니다.');
 		            });
 		        }
+
+		        // 동영상 재생 및 일시정지 기능 추가
+		        const videoContainers = document.querySelectorAll('.video-container');
+
+		        videoContainers.forEach(container => {
+		            const video = container.querySelector('video');
+		            const playPauseButton = container.querySelector('.play-pause-btn');
+
+		            // 비디오가 클릭될 때 재생 및 일시정지 기능
+		            video.addEventListener('click', () => {
+		                if (video.paused) {
+		                    video.play().catch(error => {
+		                        console.error('비디오 재생 오류:', error);
+		                    });
+		                    playPauseButton.innerText = '⏸️';
+		                } else {
+		                    video.pause();
+		                    playPauseButton.innerText = '▶️';
+		                }
+		            });
+
+		            // playPauseButton 클릭 시 재생 및 일시정지
+		            playPauseButton.addEventListener('click', () => {
+		                if (video.paused) {
+		                    video.play().catch(error => {
+		                        console.error('비디오 재생 오류:', error);
+		                    });
+		                    playPauseButton.innerText = '⏸️';
+		                } else {
+		                    video.pause();
+		                    playPauseButton.innerText = '▶️';
+		                }
+		            });
+
+		            // 비디오 재생 시 playPauseButton 업데이트
+		            video.addEventListener('play', () => {
+		                playPauseButton.innerText = '⏸️';
+		            });
+
+		            // 비디오 일시정지 시 playPauseButton 업데이트
+		            video.addEventListener('pause', () => {
+		                playPauseButton.innerText = '▶️';
+		            });
+
+		            // 비디오 재생 시간 업데이트
+		            video.addEventListener('timeupdate', () => {
+		                const progressBar = container.querySelector('.progress-bar');
+		                const timeDisplay = container.querySelector('.time-display');
+		                const currentTime = video.currentTime;
+		                const duration = video.duration;
+
+		                if (progressBar) {
+		                    const progress = (currentTime / duration) * 100;
+		                    progressBar.style.width = `${progress}%`;
+		                }
+
+		                if (timeDisplay) {
+		                    const formatTime = (time) => {
+		                        const minutes = Math.floor(time / 60);
+		                        const seconds = Math.floor(time % 60);
+		                        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+		                    };
+		                    timeDisplay.innerText = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+		                }
+		            });
+
+		            // 비디오 컨트롤바 클릭 시 시간 변경
+		            const progressContainer = container.querySelector('.progress-container');
+		            if (progressContainer) {
+		                progressContainer.addEventListener('click', (e) => {
+		                    const rect = progressContainer.getBoundingClientRect();
+		                    const offsetX = e.clientX - rect.left;
+		                    const newTime = (offsetX / rect.width) * video.duration;
+		                    video.currentTime = newTime;
+		                });
+		            }
+		        });
 		    });
 		</script>
+
 
 	</th:block>
 
