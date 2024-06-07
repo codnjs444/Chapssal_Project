@@ -93,6 +93,7 @@
 			}
 			.video-info .view-count {
 			    font-weight: bold; /* 조회수 텍스트를 굵게 설정 */
+				z-index: 1000;
 			}
 
 			.user-profile {
@@ -134,7 +135,7 @@
 		                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
 		                        <div class="video-info">
 		                            <i class="bi bi-play-fill"></i>
-		                            <span class="view-count" th:text="${videoLike.video.viewCount}">0</span>
+		                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
 		                        </div>
 		                    </div>
 		                    <!-- 영상 콘텐츠 -->
@@ -169,7 +170,7 @@
 		                        <img th:src="${videoLike.video.thumbnailUrl}" alt="Thumbnail">
 		                        <div class="video-info">
 		                            <i class="bi bi-play-fill"></i>
-		                            <span class="view-count" th:text="${videoLike.video.viewCount}">0</span>
+		                            <span class="view-count" th:text="${videoLike.video.viewCount}"></span>
 		                        </div>
 		                    </div>
 		                    <!-- 영상 콘텐츠 -->

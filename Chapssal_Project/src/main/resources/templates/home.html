@@ -1,592 +1,297 @@
 <!DOCTYPE html>
 <html layout:decorate="~{layout}">
-	<head>
-	    <style>
-	        .video-list {
-	            display: flex;
-	            flex-direction: column;
-	        }
-	
-			.video-item {
-			    display: flex;
-			    flex-direction: column;
-			    align-items: center;
-			    position: relative; /* 버튼을 영상 오른쪽에 배치하기 위해 필요한 스타일 */
-			}
-	
-	        .video-container {
-	            position: relative;
-	            width: 9%; /* 화면의 36% 너비 설정 */
-				min-width: 450px;
-				min-height: 650px;
-	            padding-bottom: 16%; /* 9:16 비율 (16 / 9 * 36) */
-	            background-color: black; /* 영상이 없는 부분을 검게 표시 */
-	            overflow: hidden;
-	            border-radius: 10px; /* 비디오 테두리를 둥글게 만듦 */
-				position: relative;
-	        }
-	
-	        .video-container video {
-	            position: absolute;
-	            top: 50%;
-	            left: 50%;
-	            width: 100%;
-	            height: 100%;
-	            transform: translate(-50%, -50%);
-	        }
+<head>
+    <style>
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-			.video-buttons {
-			    position: absolute;
-			    top: 55%;
-			    left: 69%;
-			    display: flex;
-			    flex-direction: column;
-			}
+        .video-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
 
-			.action-btn {
-			    background-color: rgba(0, 0, 0, 0.1);
-			    border: none;
-			    color: black;
-			    border-radius: 50%;
-			    width: 50px;
-			    height: 50px;
-			    display: flex;
-			    align-items: center;
-			    justify-content: center;
-			    cursor: pointer;
-			}
-			
-			.modal-action-btn {
-			    background-color: white;
-			    border: none;
-			    color: black;
-			    border-radius: 50%;
-			    width: 50px;
-			    height: 50px;
-			    display: flex;
-			    align-items: center;
-			    justify-content: center;
-			    cursor: pointer;
-			}
-				
-	        .video-content {
-	            font-size: 14px;
-	            text-align: left;
-	            width: 45%;
-				min-width: 576px;
-	        }
-			
-			.video-content .col-5,
-	        .video-content .col-35,
-	        .video-content .col-5 {
-	            flex: 1;
-	        }
-			
-			.video-content .col-35 {
-	            flex: 7;
-	            display: flex;
-	            flex-direction: column;
-	            justify-content: flex-start;
-	        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* 최대 너비 설정 */
+            aspect-ratio: 9 / 16; /* 9:16 비율 */
+            background-color: black;
+            overflow: hidden;
+            border-radius: 10px;
+        }
 
-	        .video-content img {
-	            width: 100%;
-	            height: auto;
-	            border-radius: 50%;
-	        }
-	
-	        .video-content p {
-	            margin: 0;
-	        }
-			
-			.follow-btn {
-			    width: 100%;
-			    padding: 5px 0;
-			    font-size: 14px;
-			    background-color: #007bff;
-			    border: none;
-			    color: white;
-			    border-radius: 5px;
-			    cursor: pointer;
-			}
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+        }
 
-			.follow-btn:hover {
-			    background-color: #0056b3;
-			}
-	
-	        /* Modal styles */
-	        .home-modal {
-	            display: none;
-	            position: fixed;
-	            z-index: 1050;
-	            left: 0;
-	            top: 0;
-	            width: 100%;
-	            height: 100%;
-	            overflow: auto;
-	            background-color: rgba(0,0,0,0.7);
-	        }
-	
-	        .home-modal-content {
-	            margin: 5% auto;
-	            padding: 20px;
-	            width: 80%;
-	            max-width: 1000px;
-	            background-color: white;
-	        }
-	
-	        .home-close {
-	            position: absolute;
-	            top: 15px;
-	            right: 35px;
-	            color: #f1f1f1;
-	            font-size: 40px;
-	            font-weight: bold;
-	            transition: 0.3s;
-	            cursor: pointer;
-	        }
-	
-	        .home-close:hover,
-	        .home-close:focus {
-	            color: #bbb;
-	            text-decoration: none;
-	            cursor: pointer;
-	        }
-	        
-	        .home-modal-video-container {
-	            position: relative;
-	            width: 51%;
-	            padding-bottom: 90.67%; /* 16:9 aspect ratio */
-	            background-color: black;
-	            overflow: hidden;
-	            max-height: 70%; /* 비디오 컨테이너의 최대 높이를 70%로 설정 */
-	        }
-	
-	        .home-modal-video-container video {
-	            position: absolute;
-	            top: 50%;
-	            left: 50%;
-	            width: 100%;
-	            height: 100%;
-	            transform: translate(-50%, -50%);
-	        }
-	
-			.home-modal-video-content {
-			    font-size: 14px;
-			    text-align: left;
-			    width: 100%;
-				display: flex; /* flex 컨테이너로 설정 */
-				flex-direction: column; /* 세로 정렬 */
-				height: 98vh; /* 모달의 전체 높이 설정 */
-				overflow-y: auto; /* 컨텐츠가 넘칠 때 세로 스크롤만 추가 */
-				overflow-x: hidden; /* 가로 스크롤 숨김 */ 
-				padding-left: 15px; /* 패딩 추가 */
-				box-sizing: border-box; /* 스크롤바 너비 포함 */
-			}
-			
-			.home-modal-video-content .uploader-info {
-			    margin-bottom: 10px;
-			    padding-bottom: 10px;
-			    border-bottom: 1px solid #ccc;
-			}
+        .video-details {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
 
-			.home-modal-video-content .uploader-info img {
-			    width: 74px;
-			    height: 50px;
-			    border-radius: 50%;
-			}
+        .video-details-top {
+            display: flex;
+            align-items: center;
+        }
 
-			.home-modal-video-content .uploader-info p {
-			    display: inline;
-			    vertical-align: middle;
-			}
-	
-	        .home-modal-video-content p {
-	            margin: 0;
-	        }
+        .video-details img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
 
-			.comment-list {
-				flex: 1; /* 남은 공간을 차지 */
-				overflow-y: auto; /* 스크롤 추가 */
-				overflow-x: hidden;
-				padding-right: 5%;
-			}
+        .video-details p {
+            margin: 0;
+            font-size: 14px;
+        }
 
-			.comment-form {
-				border-top: 1px solid #ccc;
-				padding-top: 10px;
-				margin-top: 10px;
-			}
-			
-			.modal-profile {
-			    width: 10vw;
-			    height: 10vw;
-			    max-width: 74px; /* Ensure the image doesn't grow too large */
-			    max-height: 50px;
-			    object-fit: cover; /* Ensures the image covers the element without distorting */
-			}
-			
-			body.modal-open {
-			    overflow: hidden;
-			}
-			
-			.nav-center {
-			    display: flex;
-			    justify-content: center;
-			    align-items: center;
-			}
+        .video-details-name {
+            margin-right: 10px;
+        }
 
-			.home-nav-link {
-			    background-color: rgb(100, 100, 100, 0.1);
-			    color: black;
-				width: 108px;
-				height: 40px;
-				border: none;
-				border-radius: 5px;
-				cursor: pointer;
-				font-size: 15px;
-			}
+        .video-title {
+            margin-top: 40px; /* 상하 간격 조절 */
+        }
 
-			.home-nav-link.active {
-			    background-color: black !important;
-			    color: white !important;
-			}
-			
-			.video-btn-count{
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				font-size: 12px;
-			}
-	    </style>
-	</head>
-	<body>
-		<div layout:fragment="content" class="container">
-		    <nav class="container nav-center p-0">
-		        <div class="nav nav-pills center" id="nav-tab" role="tablist">
-		            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
-		            <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
-				</div>
-		    </nav>
-			<br>
-			<br>
-			<div class="tab-content" id="nav-tabContent">
-				<!-- 전체 탭에서 비디오를 출력하는 부분 -->
-				<div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
-					<div class="video-list">
-					    <div th:if="${videos != null}">
-					        <div th:each="videoData : ${videos}" class="video-item">
-					            <div class="video-content">
-					                <div class="row">
-					                    <div class="col-5">
-					                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-					                    </div>
-					                    <div class="col-35 p-0">
-					                        <p th:text="${videoData.video.user.userName}"></p>
-					                        <p th:text="${videoData.video.title}"></p>
-					                    </div>
-					                    <div class="col-5">
-					                        <button class="follow-btn">팔로우</button>
-					                    </div>
-					                </div>
-					            </div>
-					            <br>
-					            <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
-					                <video controls autoplay muted>
-					                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-					                    Your browser does not support the video tag.
-					                </video>
-					            </div>
-					            <div class="video-buttons">
-					                <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
-					                <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
-					                <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
-					                <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
-					                <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
-					                <p class="video-btn-count m-0">362</p>
-					                <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-					                <p class="video-btn-count m-0">228</p>
-					            </div>
-					            <br>
-					            <hr style="width: 700px;">
-					            <br>
-					        </div>
-					    </div>
-					    <div th:if="${videos == null}">
-					        <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-					    </div>
-					</div>
-				</div>
-				
-				<!-- 각 주제별 탭에서 비디오를 출력하는 부분 -->
-				<div th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" class="tab-pane fade" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
-				    <div class="video-list">
-				        <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item">
-				            <div class="video-content">
-				                <div class="row">
-				                    <div class="col-5">
-				                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-				                    </div>
-				                    <div class="col-35 p-0">
-				                        <p th:text="${videoData.video.user.userName}"></p>
-				                        <p th:text="${videoData.video.title}"></p>
-				                    </div>
-				                    <div class="col-5">
-				                        <button class="follow-btn">팔로우</button>
-				                    </div>
-				                </div>
-				            </div>
-				            <br>
-				            <div class="video-container" th:onclick="'showModal(this)'" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
-				                <video controls autoplay muted>
-				                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-				                    Your browser does not support the video tag.
-				                </video>
-				            </div>
-				            <div class="video-buttons">
-				                <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
-				                <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
-				                <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
-				                <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
-				                <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
-				                <p class="video-btn-count m-0">187</p>
-				                <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-				                <p class="video-btn-count m-0">461</p>
-				            </div>
-				            <br>
-				            <hr style="width: 700px;">
-				            <br>
-				        </div>
-				    </div>
-				</div>
-			</div>
-		</div>
-	
-		<!-- 홈 영상 디테일 모달 -->
-		<th:block th:fragment="homeModalFragment">
-		    <div id="videoModal" class="modal home-modal">
-		        <span class="close home-close" onclick="closeModal()">&times;</span>
-		        <div class="modal-content home-modal-content my-2 p-0">
-		            <div class="row">
-		                <div class="col home-modal-video-container">
-		                    <video id="modalVideo" controls>
-		                        <source id="modalVideoSource" src="" type="video/mp4">
-		                        Your browser does not support the video tag.
-		                    </video>
-		                </div>
-		                <div class="col home-modal-video-content">
-		                    <!-- 업로더의 프로필, 이름, 글 내용 출력 -->
-							<div class="comment-item row uploader-info border-0 pt-3 pb-0 mb-0">
-							    <img id="modalUploaderProfile" class="rounded-circle profile-pic uploader-modal-profile col-2" alt="프로필 사진">
-								<div class="col">
-								    <p id="modalUploaderName"><strong></strong></p>
-								    <p id="modalTitle"></p>
-								</div>
-							</div>
-		                    <hr style="width: 470px;">
-		                    <!-- 댓글 리스트 -->
-		                    <div id="comments-list" class="comment-list">
-		                        <!-- 댓글 목록이 표시될 영역 -->
-		                    </div>
-		                    <!-- 댓글 등록 폼 -->
-							<hr class="mb-0" style="width: 470px;">
-							<div class="comment-form p-0 border-0 mt-0">
-								<div class="row pt-1 pb-0">
-									<button class="modal-action-btn"><i class="bi bi-heart col"></i></button>
-								    <button class="modal-action-btn"><i class="bi bi-bookmark col"></i></button>
-								    <button class="modal-action-btn"><i class="bi bi-share col"></i></button>
-								</div>
-								<p>동영상 좋아요 수</p>
-								<p>업로드 날짜</p>
-								<hr style="width: 470px;">
-			                    <form id="commentForm">
-			                        <input type="hidden" id="videoNum" name="videoNum" />
-									<div class="row mx-0 mb-2" style="width: 100%;">
-				                        <textarea name="text" placeholder="댓글 달기..." class="col-10 border-0" style="height: 29px; max-height: 300px; overflow-y: auto; resize: none;"></textarea>
-				                        <button type="submit" class="col-2 bg-white border-0 text-primary">게시</button>
-									</div>
-			                    </form>
-							</div>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		</th:block>
-	    
-	    <!-- 홈 스크립트 -->
-	    <th:block th:fragment="homeVideoScript">
-	        <script>
-				function styleSpecialChars(text) {
-				    return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
-				               .replace(/@(\S+)/g, '<strong>@$1</strong>');
-				}
-				
-				$(document).ready(function() {
-					// 모든 video.title 요소를 찾아서 스타일 변경
-					$('.video-content p').each(function() {
-					    const originalText = $(this).text();
-					    const styledText = styleSpecialChars(originalText);
-					    $(this).html(styledText);
-					});
+        .follow-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 20px; /* 이름으로부터 간격 조정 */
+        }
 
-					/*// 저장된 탭 정보를 로드하고 해당 탭을 활성화
-					let savedTabId = localStorage.getItem('selectedTab');
-					if (savedTabId) {
-					    $('#' + savedTabId).tab('show');
-					}
+        .follow-btn:hover {
+            background-color: #0056b3;
+        }
 
-					// 탭 클릭 시 로컬 스토리지에 탭 ID 저장
-					$('#nav-tab button').on('click', function() {
-					    let selectedTabId = $(this).attr('id');
-					    localStorage.setItem('selectedTab', selectedTabId);
-					});*/
-					
-				    let options = {
-				        root: null,
-				        rootMargin: '0px',
-				        threshold: 0.5
-				    };
+        .video-buttons {
+            position: absolute;
+            top: 50%;
+            right: 80px; /* 영상에서 떨어진 위치 */
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-5%);
+        }
 
-				    let observer = new IntersectionObserver(function(entries, observer) {
-				        entries.forEach(entry => {
-				            if (entry.isIntersecting) {
-				                let video = entry.target.querySelector('video');
-				                if (video) {
-				                    video.play();
-				                }
-				            } else {
-				                let video = entry.target.querySelector('video');
-				                if (video) {
-				                    video.pause();
-				                }
-				            }
-				        });
-				    }, options);
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
 
-				    document.querySelectorAll('.video-item').forEach(item => {
-				        observer.observe(item);
-				    });
+        .action-btn {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
 
-				    // esc key to close modal
-				    $(document).keydown(function(event) {
-				        if (event.key === "Escape") {
-				            closeModal();
-				        }
-				    });
-					
-					$('#commentForm').submit(function (event) {
-					    event.preventDefault();
-					    submitComment();
-					});
-					
-					$('#commentForm textarea[name="text"]').keydown(function (event) {
-					    if (event.key === "Enter" && !event.shiftKey) {
-					        event.preventDefault();
-					        submitComment();
-					    }
-					});
+        .video-btn-count {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: black; /* 텍스트 색상 검정으로 변경 */
+            font-weight: bold; /* 폰트 굵게 설정 */
+        }
 
-					function submitComment() {
-					    const videoNum = $('#videoNum').val();
-					    const text = $('#commentForm').find('textarea[name="text"]').val();
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-					    $.ajax({
-					        url: '/comment/add',
-					        type: 'POST',
-					        contentType: 'application/json',
-					        data: JSON.stringify({video: {videoNum: videoNum}, text: text}),
-					        success: function (response) {
-					            fetchComments(videoNum);
-					            $('#commentForm').find('textarea[name="text"]').val('');
-					        },
-					        error: function () {
-					            alert('댓글 등록 실패');
-					        }
-					    });
-					}
-					
-					// textarea의 높이를 자동으로 조정하는 함수
-					function autoResizeTextarea(textarea) {
-					    textarea.style.height = 'auto'; // 높이를 자동으로 설정
-					    textarea.style.height = textarea.scrollHeight + 'px'; // 내용에 맞춰 높이 조정
-					}
+        .home-nav-link {
+            background-color: rgb(100, 100, 100, 0.1);
+            color: black;
+            width: 108px;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
 
-					// textarea에 input 이벤트 리스너 추가
-					const commentTextarea = $('#commentForm textarea[name="text"]');
-					commentTextarea.on('input', function() {
-					    autoResizeTextarea(this);
-					});
-				});
-				
-				$('.modal-open').on('click', function() {
-				    const videoContainer = $(this).closest('.video-item').find('.video-container')[0];
-				    showModal(videoContainer);
-				});
-				
-				function showModal(videoContainer) {
-				    const modal = $('#videoModal');
-				    const videoNum = $(videoContainer).attr('data-video-id');
-				    const title = $(videoContainer).attr('data-title');
-				    const username = $(videoContainer).attr('data-username');
-				    const views = $(videoContainer).attr('data-views');
-				    const videoUrl = $(videoContainer).attr('data-videourl');
+        .home-nav-link.active {
+            background-color: black !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content" class="container">
+        <nav class="container nav-center p-0">
+            <div class="nav nav-pills center" id="nav-tab" role="tablist">
+                <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+                <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}"></button>
+            </div>
+        </nav>
+        <br>
+        <br>
+        <div class="tab-content" id="nav-tabContent">
+            <!-- 전체 탭에서 비디오를 출력하는 부분 -->
+            <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
+                <div class="video-list">
+                    <div th:if="${videos != null}">
+                        <div th:each="videoData : ${videos}" class="video-item">
+                            <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+                                <video controls autoplay muted>
+                                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                                <div class="video-details">
+                                    <div class="video-details-top">
+                                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+                                        <p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
+                                        <button class="follow-btn">팔로우</button>
+                                    </div>
+                                    <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
+                                </div>
+                            </div>
+                            <div class="video-buttons">
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+                                    <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+                                    <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+                                    <p class="video-btn-count m-0">362</p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+                                    <p class="video-btn-count m-0">228</p>
+                                </div>
+                            </div>
+                            <br>
+                            <hr style="width: 700px;">
+                            <br>
+                        </div>
+                    </div>
+                    <div th:if="${videos == null}">
+                        <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+                    </div>
+                </div>
+            </div>
 
-					const profilePicUrl = $(videoContainer).siblings('.video-content').find('img').attr('src') || '/images/default_profile.png';
-				    $('#modalUploaderProfile').attr('src', profilePicUrl);
-				    $('#modalUploaderName').text(username);
-				    $('#modalTitle').html(styleSpecialChars(title)); // 여기서 스타일 적용
-				    $('#videoNum').val(videoNum);
+            <!-- 각 주제별 탭에서 비디오를 출력하는 부분 -->
+            <div th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" class="tab-pane fade" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+                <div class="video-list">
+                    <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item">
+                        <div class="video-container" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}">
+                            <video controls autoplay muted>
+                                <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="video-details">
+                                <div class="video-details-top">
+                                    <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+                                    <p class="video-details-name" th:text="${videoData.video.user.userName}"></p>
+                                    <button class="follow-btn">팔로우</button>
+                                </div>
+                                <p class="video-title" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
+                            </div>
+                            <div class="video-buttons">
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-heart-fill"></i></button>
+                                    <p class="video-btn-count m-0" th:text="${videoData.likeCount}"></p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn modal-open"><i class="bi bi-chat-dots-fill"></i></button>
+                                    <p class="video-btn-count m-0" th:text="${videoData.commentCount}"></p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-bookmark-fill"></i></button>
+                                    <p class="video-btn-count m-0">362</p>
+                                </div>
+                                <div class="button-container">
+                                    <button class="action-btn"><i class="bi bi-share-fill"></i></button>
+                                    <p class="video-btn-count m-0">221</p>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <hr style="width: 700px;">
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-				    $('#modalVideoSource').attr('src', videoUrl);
-				    $('#modalVideo')[0].load();
+    <!-- 홈 스크립트 -->
+    <th:block th:fragment="homeVideoScript">
+        <script>
+            function styleSpecialChars(text) {
+                return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
+                           .replace(/@(\S+)/g, '<strong>@$1</strong>');
+            }
+            
+            $(document).ready(function() {
+                // 모든 video.title 요소를 찾아서 스타일 변경
+                $('.video-content p').each(function() {
+                    const originalText = $(this).text();
+                    const styledText = styleSpecialChars(originalText);
+                    $(this).html(styledText);
+                });
 
-				    fetchComments(videoNum);
+                let options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
 
-				    modal.css('display', 'block');
-				    $('body').addClass('modal-open'); // 모달 열릴 때 body에 클래스 추가
-				}
-	
-				function closeModal() {
-				    const modal = $('#videoModal');
-				    modal.css('display', 'none');
-				    $('#modalVideo')[0].pause();
-					$('body').removeClass('modal-open'); // 모달 닫힐 때 body에서 클래스 제거
-				}
+                let observer = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            let video = entry.target.querySelector('video');
+                            if (video) {
+                                video.play();
+                            }
+                        } else {
+                            let video = entry.target.querySelector('video');
+                            if (video) {
+                                video.pause();
+                            }
+                        }
+                    });
+                }, options);
 
-				// Close the modal when the user clicks anywhere outside of the modal
-				$(window).click(function(event) {
-				    const modal = $('#videoModal');
-				    if (event.target == modal[0]) {
-				        closeModal();
-				    }
-				});
-				
-				function fetchComments(videoNum) {
-				    $.ajax({
-				        url: `/comment/video/${videoNum}`,
-				        type: 'GET',
-				        success: function(comments) {
-				            const commentsDiv = $('#comments-list');
-				            commentsDiv.empty();
-				            comments.forEach(comment => {
-				                const commentElement = $('<div>').addClass('comment-item row');
-				                const profilePic = $('<img>').attr('src', comment.user.profilePictureUrl || '/images/default_profile.png').addClass('rounded-circle profile-pic modal-profile col-2');
-								const testElement1 = $('<div>').addClass('col p-0')
-				                const userNameAndText = $('<p>').html('<strong>' + comment.user.userName + '</strong> ' + comment.text).addClass('col');
-								const commentLike = $('<button>').html('좋아요').addClass('row m-0 border-0 bg-white');
-
-								// userNameAndText와 commentLike를 testElement1에 추가
-								testElement1.append(userNameAndText, commentLike);
-
-								// commentElement에 profilePic과 testElement1을 추가
-								commentElement.append(profilePic, testElement1);
-
-								commentsDiv.append(commentElement, '<br>', '<br>');
-				            });
-				        }
-				    });
-				}
-	        </script>
-	    </th:block>
-	</body>
+                document.querySelectorAll('.video-item').forEach(item => {
+                    observer.observe(item);
+                });
+            });
+        </script>
+    </th:block>
+</body>
 </html>

@@ -113,40 +113,40 @@
     <div layout:fragment="content" class="container mt-3">
         <div class="row justify-content-center">
             <div class="col-md-7">
-                <!-- 프로필 이미지와 기본 정보 -->
-                <div class="d-flex align-items-center mb-3">
-                     <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3 profile-pic" alt="프로필 사진">
-                    <div class="d-flex align-items-center w-100">			
+				<!-- 프로필 이미지와 기본 정보 -->
+				<div class="d-flex align-items-center mb-3">
+				     <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle me-3 profile-pic" alt="프로필 사진">
+				    <div class="d-flex align-items-center w-100">			
 						<div class="profile-info">
 						    <div>
 								<h4 th:text="${userName != null ? userName : #strings.concat('사용자', currentUserNum)}" class="mb-1"></h4>
-                                <p th:text="${schoolName}" class="mb-1">학교 이름</p>
-                            </div>
-                            <div class="profile-actions">
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">프로필 편집</button>
-                            </div>
+				                <p th:text="${schoolName}" class="mb-1">학교 이름</p>
+				            </div>
+				            <div class="profile-actions">
+				                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">프로필 편집</button>
+				            </div>
 						</div>
-                    </div>
-                </div>
+				    </div>
+				</div>
 
-                <!-- 팔로우 및 팔로워 수 -->
-                <div class="d-flex justify-content-start mb-4">
+				<!-- 팔로우 및 팔로워 수 -->
+				<div class="d-flex justify-content-start mb-4">
 					<div class="pe-5">
 						<span>
 						    <strong th:text="${videoCount}">0</strong> 게시글
 						</span>
 					</div>
-                    <div class="pe-5">
-                        <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('followers')">
-                            <strong th:text="${followingCount}">0</strong> 팔로워
-                        </span>
-                    </div>
-                    <div>
-                        <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('following')">
-                            <strong th:text="${followerCount}">0</strong> 팔로우
-                        </span>
-                    </div>
-                </div>
+				    <div class="pe-5">
+				        <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('followers')">
+				            <strong th:text="${followingCount}">0</strong> 팔로워
+				        </span>
+				    </div>
+				    <div>
+				        <span class="cursor-pointer" data-bs-toggle="modal" data-bs-target="#followersModal" onclick="openTab('following')">
+				            <strong th:text="${followerCount}">0</strong> 팔로우
+				        </span>
+				    </div>
+				</div>
 
                 <!-- 사용자 바이오 -->
                 <div class="mb-3">
@@ -197,7 +197,7 @@
 				    </button>
 				</div>
 
-				<!-- 아이콘 네비게이션에 따른 콘텐츠 -->
+				<!-- 사용자 비디오 목록 섹션 -->
 				<div class="tab-content">
 				    <div class="tab-pane fade show active" id="profileVideosContent">
 				        <div class="video-grid" id="profileVideoGrid">
@@ -216,7 +216,7 @@
 				    <div class="tab-pane fade" id="profileLikesContent">
 				        <!-- 좋아요 목록 -->
 				        <div class="video-grid" id="profileLikesGrid"></div>
-					</div>
+				    </div>
 				</div>
 				
 

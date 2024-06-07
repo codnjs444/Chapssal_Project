@@ -2,11 +2,13 @@ package com.chapssal.message.controller;
 
 import com.chapssal.message.model.Message;
 import com.chapssal.message.service.MessageService;
+import com.chapssal.user.JwtTokenProvider;
 import com.chapssal.user.User;
 import com.chapssal.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +33,9 @@ public class MessageController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping
     public Message saveMessage(@RequestBody Message message) {
@@ -60,10 +65,9 @@ public class MessageController {
 
     private String extractUsername(Principal principal) {
         if (principal instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) principal;
-            return oauthToken.getName();
-        } else if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername();
+            return ((OAuth2AuthenticationToken) principal).getName();
+        } else if (principal instanceof UsernamePasswordAuthenticationToken) {
+            return ((UsernamePasswordAuthenticationToken) principal).getName();
         } else {
             return null;
         }
