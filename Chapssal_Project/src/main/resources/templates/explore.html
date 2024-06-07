@@ -153,7 +153,7 @@
 		                            <div class="col text-end">
 		                                <div class="like-container text-end">
 											<i th:classappend="${likedVideos[videoLike.video.videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"
-											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}')|">
+											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}', event)|">
 											</i>
 		                                    <p th:text="${videoLike.likeCount}"></p>
 		                                </div>
@@ -192,7 +192,7 @@
 							        <div class="col text-end">
 							            <div class="like-container text-end">
 											<i th:classappend="${likedVideos[videoLike.video.videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"
-											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}')|">
+											   th:attr="onclick=|toggleLike(${videoLike.video.videoNum}, ${currentUserNum}, '${likedVideos[videoLike.video.videoNum]}', event)|">
 											</i>
 							                <p th:text="${videoLike.likeCount}"></p>
 							            </div>
@@ -214,7 +214,7 @@
 			            window.location.href = 'http://localhost:8080/user/profile/' + userNum;
 			        }
 			    }
-				function toggleLike(videoNum, currentUserNum, isLiked) {
+				function toggleLike(videoNum, currentUserNum, isLiked, event) {
 				    let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
 				    let method = isLiked === 'true' ? 'DELETE' : 'POST';
 
@@ -231,8 +231,9 @@
 				    .then(response => response.json())
 				    .then(data => {
 				        if (data.success) {
-				            const likeIcon = document.querySelector(`i[onclick="toggleLike(${videoNum}, ${currentUserNum}, '${isLiked}')"]`);
-				            const likeCountSpan = likeIcon.nextElementSibling;
+				            // 클릭된 아이콘을 기준으로 주변 요소를 찾음
+				            const likeIcon = event.target;
+				            const likeCountSpan = likeIcon.closest('.like-container').querySelector('p');
 
 				            if (isLiked === 'true') {
 				                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
@@ -244,7 +245,7 @@
 				                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
 				            }
 
-				            likeIcon.setAttribute('onclick', `toggleLike(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}')`);
+				            likeIcon.setAttribute('onclick', `toggleLike(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}', event)`);
 				        } else {
 				            alert('좋아요 처리 실패: ' + data.message);
 				        }
@@ -254,6 +255,7 @@
 				        alert('좋아요 처리 중 오류가 발생했습니다.');
 				    });
 				}
+
 			</script>
 		</th:block>
 	</body>
