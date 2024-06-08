@@ -70,4 +70,13 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     
     @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
     List<Video> findAllVideosOrderByUploadDateDesc();
+    
+    @Query(value = "SELECT v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, COUNT(vl.vlikeNum) as likeCount, " +
+            "SUM(CASE WHEN vl.likeDate >= NOW() - INTERVAL 1 HOUR THEN 1 ELSE 0 END) AS recentLikeCount, v.viewCount " +
+            "FROM video v LEFT JOIN videolike vl ON v.videoNum = vl.video " +
+            "LEFT JOIN user u ON v.user = u.userNum " +
+            "WHERE v.topic = :topic " +
+            "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, v.viewCount " +
+            "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
+    List<Object[]> findAllVideosOrderedByLikesAndTopic(@Param("topic") int topic);
 }

@@ -244,6 +244,35 @@ public class VideoService {
         }
         return 0; // 이전 영상이 없을 경우 0 반환
     }
+
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByLikesAndTopic(int topic) {
+        return videoRepository.findAllVideosOrderedByLikesAndTopic(topic).stream()
+            .map(result -> {
+                int videoNum = (Integer) result[0];
+                String title = (String) result[1];
+                String videoUrl = (String) result[2];
+                String thumbnailUrl = (String) result[3];
+                int userNum = (Integer) result[4];
+                Integer videoTopic = (Integer) result[5];
+                int likeCount = ((Number) result[6]).intValue();
+                int recentLikeCount = ((Number) result[7]).intValue();
+                int viewCount = ((Number) result[8]).intValue();
+
+                Video video = new Video();
+                video.setVideoNum(videoNum);
+                video.setTitle(title);
+                video.setVideoUrl(videoUrl);
+                video.setThumbnailUrl(thumbnailUrl);
+                video.setTopic(videoTopic);
+                video.setViewCount(viewCount);
+                User user = userService.findByUserNum(userNum);
+                video.setUser(user);
+
+                int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                return new VideoWithLikesAndComments(video, likeCount, commentCount);
+            })
+            .collect(Collectors.toList());
+    }
     
 
     public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
