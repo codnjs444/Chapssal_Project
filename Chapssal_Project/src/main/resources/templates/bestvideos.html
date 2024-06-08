@@ -136,6 +136,7 @@
 
 		.like-container i {
 		    font-size: 14px; /* 아이콘 크기 조절 */
+			cursor: pointer;
 		}
 		
 		.video-item .video-info {
@@ -158,6 +159,7 @@
 		    display: flex;
 		    align-items: center;
 		    gap: 10px;
+			cursor: pointer;
 		}
 
 		.user-profile img {
@@ -288,6 +290,19 @@
 		        const targetId = $(event.target).data('bs-target').substring(1); // remove leading '#'
 		        updateRankings(targetId);
 		    });
+			// Limiting videos to 100 for "전체" tab
+			const allVideos = $('#nav-all .video-item');
+			if (allVideos.length > 100) {
+			    allVideos.slice(100).remove();
+			}
+
+			// Limiting videos to 10 for each topic tab
+			$('[id^="video-grid-"]').each(function () {
+			    const topicVideos = $(this).find('.video-item');
+			    if (topicVideos.length > 10) {
+			        topicVideos.slice(10).remove();
+			    }
+			});
 		});
 		
 		document.addEventListener("DOMContentLoaded", function() {

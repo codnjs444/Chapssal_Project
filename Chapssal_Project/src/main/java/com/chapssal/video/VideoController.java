@@ -6,6 +6,7 @@ import com.chapssal.comment.CommentService;
 import com.chapssal.comment.RCommentService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.hashtag.HashtagService;
+import com.chapssal.hashtag.UsertagService;
 import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
@@ -55,7 +56,6 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
-
     private final CommentLikeService commentLikeService;
     
 
@@ -72,6 +72,9 @@ public class VideoController {
     
     @Autowired
     private RCommentService rCommentService;
+    
+    @Autowired
+    private UsertagService usertagService;
     
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, HashtagService hashtagService, CommentLikeService commentLikeService) {
         this.videoService = videoService;
@@ -143,6 +146,8 @@ public class VideoController {
 
             // 해시태그 처리
             hashtagService.extractAndSaveHashtags(title, video);
+            // Usertag 처리
+            usertagService.saveUsertag(video, user);
             
             // 임시 파일 삭제
             Files.delete(videoTempFilePath);
