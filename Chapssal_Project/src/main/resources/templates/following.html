@@ -197,21 +197,24 @@
 			            <p>팔로우 중인 유저가 없습니다.</p>
 			        </div>
 			        <div th:each="videoData : ${videos}" class="video-item-follow">
-						<div class="video-container-follow" th:data-video-id="${videoData.video.videoNum}" th:data-title="${videoData.video.title}" th:data-username="${videoData.video.user.userName}" th:data-views="${videoData.video.viewCount}" th:data-videourl="${videoData.video.videoUrl}" th:data-usernum="${videoData.video.user.userNum}">
-			                <video controls autoplay muted>
+						<div class="video-container-follow"  th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}"  th:data-usernum="${videoData.video.user.userNum}">			                
+							<video controls autoplay muted>
 			                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
 								<input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
 			                    Your browser does not support the video tag.
 			                </video>
-			                <div class="video-details-follow">
-			                    <div class="video-details-top-follow">
-			                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
-			                        <p class="video-details-name-follow" th:text="${videoData.video.user.userName}"></p>
-			                        <button class="follow-btn-follow">팔로우</button>
-			                    </div>
-								
-			                    <p class="video-title-follow" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
-			                </div>
+							<div class="video-details-follow">
+							    <div class="video-details-top-follow">
+							        <div class="user-info-follow">
+							            <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic">
+							            <p class="video-details-name-follow" th:text="${videoData.video.user.userName}"></p>
+							        </div>
+							        <div class="follow-btn-container-follow">
+							            <button class="follow-btn-follow">팔로우</button>
+							        </div>
+							    </div>
+							    <p class="video-title-follow" th:text="${videoData.video.title}"></p>
+							</div>
 			            </div>
 			            <div class="video-buttons-follow">
 							<div class="button-container-follow">
@@ -280,8 +283,8 @@
 				    });
 
 				    function updateLikeButton(videoItem, isLiked, likeCount) {
-				        const likeButton = videoItem.find('.button-container-follow .action-btn-follow i.bi-heart-fill');
-				        const likeCountElem = videoItem.find('.button-container-follow .video-btn-count');
+				        const likeButton = videoItem.find('.button-container-follow .action-btn-follow i.bi-heart-fill').first(); // 첫 번째 하트 아이콘만 선택
+				        const likeCountElem = videoItem.find('.button-container-follow .video-btn-count').first(); // 첫 번째 좋아요 개수 요소 선택
 				        console.log("Updating like button:", videoItem); // 디버깅
 
 				        // 좋아요 버튼 색상 변경
@@ -291,7 +294,7 @@
 				        likeCountElem.text(likeCount);
 
 				        // 클릭 이벤트 바인딩
-				        videoItem.find('.button-container-follow .action-btn-follow').off('click').on('click', function() {
+				        videoItem.find('.button-container-follow .action-btn-follow').first().off('click').on('click', function() {
 				            handleLikeButtonClick(videoItem, isLiked, likeCountElem);
 				        });
 				    }
@@ -330,7 +333,7 @@
 				                updateLikeButton(videoItem, !isLiked, newLikeCount);
 
 				                // 클릭 효과 추가
-				                videoItem.find('.button-container-follow .action-btn-follow').toggleClass('clicked', !isLiked);
+				                videoItem.find('.button-container-follow .action-btn-follow').first().toggleClass('clicked', !isLiked);
 
 				                alert(isLiked ? '좋아요를 취소하였습니다.' : '좋아요를 누르셨습니다.');
 				            } else {
@@ -343,7 +346,22 @@
 				        });
 				    }
 					
-					//ready
+					
+					
+					// 팔로우 버튼 클릭 시 알림 표시
+					$('.follow-btn-follow').on('click', function(event) {
+					    event.stopPropagation(); // 이벤트 전파 중단
+					    alert('팔로우 버튼 클릭');
+					});
+					
+					// 프로필 이미지와 이름 클릭 시 특정 URL로 이동
+					$('.user-info-follow').on('click', function(event) {
+					    event.stopPropagation(); // 이벤트 전파 중단
+					    const userNum = $(this).closest('.video-container-follow').data('usernum');
+					    const profileUrl = userNum === currentUserNum ? '/user/profile' : `/user/profile/${userNum}`;
+					    window.location.href = `http://localhost:8080${profileUrl}`;
+					});
+					// ready
 				});
 
 
