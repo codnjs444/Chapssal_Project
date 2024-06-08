@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragments="header">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script th:src="@{/assets/js/color-modes.js}"></script>
+    <!-- link href 를 제외한 모든 코드 동일 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.122.0">
+    <title>ChapSsenger</title>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/sidebars/">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/list-groups/">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/navbars/">
+
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+    <link th:href="@{/assets/dist/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link th:href="@{/assets/dist/css/sidebars.css}" rel="stylesheet">
+    <link th:href="@{/assets/dist/css/list-groups.css}" rel="stylesheet">
+
+    <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+
+    @media (min-width: 992px) {
+    .offset-lg-1 {
+        margin-left: 2%;
+    }
+    }
+
+    .no-hover:hover {
+    background-color: transparent !important;
+    color: inherit !important;
+    }
+
+    .b-example-divider {
+      width: 100%;
+      height: 3rem;
+      background-color: rgba(0, 0, 0, .1);
+      border: solid rgba(0, 0, 0, .15);
+      border-width: 1px 0;
+      box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+    }
+
+    .b-example-vr {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 100vh;
+    }
+
+    .bi {
+      vertical-align: -.125em;
+      fill: currentColor;
+    }
+
+    .nav-scroller {
+      position: relative;
+      z-index: 2;
+      height: 2.75rem;
+      overflow-y: hidden;
+    }
+
+    .navbar {
+        z-index: 102;
+    }
+
+    .nav-scroller .nav {
+      display: flex;
+      flex-wrap: nowrap;
+      padding-bottom: 1rem;
+      margin-top: -1px;
+      overflow-x: auto;
+      text-align: center;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .btn-bd-primary {
+      --bd-violet-bg: #712cf9;
+      --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+      --bs-btn-font-weight: 600;
+      --bs-btn-color: var(--bs-white);
+      --bs-btn-bg: var(--bd-violet-bg);
+      --bs-btn-border-color: var(--bd-violet-bg);
+      --bs-btn-hover-color: var(--bs-white);
+      --bs-btn-hover-bg: #6528e0;
+      --bs-btn-hover-border-color: #6528e0;
+      --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+      --bs-btn-active-color: var(--bs-btn-hover-color);
+      --bs-btn-active-bg: #5a23c8;
+      --bs-btn-active-border-color: #5a23c8;
+    }
+
+    .bd-mode-toggle .dropdown-menu {
+      z-index: 1500;
+    }
+
+    .bd-mode-toggle .dropdown-menu .active .bi {
+      display: block !important;
+    }
+
+.chat-page {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.chat-box {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    height: 850px; /* 전체 화면 높이에 맞게 설정 */
+    position: relative;
+}
+
+.msg_view {
+    flex: 1;
+    overflow-y: scroll;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #dee2e6; /* 테두리 추가 */
+    display: flex;
+    flex-direction: column; /* 세로로 쌓이도록 설정 */
+    height: 650px; /* 원하는 고정 높이 설정 */
+    width: 100%; /* 너비 설정 */
+    margin: 0 auto; /* 가운데 정렬 */
+}
+
+.msg_input {
+    padding: 10px;
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    bottom: 0;
+    width: 98%;
+}
+
+.msg_input form {
+    display: flex;
+    width: 100%;
+}
+
+.msg_input input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    margin-right: 10px;
+}
+
+.msg_input button {
+    padding: 6px 12px; /* 패딩 줄이기 */
+    background-color: #5587ED;
+    flex-shrink: 0; /* 버튼이 텍스트 필드 크기를 줄이지 않도록 함 */
+}
+
+.message {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+    position: relative;
+}
+
+
+.message .time {
+    font-size: 0.8em;
+    color: #999;
+    position: absolute;
+    bottom: 0;
+}
+
+.message.sender .time {
+    left: -70px; /* 왼쪽에 위치 */
+    margin-right: 15px; /* 시간과 말풍선 간의 간격 */
+}
+
+.message.receiver .time {
+    right: -70px; /* 오른쪽에 위치 */
+    margin-left: 15px; /* 시간과 말풍선 간의 간격 */
+}
+
+.message.sender {
+    background-color: #5587ED;
+    color: white;
+    margin-left: auto; /* 오른쪽 정렬 */
+    text-align: right;
+}
+
+.message.receiver {
+    background-color: #e9ecef;
+    color: black;
+    margin-right: auto; /* 왼쪽 정렬 */
+    text-align: left;
+}
+
+
+
+.sidebar {
+    position: fixed; /* 화면에 고정 */
+    top: 0;
+    left: 0;
+    height: 100%; /* 화면 전체 높이 */
+    width: 3%; /* 화면 가로의 3% */
+    overflow-y: hidden;
+    overflow-x: hidden;
+    background-color: #f8f9fa; /* 배경색 */
+    border-right: 1px solid #dee2e6; /* 테두리 */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 아이콘 중앙 배열 */
+    padding-top:3%; /* 상단 패딩 추가 */
+    z-index: 100;
+}
+
+.content {
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f0f0f0; /* 배경색 예시 */
+}
+
+.dropdown-menu {
+    position: fixed;
+    inset: auto auto 0px 0px;
+    margin: 0px;
+    transform: translate(0px, -58px);
+}
+
+/* 기본 레이아웃 설정 */
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container-fluid {
+padding-right: 0px;
+padding-left: 20px;
+margin-right: auto;
+margin-left: auto;
+}
+
+/* 리스트 그룹 컨테이너 스타일 */
+.list-group-container {
+    height: 100vh; /* 화면 높이만큼 */
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    box-sizing: border-box;
+    padding: 0;
+}
+
+/* 나머지 컨텐츠 섹션 스타일 */
+.content-section {
+    height: 100vh; /* 화면 높이만큼 */
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 스크롤바 숨김 (선택 사항) */
+.scrollarea {
+    max-height: 773px;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #dee2e6 transparent; /* Firefox */
+    margin-bottom: 5%;
+}
+
+.extraspace {
+    height: 70px; /* 추가 공간의 높이 설정 */
+    background-color: #FEFFFF; /* 시각적 구분을 위한 배경색 */
+    border: 1px solid #888; /* 진한 회색 테두리 추가 */
+    margin-bottom: 10px; /* 리스트 그룹과의 간격 */
+    margin-left: 5.67%;
+    width: calc(100% - 2px);
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 5px; /* 테두리를 둥글게 */
+}
+
+.extraspace img {
+    margin-left: 10%;
+}
+
+.user-info {
+    margin-left: 20px; /* 이미지와 텍스트 사이의 간격 설정 */
+    display: flex;
+    flex-direction: column;
+}
+
+.user-id {
+    font-size: 22px;
+    color: black;
+}
+
+.user-name {
+    font-size: 13px;
+    color: darkgray;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1),
+                 -1px -1px 2px rgba(0, 0, 0, 0.1),
+                 -1px 1px 2px rgba(0, 0, 0, 0.1),
+                 1px -1px 2px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 효과 */
+}
+
+.scrollarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollarea::-webkit-scrollbar-thumb {
+    background-color: #dee2e6;
+    border-radius: 4px;
+    border: none;
+}
+
+
+.list-group-item {
+    border-radius: 10px; /* 기본적으로 테두리를 둥글게 */
+    margin-bottom: 5px; /* 아이템 간격 */
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
+}
+
+.list-group-item:first-child {
+    border-top-left-radius: 10px; /* 첫 번째 아이템의 상단 왼쪽 테두리를 둥글게 */
+    border-top-right-radius: 10px; /* 첫 번째 아이템의 상단 오른쪽 테두리를 둥글게 */
+}
+
+.list-group-item:last-child {
+    border-bottom-left-radius: 10px; /* 마지막 아이템의 하단 왼쪽 테두리를 둥글게 */
+    border-bottom-right-radius: 10px; /* 마지막 아이템의 하단 오른쪽 테두리를 둥글게 */
+}
+
+.list-group-item.active {
+    background-color: #8BBDFF; /* 활성화 상태일 때 배경색 */
+    color: white; /* 텍스트 색상 변경 */
+}
+
+.list-group-item:hover {
+    background-color: #5587ED; /* 호버 시 배경색 */
+}
+
+.list-group-item-action:active {
+    background-color: #0056b3; /* 클릭 시 배경색 */
+    color: white;
+}
+
+.list-group-item-delete-mode {
+    background-color: #f8d7da;
+}
+
+.chat-create {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* 화면 전체 높이를 채우기 위해 */
+}
+
+.chat-create img {
+    max-width: 20%;
+    margin-top: 15%;
+    margin-bottom: 5px;
+}
+.chat-create .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white; /* 글씨 색상을 하얀색으로 설정 */
+}
+
+ .date-separator {
+    text-align: center;
+    border-top: 1px solid #dee2e6;
+    margin: 20px 0;
+    padding-top: 10px;
+    font-size: 0.875rem;
+    color: #888;
+}
+
+         .notification-panel {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            width: 350px;
+            max-height: 80vh;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 1050;
+            display: none; /* 패널을 처음에는 보이지 않도록 설정 */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .notification-panel.active {
+            display: block; /* 패널을 보이도록 설정 */
+            transform: translateY(0);
+        }
+
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .notification-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .notification-body {
+            padding: 10px;
+            max-height: calc(80vh - 50px);
+            overflow-y: auto;
+        }
+
+        .notification-body ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notification-body ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .notification-body ul li:hover {
+            background-color: #f1f1f1;
+        }
+
+        .notification-body ul li button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .notification-body ul li button:hover {
+            background-color: #0056b3;
+        }
+
+        .notification-body ul li span {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .notification-icon {
+            position: relative;
+        }
+
+        #notificationCount {
+            position: absolute;
+            top: 10px; /* 더 아래로 이동 */
+            right: 10px; /* 약간 왼쪽으로 이동 */
+            transform: translate(50%, -50%);
+            display: inline-block;
+            padding: 0.3em 0.5em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            background-color: #dc3545;
+            border-radius: 0.75rem; /* 둥근 모서리를 더 강조 */
+        }
+
+
+        #searchResults {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-left: 0%;
+        }
+        .user-result {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .user-result img {
+            margin-right: 15px;
+        }
+        .user-result .user-info {
+            flex-grow: 1;
+            min-width: 0; /* 추가: 텍스트 오버플로우 처리 */
+        }
+        .user-result .user-info .user-id,
+        .user-result .user-info .user-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-result button {
+            flex-shrink: 0;
+        }
+
+
+        .participant {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .empty-box {
+            width: 200px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid #ccc;
+            position: absolute;
+            bottom: 150%; /* 빈 창을 위로 위치시킴 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 1002;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>

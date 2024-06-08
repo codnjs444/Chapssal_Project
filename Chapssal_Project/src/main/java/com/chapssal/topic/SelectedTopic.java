@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import com.chapssal.user.User;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "SelectedTopic")
 @Getter
@@ -21,4 +23,7 @@ public class SelectedTopic {
     @ManyToOne
     @JoinColumn(name = "user", nullable = false)
     private User user;
+
+    @Column(nullable = false)
+    private LocalDateTime createDate; // 투표 날짜
 }

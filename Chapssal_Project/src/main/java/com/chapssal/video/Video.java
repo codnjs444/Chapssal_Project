@@ -39,4 +39,8 @@ public class Video {
 
     @Column(name = "viewCount")
     private Integer viewCount;
+
+    @Transient // This field is not persisted in the database
+    private Long likeCount;
 }
+

@@ -60,7 +60,18 @@ dependencies {
 	// Spring WebSocket messaging 의존성
 	implementation 'org.springframework:spring-messaging'
 	implementation 'org.springframework:spring-websocket'
+	
+	// Spring SSE 통신 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.projectreactor:reactor-core'
 
+	//일반 유저 인증 및 토큰
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // jjwt-api 추가
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5' // jjwt-impl 추가
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // jjwt-jackson 추가
+	implementation 'javax.xml.bind:jaxb-api:2.3.1'
+	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+	
 }
 
 tasks.named('test') {
@@ -68,5 +79,8 @@ tasks.named('test') {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-parameters"
+	options.encoding = 'UTF-8'
+	options.compilerArgs << "-parameters"
+	options.compilerArgs << "-Xlint:unchecked"
+	options.compilerArgs << "-Xlint:deprecation"
 }

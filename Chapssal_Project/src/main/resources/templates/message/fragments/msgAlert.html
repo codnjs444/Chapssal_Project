@@ -1,0 +1,137 @@
+<div th:fragment="msgAlert" xmlns:th="http://www.w3.org/1999/xhtml">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded and parsed'); // 디버깅 로그 추가
+
+function getJwtToken() {
+    const token = localStorage.getItem('jwtToken');
+    console.log('JWT Token:', token); // 디버깅 로그 추가
+    return token;
+}
+
+function connectToSse() {
+    const token = localStorage.getItem('jwtToken');
+    fetch('/api/messages/info', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        var userId = data.userNum; // 사용자 ID
+        var eventSource = new EventSource(`/api/messages/subscribe?token=${token}`);
+
+        eventSource.onmessage = function(event) {
+            console.log('Received message:', event.data); // 디버깅 로그 추가
+            showNotification('새로운 메시지가 도착했습니다.');
+        };
+
+        eventSource.onerror = function(event) {
+            console.error('Error in SSE connection:', event);
+            eventSource.close();
+        };
+    })
+    .catch(error => console.error('Error connecting to SSE:', error));
+}
+
+
+            function showNotification(message) {
+                var notificationElement2 = document.getElementById('messageNotificationIndicator');
+                if (notificationElement2) {
+                    notificationElement2.style.display = 'block';
+                }
+
+                var notificationElement = document.createElement('div');
+                notificationElement.className = 'alert alert-success';
+                notificationElement.innerText = message;
+                notificationElement.style.position = 'fixed';
+                notificationElement.style.top = '10px';
+                notificationElement.style.right = '300px';
+                notificationElement.style.zIndex = 1000;
+
+                document.body.appendChild(notificationElement);
+
+                setTimeout(() => {
+                    notificationElement.remove();
+                }, 3000);
+            }
+
+            function fetchUnreadMessageStatus() {
+                console.log('Fetching unread message status...'); // 디버깅 로그 추가
+                const token = getJwtToken();
+                fetch('/api/messages/unread-count', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Unread message count:', data.count); // 디버깅 로그 추가
+                    var hasUnread = data.count > 0;
+                    updateMessageNotificationIndicator(hasUnread);
+                })
+                .catch(error => console.error('Error fetching unread message status:', error));
+            }
+
+            function updateMessageNotificationIndicator(hasUnread) {
+                var messageIndicatorElement = document.getElementById('messageNotificationIndicator');
+                if (messageIndicatorElement) {
+                    if (hasUnread) {
+                        messageIndicatorElement.style.display = 'block';
+                    } else {
+                        messageIndicatorElement.style.display = 'none';
+                    }
+                }
+            }
+
+            connectToSse();
+            fetchUnreadMessageStatus();
+        });
+
+
+                        $(document).ready(function() {
+                            // Load popular searches on page load
+                            $.ajax({
+                                url: "/message/search/popular",
+                                type: "GET",
+                                success: function(data) {
+                                    $("#popular-searches").empty().append('<h3>Popular Searches</h3>');
+                                    data.forEach(function(search) {
+                                        $("#popular-searches").append('<a href="#" class="list-group-item list-group-item-action">' + search + '</a>');
+                                    });
+                                }
+                            });
+
+                            // Load search suggestions based on input
+                            $("#search-input").on("input", function() {
+                                var query = $(this).val();
+                                if (query.length >= 2) {
+                                    $.ajax({
+                                        url: "/message/search/suggestions",
+                                        type: "GET",
+                                        data: { query: query },
+                                        success: function(data) {
+                                            $("#suggestions").empty();
+                                            data.forEach(function(suggestion) {
+                                                $("#suggestions").append('<a href="#" class="list-group-item list-group-item-action">' + suggestion + '</a>');
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    $("#suggestions").empty();
+                                }
+                            });
+
+                            // Populate search input on suggestion click
+                            $(document).on("click", ".list-group-item", function() {
+                                $("#search-input").val($(this).text());
+                                $("#suggestions").empty();
+                            });
+                        });
+    </script>
+</div>

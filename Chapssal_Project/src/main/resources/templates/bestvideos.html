@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+    <style>
+		.ranking-container {
+		    width: 100%;
+		    display: flex;
+		    align-items: center;
+		    padding: 30px;
+		    border: 1px solid #ccc;
+		    border-radius: 10px;
+		    margin-bottom: 20px;
+		    position: relative;
+		    background-color: white;
+		    height: auto;
+		    margin-top: 20px;
+		}
+	
+		.ranking-arrow {
+		    font-size: 32px;
+			
+		}
+	
+		.ranking-header {
+		    width: 100%;
+		    display: flex;
+		    align-items: center;
+		    justify-content: space-between;
+		    padding: 30px;
+		    border: 1px solid #ccc;
+		    border-radius: 10px;
+		    margin-bottom: 20px;
+		    background-color: white;
+		}
+	
+		.ranking-header h4 {
+		    margin: 0;
+		    font-weight: bold;
+		    text-align: center;
+		    width: 100%;
+		}
+	
+		.ranking-header p {
+		    margin: 5px 0 0 0;
+		    text-align: center;
+		    width: 100%;
+		}
+		
+        /* 네비게이션 탭 스타일 */
+        .nav-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .home-nav-link {
+            background-color: rgb(100, 100, 100, 0.1);
+            color: black;
+            width: 108px;
+			height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+			font-size: 15px;
+        }
+
+        .home-nav-link.active {
+            background-color: black !important;
+            color: white !important;
+        }
+
+        /* 비디오 그리드 스타일 */
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .video-item {
+            flex: 0 0 calc(20% - 16px);
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 150%; /* 16:9 aspect ratio (9 / 16 * 100) */
+            overflow: hidden;
+            background-color: black; /* 영상이 없는 부분을 검게 표시 */
+            border-radius: 10px;
+        }
+
+        .thumbnail-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 썸네일이 container를 채우도록 설정 */
+        }
+
+        .video-content {
+            font-size: 12px;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .video-content p {
+            margin: 0;
+        }
+
+		.ranking-number {
+		    background-color: #FFDB3C;
+		    color: #CE8219;
+		    padding: 5px 10px;
+			height: 30px;
+			width: 30px;
+		    border-radius: 50%;
+			margin-bottom: 5px;
+		    font-size: 14px;
+		    font-weight: bold;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}		
+		
+		/* 좋아요 수와 아이콘을 붙게 하는 스타일 */
+		.like-container {
+		    display: flex;
+		    align-items: center;
+			justify-content: flex-end;
+		    gap: 5px; /* 좋아요 아이콘과 숫자 사이의 간격 조절 */
+		}
+
+		.like-container i {
+		    font-size: 14px; /* 아이콘 크기 조절 */
+		}
+		
+		.video-item .video-info {
+		    position: absolute;
+		    bottom: 5px;
+		    left: 5px;
+		    color: white;
+		    padding: 3px 5px;
+		    font-size: 0.8rem;
+		    border-radius: 5px;
+		    display: flex;
+		    align-items: center;
+		    gap: 5px;
+		}
+		.video-info .view-count {
+		    font-weight: bold; /* 조회수 텍스트를 굵게 설정 */
+		}
+
+		.user-profile {
+		    display: flex;
+		    align-items: center;
+		    gap: 10px;
+			cursor: pointer;
+		}
+
+		.user-profile img {
+		    width: 20px;
+		    height: 20px;
+		    border-radius: 50%;
+		    object-fit: cover;
+		}
+    </style>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+	    <!-- 화살표 추가 -->
+	    <div class="ranking-header">
+	        <button type="button" class="ranking-arrow border-0 bg-white" id="left-arrow">&lt;</button>
+	        <div>
+	            <h4 th:text="${currentWeek}"></h4>
+	            <p>베스트 영상</p>
+	        </div>
+	        <button type="button" class="ranking-arrow border-0 bg-white" id="right-arrow">&gt;</button>
+	    </div>
+	    
+	    <nav class="container nav-center p-0">
+	        <div class="nav nav-pills center p-0" id="nav-tab" role="tablist">
+	            <button class="nav-link home-nav-link active mx-1 py-1" id="nav-all-tab" data-bs-toggle="pill" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">전체</button>
+	            <button class="nav-link home-nav-link mx-1 p-0" th:each="topic : ${topicsByVoteCount}"
+	                    th:id="'nav-' + ${topic[0].topicNum} + '-tab'" data-bs-toggle="pill"
+	                    th:data-bs-target="'#nav-' + ${topic[0].topicNum}" type="button" role="tab"
+	                    th:aria-controls="'nav-' + ${topic[0].topicNum}" aria-selected="false" th:text="${topic[0].title}">
+	            </button>
+	        </div>
+	    </nav>
+	    <br>
+	    <br>
+	    <div class="tab-content" id="nav-tabContent">
+	        <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab" tabindex="0">
+	            <div class="video-grid">
+	                <div th:if="${topVideos != null}" th:each="videoLike, iterStat : ${topVideos}" class="video-item">
+	                    <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
+	                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+	                        <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?weekOffset=${weekOffset}|}">
+	                            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+	                            <div class="video-info">
+	                                <i class="bi bi-play-fill"></i>
+	                                <span class="view-count" th:text="${videoLike[0].viewCount}"></span>
+	                            </div>
+	                        </a>
+	                    </div>
+	                    <div class="video-content">
+	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+	                        <div class="row">
+	                            <div class="col">
+	                                <div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike[0].user.userNum}, ${currentUserNum})|">
+	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+	                                    <p th:text="${videoLike[0].user.userName}"></p>
+	                                </div>
+	                            </div>
+	                            <div class="col text-end">
+	                                <div class="like-container text-end">
+										<i th:classappend="${likedVideosThisWeek[videoLike[0].videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div th:if="${topVideos == null}">
+	                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	                </div>
+	            </div>
+	        </div>
+	        <div class="tab-pane fade" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum}" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab'" tabindex="0">
+	            <div class="video-grid" th:id="'video-grid-' + ${topic[0].topicNum}">
+	                <div th:each="videoLike, iterStat : ${topVideos}" th:if="${videoLike[0].topic != null and videoLike[0].topic == topic[0].topicNum}" class="video-item">
+	                    <div class="ranking-number" th:text="${iterStat.index + 1}"></div>
+	                    <div class="thumbnail-container" th:data-video-id="${videoLike[0].videoNum}">
+	                        <a th:href="@{|/bestvideos/video/${videoLike[0].videoNum}?topicNum=${topic[0].topicNum}&weekOffset=${weekOffset}|}">
+	                            <img th:src="${videoLike[0].thumbnailUrl}" alt="Thumbnail">
+	                            <div class="video-info">
+	                                <i class="bi bi-play-fill"></i>
+	                                <span class="view-count" th:text="${videoLike[0].viewCount}"></span>
+	                            </div>
+	                        </a>
+	                    </div>
+	                    <div class="video-content">
+	                        <p th:text="${videoLike[0].title}" style="font-size: 15px;"></p>
+	                        <div class="row">
+	                            <div class="col">
+	                                <div class="user-profile" th:onclick="|navigateToProfilePage(${videoLike[0].user.userNum}, ${currentUserNum})|">
+	                                    <img th:src="${videoLike[0].user.profilePictureUrl != null ? videoLike[0].user.profilePictureUrl : '/images/default_profile.png'}" alt="Profile Image">
+	                                    <p th:text="${videoLike[0].user.userName}"></p>
+	                                </div>
+	                            </div>
+	                            <div class="col text-end">
+	                                <div class="like-container text-end">
+									<i th:classappend="${likedVideosThisWeek[videoLike[0].videoNum]} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+	                                    <p th:text="${videoLike[1] != null ? videoLike[1] : 0}"></p> <!-- 좋아요 수가 null인 경우 0으로 표시 -->
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div th:if="${topVideos == null}">
+	                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+<th:block th:fragment="bestVideoScript">
+    <script>
+		$(document).ready(function () {
+		    // Function to update rankings in a specific grid
+		    function updateRankings(gridId) {
+		        const $grid = $('#' + gridId);
+		        const $videoItems = $grid.find('.video-item');
+		        $videoItems.each(function (index) {
+		            $(this).find('.ranking-number').text(index + 1);
+		        });
+		    }
+	
+		    // Initial ranking update for the "전체" tab
+		    updateRankings('video-grid-all');
+	
+		    // Event listener for tab changes
+		    $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (event) {
+		        const targetId = $(event.target).data('bs-target').substring(1); // remove leading '#'
+		        updateRankings(targetId);
+		    });
+			// Limiting videos to 100 for "전체" tab
+			const allVideos = $('#nav-all .video-item');
+			if (allVideos.length > 100) {
+			    allVideos.slice(100).remove();
+			}
+
+			// Limiting videos to 10 for each topic tab
+			$('[id^="video-grid-"]').each(function () {
+			    const topicVideos = $(this).find('.video-item');
+			    if (topicVideos.length > 10) {
+			        topicVideos.slice(10).remove();
+			    }
+			});
+		});
+		
+		document.addEventListener("DOMContentLoaded", function() {
+	        const leftArrow = document.getElementById('left-arrow');
+	        const rightArrow = document.getElementById('right-arrow');
+	        const weekOffset = parseInt("[[${weekOffset}]]", 10);
+			const currentWeekElement = document.querySelector('.ranking-header h4');
+	        
+			if (currentWeekElement) {
+			    const currentWeekText = currentWeekElement.textContent;
+
+			    // Check if currentWeek is the first week of May 2024
+			    const firstWeekOfMay2024 = "2024년 05월 1주차";
+			    if (currentWeekText === firstWeekOfMay2024) {
+			        if (leftArrow) {
+			            leftArrow.disabled = true;
+			        }
+			    } else {
+			        if (leftArrow) {
+			            leftArrow.disabled = false;
+			        }
+			    }
+
+			    if (rightArrow) {
+			        if (weekOffset === 0) {
+			            rightArrow.disabled = true;
+			        } else {
+			            rightArrow.disabled = false;
+			        }
+			    }
+			}
+
+			if (leftArrow) {
+			    leftArrow.addEventListener('click', function() {
+			        changeWeek(weekOffset + 1);
+			    });
+			}
+
+			if (rightArrow) {
+			    rightArrow.addEventListener('click', function() {
+			        if (weekOffset > 0) {
+			            changeWeek(weekOffset - 1);
+			        }
+			    });
+			}
+
+	        function changeWeek(offset) {
+	            const url = `/bestvideos?weekOffset=${offset}`;
+	            window.location.href = url;
+	        }
+	    });
+		
+		function navigateToProfilePage(userNum, currentUserNum) {
+	        if (userNum === currentUserNum) {
+	            window.location.href = 'http://localhost:8080/user/profile';
+	        } else {
+	            window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+	        }
+	    }
+    </script>
+</th:block>
+</body>
+</html>

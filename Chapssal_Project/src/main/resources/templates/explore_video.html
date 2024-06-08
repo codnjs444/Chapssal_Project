@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        .video-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        .video-section {
+            flex: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .video-section video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .info-section {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fff;
+            color: #000;
+            position: relative;
+        }
+        .profile-section, .comments-section {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .profile-section .follow-btn {
+            color: #fff;
+            background-color: #ff0050;
+            border: none;
+            padding: 5px 20px;
+            border-radius: 5px;
+            margin-left: auto;
+        }
+        .comments-section h6 {
+            margin-bottom: 10px;
+        }
+        .comments-section {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+        .close-btn, .navigation-btns {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .navigation-btns {
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+        .navigation-btns button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            display: block;
+            margin: 10px 0;
+        }
+        .profile-section img {
+            width: 40px;
+            height: 40px;
+        }
+        .profile-info-container {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+        .profile-section h5 {
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+        .profile-section small {
+            display: block;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .comment-input-container {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: calc(100% - 40px);
+            z-index: 1000;
+        }
+        .comment-input {
+            flex-grow: 1;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            margin-right: 5px;
+        }
+        .comment-input:focus {
+            outline: none;
+        }
+        .submit-comment-btn {
+            background-color: transparent;
+            color: #007bff;
+            border: none;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+        .profile-section .options-btn, .options-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .options-dropdown {
+            display: none;
+            position: absolute;
+            top: 30px;
+            right: 0;
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1000;
+            white-space: nowrap;
+            padding: 5px;
+        }
+        .options-dropdown button {
+            display: inline-block;
+            border: none;
+            background: none;
+            padding: 10px;
+            cursor: pointer;
+            color: #000;
+            font-size: 16px;
+            margin: 0 5px;
+        }
+        .comment-item strong {
+            font-size: 13px;
+        }
+        .comment-item p {
+            font-size: 12px;
+            margin: 0;
+        }
+        .comment-item small {
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        .icon-section {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            color: white;
+        }
+        .icon-section button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            display: block;
+            margin: 10px 0;
+        }
+        .icon-section span {
+            display: block;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .comment-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .comment-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .comment-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .comment-meta {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .comment-meta .comment-date,
+        .comment-meta .reply-link {
+            font-size: 10px;
+            color: #6c757d;
+        }
+        .comment-meta .reply-link {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .comment-actions .like-button {
+            background: none;
+            border: none;
+            color: #000;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .comment-actions .like-count {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 5px;
+        }
+        .comment-meta .view-replies-link {
+            font-size: 10px;
+            color: #000;
+            cursor: pointer;
+            margin-left: 0;
+            text-decoration: none;
+        }
+        .replies-container {
+            display: none;
+            margin-top: 10px;
+            min-height: 50px;
+        }
+        .reply-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            margin-left: 20px;
+            position: relative;
+            flex-direction: row;
+            border-left: none;
+            padding-left: 0;
+        }
+        .reply-body {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .reply-item .comment-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 0;
+        }
+        .reply-item .comment-body p,
+        .reply-item .comment-body .comment-meta {
+            margin-bottom: 1px;
+            line-height: 1;
+        }
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="video-container">
+    <div class="video-section">
+        <video controls autoplay>
+            <source th:src="${videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <button class="close-btn btn btn-outline-light" id="closeButton" th:onclick="|navigateToExploreVideos(${topicNum})|">
+            <i class="bi bi-x"></i>
+        </button>
+        <div class="navigation-btns">
+			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + (${topic} != null ? ${topic} : 'null') + ')'" th:disabled="${prevVideoNum} == 0">
+			    <i class="bi bi-chevron-up"></i>
+			</button>
+			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + (${topic} != null ? ${topic} : 'null') + ')'" th:disabled="${nextVideoNum} == 0">
+			    <i class="bi bi-chevron-down"></i>
+			</button>
+        </div>
+    </div>
+    <div class="info-section">
+        <div class="profile-section">
+            <div class="d-flex align-items-center mb-2">
+                <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
+                <div class="profile-info-container">
+                    <div>
+                        <h5 th:text="${userName != null ? userName : '사용자'}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></h5>
+                        <small th:text="${schoolName}"></small>
+                    </div>
+                </div>
+                <button type="button"
+                        th:if="${currentUserNum} != ${userNum}"
+                        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm text-white'"
+                        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
+                    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
+                    <span th:text="${isFollowing} ? '팔로잉' : '팔로우'"></span>
+                </button>
+            </div>
+            <p th:text="${videoTitle}"></p>
+			<div class="d-flex justify-content-around mt-3">
+			    <div class="d-flex align-items-center">
+			        <button type="button" class="btn btn-link"
+			                th:classappend="${isLiked} ? 'text-danger' : 'text-muted'"
+			                th:attr="onclick=|likeVideo(${videoNum}, ${currentUserNum}, '${isLiked}')|">
+			            <i th:classappend="${isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+			        </button>
+			        <span class="like-count ms-0" th:text="${likeCount}"></span>
+			    </div>
+			    <div class="d-flex align-items-center">
+			        <div><i class="bi bi-chat"></i> <span th:text="${commentCount}"></span></div>
+			    </div>
+			    <div class="d-flex align-items-center">
+			        <div><i class="bi bi-share"></i> 593</div>
+			    </div>
+			</div>
+        </div>
+
+        <div class="comments-section">
+            <h6>댓글</h6>
+            <div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
+                <img th:src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}"
+                     alt="사용자 사진" th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
+                <div class="comment-body">
+                    <strong th:text="${comment.user.userName}" th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">사용자 이름</strong>
+                    <p th:text="${comment.text}">댓글 내용</p>
+                    <div class="comment-meta">
+                        <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+                        <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+                    </div>
+                    <div class="comment-meta">
+                        <a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">
+                            답글 보기 (<span th:text="${comment.replies.size()}"></span>)
+                        </a>
+                    </div>
+                    <div class="replies-container" id="replies-1"></div>
+                </div>
+                <div class="comment-actions">
+                    <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
+                        <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
+                    </button>
+                    <span class="like-count" th:text="${comment.likeCount}">0</span>
+                </div>
+                <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;"></div>
+            </div>
+            <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
+        </div>
+        <div class="comment-input-container">
+            <input type="hidden" name="videoNum" id="videoNum" value="${videoNum}">
+            <input type="hidden" name="currentUserNum" id="currentUserNum" value="${currentUserNum}">
+            <input type="hidden" name="parentCommentNum" id="parentCommentNum" value="">
+            <input type="text" class="comment-input" name="commentText" id="commentText" placeholder="따뜻한 말 한마디 해주세요...">
+            <button type="button" class="submit-comment-btn" onclick="submitComment()">게시</button>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+
+			document.addEventListener('DOMContentLoaded', function() {
+			    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+			    const currentUserNum = '[[${currentUserNum}]]';
+			    const prevVideoNum = /*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]';
+			    const nextVideoNum = /*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]';
+			    const topic = /*[[${topic != null ? topic : 'null'}]]*/ '[[${topic != null ? topic : "null"}]]';
+			    console.log('Video Number:', videoNum);
+			    console.log('Current User Number:', currentUserNum);
+			    console.log('Topic:', topic);
+			    document.getElementById('videoNumDisplay').textContent = videoNum;
+			    document.getElementById('videoNum').value = videoNum;
+			    document.getElementById('currentUserNum').value = currentUserNum;
+
+			    // 키보드 이벤트 리스너 추가
+			    document.addEventListener('keydown', function(event) {
+			        if (event.key === 'ArrowUp') {
+			            if (prevVideoNum != 0) {
+			                navigateVideo(prevVideoNum, topic);
+			            }
+			        } else if (event.key === 'ArrowDown') {
+			            if (nextVideoNum != 0) {
+			                navigateVideo(nextVideoNum, topic);
+			            }
+			        } else if (event.key === 'Escape') {
+			            navigateToExploreVideos(topic);
+			        }
+			    });
+			});
+
+
+            function followUser(currentUserNum, userNum, isFollowing) {
+                console.log("followUser 함수 호출됨");
+
+                let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+                let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        follower: currentUserNum,
+                        following: userNum
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const followButton = document.querySelector('button[onclick^="followUser"]');
+                        if (isFollowing === 'true') {
+                            followButton.classList.remove('btn-outline-secondary');
+                            followButton.classList.add('btn-primary', 'text-white');
+                            followButton.innerHTML = '<span>팔로우</span>';
+                            followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'false')`);
+                        } else {
+                            followButton.classList.remove('btn-primary', 'text-white');
+                            followButton.classList.add('btn-outline-secondary');
+                            followButton.innerHTML = '<i class="bi bi-check2"></i> <span>팔로잉</span>';
+                            followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'true')`);
+                        }
+                        showAlert("알림", isFollowing === 'true' ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+                    } else {
+                        alert('작업 실패: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('작업 중 오류가 발생했습니다.');
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const videoElement = document.querySelector('video');
+                const videoNum = document.getElementById('videoNum').value;
+
+                videoElement.addEventListener('timeupdate', function() {
+                    if (videoElement.currentTime > 10) { // 10초 이상 시청 시 조회수 증가
+                        fetch('/video/incrementViewCount', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ videoNum: parseInt(videoNum) })
+                        }).then(response => {
+                            if (!response.ok) {
+                                console.error('Error incrementing view count');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                        });
+
+                        // 조회수 증가 요청을 한 번만 보내도록 이벤트 리스너 제거
+                        videoElement.removeEventListener('timeupdate', arguments.callee);
+                    }
+                });
+            });
+
+            function likeVideo(videoNum, currentUserNum, isLiked) {
+                console.log("likeVideo 함수 호출됨");
+
+                let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
+                let method = isLiked === 'true' ? 'DELETE' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        video: videoNum,
+                        user: currentUserNum
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const likeIcon = document.querySelector('.btn-link .bi');
+                        const likeCountSpan = document.querySelector('.like-count');
+
+                        if (isLiked === 'true') {
+                            likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+                            likeIcon.classList.add('bi-heart');
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1;
+                            showAlert("알림", "좋아요를 취소하였습니다.");
+                        } else {
+                            likeIcon.classList.remove('bi-heart');
+                            likeIcon.classList.add('bi-heart-fill', 'text-danger');
+                            likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1;
+                            showAlert("알림", "좋아요를 눌렀습니다.");
+                        }
+
+                        likeIcon.parentElement.setAttribute('onclick', `likeVideo(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}')`);
+                    } else {
+                        alert('좋아요 등록 실패: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('좋아요 등록 중 오류가 발생했습니다.');
+                });
+            }
+
+            function showAlert(title, message) {
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-info';
+                alertBox.innerHTML = `<strong>${title}</strong> ${message}`;
+
+                document.body.appendChild(alertBox);
+
+                setTimeout(() => {
+                    alertBox.remove();
+                }, 3000);
+            }
+
+			function navigateVideo(videoNum, topic) {
+		        if (videoNum === 0) {
+		            alert("더 이상의 영상이 없습니다.");
+		        } else {
+		            let url = `/explore/video/${videoNum}`;
+		            if (topic !== null && topic !== 'null') {
+		                url += `?topic=${topic}`;
+		            }
+		            window.location.href = url;
+		        }
+		    }
+
+		    function navigateToExploreVideos(topicNum) {
+		        let url = '/explore';
+		        if (topicNum !== null && topicNum !== 'null') {
+		            url += `?topic=${topicNum}`;
+		        }
+		        window.location.href = url;
+		    }
+			
+			function navigateToProfilePage(userNum, currentUserNum) {
+			    if (userNum === currentUserNum) {
+			        window.location.href = 'http://localhost:8080/user/profile';
+			    } else {
+			        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+			    }
+			}
+			
+            function toggleReplyForm(event, commentNum, userName) {
+                event.stopPropagation();
+                const commentText = document.getElementById('commentText');
+                const parentCommentNum = document.getElementById('parentCommentNum');
+
+                commentText.value = `@${userName} `;
+                parentCommentNum.value = commentNum;
+                commentText.focus();
+            }
+
+			function submitComment() {
+			    const commentText = document.getElementById('commentText').value;
+			    const videoNum = document.getElementById('videoNum').value;
+			    const currentUserNum = document.getElementById('currentUserNum').value;
+			    const parentCommentNum = document.getElementById('parentCommentNum').value;
+
+			    if (commentText.trim() === "") {
+			        alert("댓글을 입력하세요.");
+			        return;
+			    }
+
+			    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
+			    const comment = {
+			        text: commentText,
+			        video: { videoNum: parseInt(videoNum, 10) },
+			        user: { userNum: parseInt(currentUserNum, 10) }
+			    };
+
+			    if (parentCommentNum) {
+			        comment.comment = { commentNum: parseInt(parentCommentNum, 10) };
+			    }
+
+			    fetch(url, {
+			        method: 'POST',
+			        headers: {
+			            'Content-Type': 'application/json'
+			        },
+			        body: JSON.stringify(comment)
+			    })
+			    .then(response => response.text()) // 응답을 텍스트로 처리
+			    .then(text => {
+			        if (text === 'success') {
+			            location.reload();
+			        } else {
+			            alert('댓글 등록 실패: ' + text);
+			        }
+			    })
+			    .catch(error => {
+			        console.error('Error:', error);
+			        alert('댓글 등록 중 오류가 발생했습니다.');
+			    });
+			}
+
+            function toggleCommentLike(commentNum, currentUserNum, isLiked) {
+                const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+                const likeIcon = commentElement.querySelector('.bi');
+                const likeCountSpan = commentElement.querySelector('.like-count');
+                const likeButton = commentElement.querySelector('.like-button');
+
+                const url = isLiked ? '/comment/unlike' : '/comment/like';
+                const method = isLiked ? 'DELETE' : 'POST';
+
+                likeButton.disabled = true;
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        commentNum: commentNum,
+                        currentUserNum: currentUserNum,
+                        likeDate: new Date().toISOString()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.likeCount !== undefined) {
+                        const newLikeCount = data.likeCount;
+                        likeCountSpan.textContent = newLikeCount;
+
+                        if (isLiked) {
+                            likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+                            likeIcon.classList.add('bi-heart');
+                            alert('좋아요를 취소하였습니다.');
+                        } else {
+                            likeIcon.classList.remove('bi-heart');
+                            likeIcon.classList.add('bi-heart-fill', 'text-danger');
+                            alert('좋아요를 눌렀습니다.');
+                        }
+
+                        likeIcon.setAttribute('onclick', `toggleCommentLike(${commentNum}, ${currentUserNum}, ${!isLiked})`);
+                    } else {
+                        alert('좋아요 등록 실패: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('좋아요 등록 중 오류가 발생했습니다.');
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        likeButton.disabled = false;
+                    }, 8000);
+                });
+            }
+
+            function toggleReplies(commentNum) {
+                const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+                let repliesContainer = commentElement.querySelector('.replies-container');
+
+                if (!repliesContainer) {
+                    repliesContainer = document.createElement('div');
+                    repliesContainer.id = `replies-${commentNum}`;
+                    repliesContainer.className = 'replies-container';
+                    commentElement.appendChild(repliesContainer);
+                }
+
+                if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+                    repliesContainer.style.display = 'block';
+                    fetchReplies(commentNum, repliesContainer);
+                } else {
+                    repliesContainer.style.display = 'none';
+                    repliesContainer.innerHTML = '';
+                }
+            }
+
+            function fetchReplies(commentNum, container) {
+                fetch(`/rcomment/list?commentNum=${commentNum}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        container.innerHTML = '';
+                        if (data.length === 0) {
+                            container.innerHTML = '<p>No replies yet.</p>';
+                            return;
+                        }
+                        data.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.className = 'reply-item';
+                            replyElement.innerHTML = `
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="${reply.profilePictureUrl != null ? reply.profilePictureUrl : '/images/default_profile.png'}" alt="사용자 사진" class="rounded-circle" style="width: 40px; height: 40px; margin-right: 10px;">
+                                    <div class="comment-body">
+                                        <strong>${reply.userName}</strong>
+                                        <p>${reply.text}</p>
+                                        <div class="comment-meta">
+                                            <small class="comment-date">${calculateDaysAgo(reply.date)}</small>
+                                            <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${reply.commentNum}, '${reply.userName}')"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            container.appendChild(replyElement);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching replies:', error);
+                        container.innerHTML = '<p>Error loading replies.</p>';
+                    });
+            }
+
+            function calculateDaysAgo(dateString) {
+                const now = new Date();
+                const replyDate = new Date(dateString);
+                const diffTime = Math.abs(now - replyDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const adjustedDiffDays = diffDays - 1;
+
+                if (adjustedDiffDays === 0) {
+                    return '오늘';
+                } else if (adjustedDiffDays === 1) {
+                    return '어제';
+                } else {
+                    return `${adjustedDiffDays}일 전`;
+                }
+            }
+
+            /*]]>*/
+        </script>
+    </div>
+</div>
+</body>
+</html>

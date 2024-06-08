@@ -1,0 +1,985 @@
+<div th:fragment="messageScripts" xmlns:th="http://www.w3.org/1999/xhtml">
+    <script>
+        let lastMessageTime = null;
+        let lastMessageDate = null;
+        let loadedMessages = new Set();
+        let isLoading = false;
+        let currentRoomNum = null;
+        let unreadCounts = {};
+        let currentUserNum = null;
+        let receiverId = null;
+
+        function escapeHtml(text) {
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+        }
+
+        function formatRelativeDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Date';
+            }
+
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return '오늘';
+            } else if (diffDays === 1) {
+                return '어제';
+            } else if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                if (diffWeeks < 4) {
+                    return `${diffWeeks}주 전`;
+                } else {
+                    const diffMonths = Math.floor(diffDays / 30);
+                    if (diffMonths < 12) {
+                        return `${diffMonths}달 전`;
+                    } else {
+                        const diffYears = Math.floor(diffDays / 365);
+                        return `${diffYears}년 전`;
+                    }
+                }
+            }
+        }
+
+        function formatListDate(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '';
+            }
+
+            const now = new Date();
+            if (now.toLocaleDateString() === date.toLocaleDateString()) {
+                return '오늘';
+            }
+            now.setDate(now.getDate() - 1);
+            if (now.toLocaleDateString() === date.toLocaleDateString()) {
+                return '어제';
+            }
+
+            const diffTime = Math.abs(new Date() - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 7) {
+                return `${diffDays}일 전`;
+            } else {
+                const diffWeeks = Math.floor(diffDays / 7);
+                if (diffWeeks < 4) {
+                    return `${diffWeeks}주 전`;
+                } else {
+                    const diffMonths = Math.floor(diffDays / 30);
+                    if (diffMonths < 12) {
+                        return `${diffMonths}달 전`;
+                    } else {
+                        const diffYears = Math.floor(diffDays / 365);
+                        return `${diffYears}년 전`;
+                    }
+                }
+            }
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Time';
+            }
+            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateElements = document.querySelectorAll('.recent-message-date');
+            dateElements.forEach(function (element) {
+                const dateStr = element.getAttribute('data-date');
+                const formattedDate = formatListDate(dateStr);
+                element.textContent = formattedDate;
+            });
+        });
+
+        function updateLastMessageInChatList(roomNum, message) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            chatRoomElement.find('.small.text-muted').text(message.text);
+
+            if (message.sendDate) {
+                chatRoomElement.find('.recent-message-date').text(formatListDate(message.sendDate));
+            } else {
+                console.error('Message sendDate is undefined:', message);
+            }
+        }
+
+function showMessage(message, prepend = false) {
+    var currentUserNum = parseInt($('#sender').val(), 10);
+
+    if (typeof message.sender !== 'undefined') {
+        if (loadedMessages.has(message.messageNum)) {
+            return;
+        }
+        loadedMessages.add(message.messageNum);
+
+        var alignment = message.sender === currentUserNum ? 'message sender' : 'message receiver';
+        var currentTime = new Date(message.sendDate);
+        var currentDate = currentTime.toLocaleDateString();
+
+        var messageHtml = '';
+
+        if (prepend) {
+            if (!lastMessageDate || lastMessageDate !== currentDate) {
+                messageHtml += '<div class="date-separator">' + currentDate + '</div>';
+                lastMessageDate = currentDate;
+            }
+        } else {
+            if (!lastMessageDate || lastMessageDate !== currentDate) {
+                $('#chatMessages').append('<div class="date-separator">' + currentDate + '</div>');
+                lastMessageDate = currentDate;
+            }
+        }
+
+        if (message.messageType === 1 && message.filePath) {
+            var fileName = message.filePath.split('/').pop();
+            var fileExtension = fileName.split('.').pop().toLowerCase();
+
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<img src="' + escapeHtml(message.filePath) + '" alt="Image" style="max-width: 100%;">';
+                messageHtml += '</div>';
+            } else if (['mp4', 'mov', 'avi'].includes(fileExtension)) {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<video controls style="max-width: 100%;"><source src="' + escapeHtml(message.filePath) + '" type="video/' + fileExtension + '">Your browser does not support the video tag.</video>';
+                messageHtml += '</div>';
+            } else {
+                messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+                messageHtml += '<a href="' + escapeHtml(message.filePath) + '" download>' + escapeHtml(fileName) + '</a>';
+                messageHtml += '</div>';
+            }
+        } else {
+            messageHtml += '<div class="' + alignment + '" data-date="' + message.sendDate + '" data-sender="' + message.sender + '">';
+            messageHtml += escapeHtml(message.text);
+            messageHtml += '</div>';
+        }
+
+        if (prepend) {
+            $('#chatMessages').prepend(messageHtml);
+        } else {
+            $('#chatMessages').append(messageHtml);
+        }
+
+        const messageElement = $('#chatMessages').find('.' + alignment).last();
+        messageElement.text(message.text);
+
+        if (message.roomNum === currentRoomNum) {
+            updateLastMessageInChatList(message.roomNum, message);
+        } else {
+            updateChatRoomList(message.roomNum, message);
+            updateUnreadCountFromDB(message.roomNum);
+        }
+
+        updateDateAndTimeSeparators();
+
+        // 추가된 부분: 스크롤을 항상 아래로 이동
+        if (!prepend) {
+            setTimeout(() => {
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+            }, 100);
+        }
+
+    } else {
+        console.error('Invalid message format:', message);
+    }
+}
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/messages', function (message) {
+                    var parsedMessage = JSON.parse(message.body);
+                    if (parsedMessage.roomNum === currentRoomNum) {
+                        showMessage(parsedMessage);
+                        markMessagesAsRead(parsedMessage.roomNum);
+                    } else {
+                        updateChatRoomList(parsedMessage.roomNum, parsedMessage);
+                        updateUnreadCountFromDB(parsedMessage.roomNum);
+                    }
+                });
+
+                stompClient.subscribe('/topic/chatRoomUpdate/' + currentUserNum, function (message) {
+                    const chatRoom = JSON.parse(message.body);
+                    console.log('Received chat room update:', chatRoom);
+                    updateChatRoomList2(chatRoom);
+                });
+            }, function (error) {
+                console.log('STOMP error: ' + error);
+            });
+        }
+
+        $(document).ready(function () {
+            var senderValue = $('#sender').val();
+            currentUserNum = parseInt(senderValue, 10);
+
+            if (isNaN(currentUserNum)) {
+                console.error('Invalid currentUserNum:', senderValue);
+            }
+
+            connect();
+
+            $('[data-bs-toggle="popover"]').popover({
+                html: true,
+                content: 'Loading...',
+                trigger: 'click'
+            });
+
+            $('.list-group-item').on('click', function (event) {
+                event.preventDefault();
+                var roomNum = $(this).data('roomnum');
+
+                if (!roomNum) {
+                    console.error('roomNum is undefined');
+                    return;
+                }
+
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active');
+                    $('#chat-box-a').hide();
+                    $('#chat-create').show();
+                    currentRoomNum = null;
+                    return;
+                }
+
+                $('.list-group-item.active').removeClass('active');
+                $(this).addClass('active');
+
+                currentRoomNum = roomNum;
+                $('#currentRoomNum').val(roomNum);
+
+                $('#chatMessages').empty();
+                lastMessageTime = null;
+                lastMessageDate = null;
+                loadedMessages.clear();
+
+                $.ajax({
+                    url: '/api/chat/rooms/' + roomNum + '/participants',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (participants) {
+                        if (!participants || participants.length === 0) {
+                            console.error('No participants found for roomNum:', roomNum);
+                            return;
+                        }
+
+                        var otherParticipants = participants.filter(function (participant) {
+                            var userNum = parseInt(participant.user.userNum, 10);
+                            return userNum !== currentUserNum;
+                        });
+
+                        if (otherParticipants.length === 0) {
+                            console.error('No other participants found for currentUserNum:', currentUserNum);
+                            return;
+                        }
+
+                        var otherParticipant = otherParticipants[0].user;
+                        var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
+                        var userId = otherParticipant.userId;
+                        var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+                        var userProfileUrl = 'http://localhost:8080/user/profile/' + otherParticipant.userNum;
+
+                        receiverId = otherParticipant.userNum;
+                        $('#participant_a').html(
+                            `<img src="${profilePictureUrl}" alt="프로필 이미지" width="32" height="32" class="rounded-circle"> ${userName}`
+                        );
+
+                        var popoverContent = `
+                            <div>
+                                <img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userId}
+                                <strong id="popoverUserName" style="cursor:pointer; color: #007bff;">유저 프로필 보기</strong> <br>
+                            </div>
+                        `;
+
+                        $('#participant_a').attr('data-bs-content', popoverContent).popover('hide').popover('dispose').popover({
+                            html: true,
+                            content: popoverContent,
+                            trigger: 'click'
+                        });
+
+                        $('#participant_a').on('shown.bs.popover', function () {
+                            $('#popoverUserName').on('click', function () {
+                                window.location.href = userProfileUrl;
+                            });
+                        });
+
+                        $.ajax({
+                            url: '/api/chat/rooms/' + roomNum + '/messages',
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function (messages) {
+                                messages.reverse().forEach(function (message) {
+                                    showMessage(message, false);
+                                });
+
+                                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                                updateDateAndTimeSeparators();
+                                $('#chatMessages').off('scroll').on('scroll', function () {
+                                    if ($(this).scrollTop() === 0 && !isLoading) {
+                                        loadMoreMessages();
+                                    }
+                                });
+                                $('#participant_a').popover();
+                            },
+                            error: function (err) {
+                                console.error('Failed to fetch messages:', err);
+                            }
+                        });
+
+                        updateUnreadCountFromDB(roomNum);
+                        markMessagesAsRead(roomNum);
+                    },
+                    error: function (err) {
+                        console.error('Failed to fetch participants:', err);
+                    }
+                });
+
+                $('#chat-box-a').show();
+                $('#chat-create').hide();
+            });
+
+            $('#sendMessageForm').on('submit', function (event) {
+                event.preventDefault();
+                sendMessage();
+            });
+
+            $('#messageText').on('keydown', function (event) {
+                if ((event.key === 'Enter' && !event.shiftKey && !event.altKey) || (event.key === 'NumpadEnter')) {
+                    event.preventDefault();
+                    $('#sendMessageForm').submit();
+                } else if ((event.key === 'Enter' && event.shiftKey) || (event.key === 'Enter' && event.altKey)) {
+                    event.preventDefault();
+                    insertNewLine($(this));
+                }
+            });
+
+            $('#chat-box-a').hide();
+            $('#chat-create').show();
+
+            $('#chatMessages').on('scroll', function () {
+                if ($(this).scrollTop() === 0 && !isLoading) {
+                    loadMoreMessages();
+                }
+            });
+
+            loadChatRooms(currentUserNum);
+
+            $('#attachIcon').on('click', function () {
+                $('#fileInput').click();
+            });
+
+            $('#fileInput').on('change', function (event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('roomNum', currentRoomNum);
+                    formData.append('sender', currentUserNum);
+
+                    $.ajax({
+                        url: '/api/chat/rooms/' + currentRoomNum + '/upload',
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            var message = {
+                                roomNum: currentRoomNum,
+                                sender: currentUserNum,
+                                receiver: receiverId,
+                                text: '',
+                                messageType: 1,
+                                filePath: response.filePath,
+                                isRead: 0,
+                                sendDate: new Date().toISOString()
+                            };
+                            stompClient.send("/app/chat", {}, JSON.stringify(message));
+                            updateLastMessageInChatList(currentRoomNum, message);
+                            updateDateAndTimeSeparators();
+                        },
+                        error: function (err) {
+                            console.error('Failed to upload file:', err);
+                        }
+                    });
+
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        console.log(e.target.result);
+                    };
+                    reader.onerror = function (e) {
+                        console.error('Error reading file:', e);
+                    };
+                    if (file) {
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+        });
+
+        function loadChatRooms(currentUserNum) {
+            $('.list-group-item').each(function () {
+                var roomNum = $(this).data('roomnum');
+                updateUnreadCountFromDB(roomNum);
+            });
+        }
+
+        function updateUnreadCount(roomNum, count) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            const unreadCountElement = chatRoomElement.find('.unread-count');
+            if (count > 0) {
+                unreadCountElement.text(count);
+                unreadCountElement.show();
+            } else {
+                unreadCountElement.text(0);
+                unreadCountElement.hide();
+            }
+        }
+
+        function updateUnreadCountFromDB(roomNum) {
+            var currentUserNum = parseInt($('#sender').val(), 10);
+            $.ajax({
+                url: '/api/chat/rooms/' + roomNum + '/unreadCount',
+                method: 'GET',
+                data: { userNum: currentUserNum },
+                success: function (unreadCount) {
+                    updateUnreadCount(roomNum, unreadCount);
+                },
+                error: function (err) {
+                    console.error('Failed to fetch unread message count:', err);
+                }
+            });
+        }
+
+        function insertNewLine(textArea) {
+            var cursorPos = textArea.prop('selectionStart');
+            var text = textArea.val();
+            var before = text.substring(0, cursorPos);
+            var after = text.substring(cursorPos, text.length);
+            textArea.val(before + "\n" + after);
+            textArea.prop('selectionStart', cursorPos + 1);
+            textArea.prop('selectionEnd', cursorPos + 1);
+        }
+
+        function sendMessage() {
+            if (!stompClient) {
+                console.error('WebSocket connection not established.');
+                return;
+            }
+
+            var content = $('#messageText').val();
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var sender = parseInt($('#sender').val(), 10);
+
+            if (content.trim() !== "") {
+                const message = {
+                    'roomNum': roomNum,
+                    'sender': sender,
+                    'receiver': receiverId,
+                    'text': content,
+                    'messageType': 0,
+                    'isRead': 0,
+                    'sendDate': new Date().toISOString()
+                };
+
+                stompClient.send("/app/chat", {}, JSON.stringify(message));
+                $('#messageText').val('');
+                updateLastMessageInChatList(roomNum, message);
+                updateDateAndTimeSeparators();
+            }
+        }
+
+        function loadMoreMessages() {
+            if (isLoading) return;
+
+            isLoading = true;
+            var roomNum = parseInt($('#currentRoomNum').val(), 10);
+            var oldestMessageId = Math.min(...Array.from(loadedMessages)) || null;
+
+            var currentScrollHeight = $('#chatMessages')[0].scrollHeight;
+            var currentScrollTop = $('#chatMessages').scrollTop();
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomNum}/messages`,
+                method: 'GET',
+                data: {
+                    oldestMessageId: oldestMessageId === Infinity ? null : oldestMessageId,
+                    limit: 30
+                },
+                dataType: 'json',
+                success: function (messages) {
+                    if (messages.length > 0) {
+                        messages.forEach(function (message) {
+                            showMessage(message, true);
+                        });
+
+                        updateDateAndTimeSeparators();
+
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight - currentScrollHeight + currentScrollTop);
+                    }
+
+                    if (messages.length < 30) {
+                        $('#chatMessages').off('scroll');
+                    }
+
+                    isLoading = false;
+                },
+                error: function (err) {
+                    console.error('Failed to fetch more messages:', err);
+                    isLoading = false;
+                }
+            });
+        }
+
+        function updateDateAndTimeSeparators() {
+            const messages = $('#chatMessages .message');
+            let lastDate = null;
+            let lastTime = null;
+            let lastMessageElement = null;
+
+            $('#chatMessages .date-separator').remove();
+            $('#chatMessages .time').remove();
+
+            messages.each(function (index) {
+                const message = $(this);
+                const date = new Date(message.data('date'));
+                const time = formatTime(message.data('date'));
+
+                const currentDate = date.toLocaleDateString();
+
+                if (!lastDate || lastDate !== currentDate) {
+                    message.before('<div class="date-separator">' + currentDate + '</div>');
+                    lastDate = currentDate;
+                    lastTime = null;
+                }
+
+                if (!lastTime || date.getMinutes() !== new Date(lastTime).getMinutes() || lastDate !== currentDate || message.data('sender') !== lastMessageElement.data('sender')) {
+                    message.append('<div class="time">' + time + '</div>');
+                    lastTime = date;
+                } else {
+                    if (lastMessageElement) {
+                        lastMessageElement.find('.time').remove();
+                    }
+                    message.append('<div class="time">' + time + '</div>');
+                }
+                lastMessageElement = message;
+            });
+
+            if (lastMessageElement) {
+                lastMessageElement.append('<div class="time">' + formatTime(lastTime) + '</div>');
+            }
+        }
+
+        function markMessagesAsRead(roomNum) {
+            $.ajax({
+                url: '/api/chat/rooms/' + roomNum + '/markAsRead',
+                method: 'POST',
+                data: { userNum: $('#sender').val() },
+                success: function () {
+                    console.log('Messages marked as read');
+                    updateUnreadCount(roomNum, 0);
+                },
+                error: function (err) {
+                    console.error('Failed to mark messages as read:', err);
+                }
+            });
+        }
+
+        function updateChatRoomProfile(roomNum, user) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            if (chatRoomElement.length > 0) {
+                chatRoomElement.find('img').attr('src', user.profilePictureUrl || '/images/default_profile.png');
+                chatRoomElement.find('.fw-bold').text(user.userName || '이름없음');
+            }
+        }
+
+        function updateChatRoomList(roomNum, message) {
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            chatRoomElement.find('.small.text-muted').text(message.text);
+
+            if (message.sendDate) {
+                chatRoomElement.find('.recent-message-date').text(formatListDate(message.sendDate));
+            } else {
+                console.error('Message sendDate is undefined:', message);
+            }
+        }
+
+        function updateChatRoomList2(chatRoom) {
+            console.log('Updating chat room list with:', chatRoom);
+
+            const chatRoomElement = $(`.list-group-item[data-roomnum="${chatRoom.roomNum}"]`);
+            if (chatRoomElement.length > 0) {
+                chatRoomElement.find('.small.text-muted').text(chatRoom.recentMessage);
+                chatRoomElement.find('.recent-message-date').text(chatRoom.recentMessageDate === '54년 전' ? '' : formatListDate(chatRoom.recentMessageDate));
+            } else {
+                let otherParticipant = chatRoom.participants && chatRoom.participants.length > 0
+                    ? chatRoom.participants.find(participant => participant.userNum !== currentUserNum)
+                    : { userName: '새로운 채팅방이 생성되었습니다.', profilePictureUrl: '/images/default_profile.png' };
+
+                const newChatRoomHtml = `
+                    <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" data-roomnum="${chatRoom.roomNum}" data-is-new="true">
+                        <div class="d-flex w-100 align-items-center">
+                            <img src="${otherParticipant.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
+                            <div class="ms-2 flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold">${otherParticipant.userName || '새로운 채팅방이 생성되었습니다.'}</span>
+                                    <small class="recent-message-date">${chatRoom.recentMessageDate === '54년 전' ? '' : formatListDate(chatRoom.recentMessageDate)}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="small text-muted mt-1 text-truncate" style="max-width: 200px;">${chatRoom.recentMessage || '자세한 정보를 보시려면 F5를 눌러주세요'}</div>
+                                    <div class="unread-count badge bg-danger ms-2" style="display: none;">0</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger btn-delete" style="display: none;">삭제</button>
+                        </div>
+                    </a>`;
+                $('.list-group').prepend(newChatRoomHtml);
+
+                $('.list-group-item[data-roomnum="' + chatRoom.roomNum + '"]').on('click', function(event) {
+                    event.preventDefault();
+                    var roomNum = $(this).data('roomnum');
+                    var isNew = $(this).data('is-new');
+
+                    if (!roomNum) {
+                        console.error('roomNum is undefined');
+                        return;
+                    }
+
+                    if ($(this).hasClass('active')) {
+                        $(this).removeClass('active');
+                        $('#chat-box-a').hide();
+                        $('#chat-create').show();
+                        currentRoomNum = null;
+                        return;
+                    }
+
+                    $('.list-group-item.active').removeClass('active');
+                    $(this).addClass('active');
+
+                    currentRoomNum = roomNum;
+                    $('#currentRoomNum').val(roomNum);
+
+                    if (isNew) {
+                        localStorage.setItem('openChatRoomNum', roomNum);
+                        location.reload();
+                    } else {
+                        loadChatRoomMessages(roomNum);
+                    }
+                });
+            }
+        }
+
+function loadChatRoomMessages(roomNum) {
+    $('#chatMessages').empty();
+    lastMessageTime = null;
+    lastMessageDate = null;
+    loadedMessages.clear();
+
+    $.ajax({
+        url: '/api/chat/rooms/' + roomNum + '/participants',
+        method: 'GET',
+        dataType: 'json',
+        success: function (participants) {
+            if (!participants || participants.length === 0) {
+                console.error('No participants found for roomNum:', roomNum);
+                return;
+            }
+
+            var otherParticipants = participants.filter(function (participant) {
+                var userNum = parseInt(participant.user.userNum, 10);
+                return userNum !== currentUserNum;
+            });
+
+            if (otherParticipants.length === 0) {
+                console.error('No other participants found for currentUserNum:', currentUserNum);
+                return;
+            }
+
+            var otherParticipant = otherParticipants[0].user;
+            var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
+            var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
+
+            receiverId = otherParticipant.userNum;
+            $('#participant_a').html(
+                `<img src="${profilePictureUrl}" alt="프로필 이미지" width="24" height="24" class="rounded-circle"> ${userName}`
+            );
+
+            $.ajax({
+                url: '/api/chat/rooms/' + roomNum + '/messages',
+                method: 'GET',
+                dataType: 'json',
+                success: function (messages) {
+                    messages.reverse().forEach(function (message) {
+                        showMessage(message, false);
+                    });
+
+                    // 추가된 부분: 스크롤을 항상 아래로 이동
+                    setTimeout(() => {
+                        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                    }, 100);
+
+                    updateDateAndTimeSeparators();
+                    $('#chatMessages').off('scroll').on('scroll', function () {
+                        if ($(this).scrollTop() === 0 && !isLoading) {
+                            loadMoreMessages();
+                        }
+                    });
+                },
+                error: function (err) {
+                    console.error('Failed to fetch messages:', err);
+                }
+            });
+
+            updateUnreadCountFromDB(roomNum);
+            markMessagesAsRead(roomNum);
+        },
+        error: function (err) {
+            console.error('Failed to fetch participants:', err);
+        }
+    });
+
+    $('#chat-box-a').show();
+    $('#chat-create').hide();
+}
+
+
+        $(document).ready(function () {
+            let longPressTimer;
+            let isDeleteButtonVisible = false;
+
+            $('.list-group-item').on('mousedown', function(event) {
+                longPressTimer = setTimeout(() => {
+                    if (!isDeleteButtonVisible) {
+                        showDeleteButton($(this));
+                        isDeleteButtonVisible = true;
+                    } else {
+                        hideDeleteButton($(this));
+                        isDeleteButtonVisible = false;
+                    }
+                }, 1000);
+            }).on('mouseup mouseleave', function(event) {
+                clearTimeout(longPressTimer);
+            });
+
+            $(document).on('click', '.delete-btn', function () {
+                const roomNum = $(this).closest('.list-group-item').data('roomnum');
+                deleteChatRoom(roomNum);
+            });
+        });
+
+        function showDeleteButton(element) {
+            const deleteButton = element.find('.delete-btn');
+            element.css('background-color', '#f8d7da');
+            element.append('<button class="delete-btn btn btn-danger btn-sm" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">나가기</button>');
+        }
+
+        function hideDeleteButton(element) {
+            const deleteButton = element.find('.delete-btn');
+            element.css('background-color', '');
+            deleteButton.remove();
+        }
+
+        function deleteChatRoom(roomNum) {
+            const userId = $('#sender').val();
+
+            $.ajax({
+                url: `/api/chat/rooms/${roomNum}/participants/${userId}`,
+                type: 'DELETE',
+                success: function(result) {
+                    $(`.list-group-item[data-roomnum="${roomNum}"]`).remove();
+                    if (currentRoomNum === roomNum) {
+                        $('#chat-box-a').hide();
+                        $('#chat-create').show();
+                        currentRoomNum = null;
+                    }
+                },
+                error: function(err) {
+                    console.error('Failed to leave chat room:', err);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+            var dropdown = new bootstrap.Dropdown(dropdownToggle, {
+                popperConfig: function() {
+                    return {
+                        placement: 'bottom-start',
+                        modifiers: [
+                            {
+                                name: 'computeStyles',
+                                options: {
+                                    adaptive: false,
+                                    gpuAcceleration: false
+                                }
+                            },
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [0, 0]
+                                }
+                            }
+                        ]
+                    };
+                }
+            });
+
+            dropdownToggle.addEventListener('click', function () {
+                var dropdownMenu = this.nextElementSibling;
+
+                setTimeout(function() {
+                    dropdownMenu.style.zIndex = '10000000000';
+                    dropdownMenu.style.position = 'fixed';
+                    dropdownMenu.style.inset = 'auto auto 0px 0px';
+                    dropdownMenu.style.margin = '0px';
+                    dropdownMenu.style.transform = 'translate(0px, -58px)';
+                }, 10);
+            });
+
+            dropdownToggle.addEventListener('hidden.bs.dropdown', function () {
+                var dropdownMenu = this.nextElementSibling;
+                dropdownMenu.style.position = '';
+                dropdownMenu.style.inset = '';
+                dropdownMenu.style.margin = '';
+                dropdownMenu.style.transform = '';
+            });
+        });
+
+        async function searchUsers() {
+            var input = document.getElementById('searchInput');
+            var filter = input.value;
+            var resultsContainer = document.getElementById('searchResults');
+
+            if (filter.trim() === '') {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/chat/rooms/searchUsers?query=${filter}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const users = await response.json();
+                const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+
+                resultsContainer.innerHTML = '';
+
+                if (Array.isArray(users)) {
+                    users
+                        .filter(user => user.userNum !== currentUserNum)
+                        .forEach(user => {
+                            var userElement = document.createElement('div');
+                            userElement.className = 'user-result d-flex align-items-center mb-2';
+                            userElement.innerHTML = `
+                                <img src="${user.profilePictureUrl || '/images/default_profile.png'}" alt="프로필 이미지" width="52" height="52" class="rounded-circle me-3">
+                                <div class="user-info flex-grow-1">
+                                    <div class="user-id"><strong>${user.userId}</strong></div>
+                                    <div class="user-name">${user.userName || '이름없음'}</div>
+                                </div>
+                                <button class="btn btn-primary ms-auto" onclick="selectUser(${user.userNum})">선택</button>
+                            `;
+                            resultsContainer.appendChild(userElement);
+                        });
+                } else {
+                    console.error('Unexpected response format:', users);
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+async function selectUser(selectedUserNum) {
+    const currentUserNum = parseInt(document.getElementById('sender').value, 10);
+
+    try {
+        const response = await fetch(`/api/chat/rooms/check?userNum1=${currentUserNum}&userNum2=${selectedUserNum}`);
+        if (response.ok) {
+            const chatRoom = await response.json();
+            if (response.status === 202) {
+                await fetch(`/api/chat/rooms/${chatRoom.roomNum}/updateIsLeaveToFalse`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userNum: currentUserNum })
+                });
+                $('#chatModal').modal('hide');
+                localStorage.setItem('openChatRoomNum', chatRoom.roomNum);
+                location.reload();
+            } else {
+                const chatRoomElement = $(`.list-group-item[data-roomnum="${chatRoom.roomNum}"]`);
+                if (chatRoomElement.length === 0) {
+                    // 채팅방이 리스트에 없으면 로컬 스토리지에 저장 후 리로드
+                    localStorage.setItem('openChatRoomNum', chatRoom.roomNum);
+                    location.reload();
+                } else {
+                    openChatRoom(chatRoom.roomNum, false);
+                    $('#chatModal').modal('hide');
+                }
+            }
+        } else if (response.status === 404) {
+            const createRoomResponse = await fetch('/api/chat/rooms/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ participants: [currentUserNum, selectedUserNum] })
+            });
+
+            if (!createRoomResponse.ok) {
+                throw new Error(`HTTP error! status: ${createRoomResponse.status}`);
+            }
+
+            const newChatRoom = await createRoomResponse.json();
+            $('#chatModal').modal('hide');
+            localStorage.setItem('openChatRoomNum', newChatRoom.roomNum);
+            location.reload();
+        } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error selecting user:', error);
+    }
+}
+
+function openChatRoom(roomNum, isNew = false) {
+            const existingChatRoom = $(`.list-group-item[data-roomnum="${roomNum}"]`);
+            if (existingChatRoom.hasClass('active')) {
+                return;
+            }
+            if (isNew) {
+                localStorage.setItem('openChatRoomNum', roomNum);
+                location.reload();
+            } else {
+                loadChatRoomMessages(roomNum);
+            }
+}
+
+        $(document).ready(function () {
+            const openChatRoomNum = localStorage.getItem('openChatRoomNum');
+            if (openChatRoomNum) {
+                openChatRoom(openChatRoomNum, true);
+                localStorage.removeItem('openChatRoomNum');
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/assets/js/sidebars.js}"></script>
+</div>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+
+<head>
+    <style>
+        .ranking-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 30px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            background-color: white;
+            height: auto;
+            margin-top: 20px;
+        }
+
+        .ranking-arrow {
+            font-size: 32px;
+            cursor: pointer;
+        }
+
+        .ranking-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+
+        .ranking-header h4 {
+            margin: 0;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+        }
+
+        .ranking-header p {
+            margin: 5px 0 0 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .ranking-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .school-info {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .school-info h4 {
+            margin: 0;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .school-info .medal-container {
+            margin-top: 10px;
+        }
+
+        .score {
+            margin-left: auto;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .details {
+            text-align: right;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .medal-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .medal-container img {
+            width: 30px;
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            width: 100%;
+            position: relative;
+        }
+
+        .search-container input[type="text"] {
+            width: 200px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .search-container button {
+            padding: 5px 10px;
+        }
+
+        .school-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            margin-right: 20px;
+        }
+
+        #schoolSearchSuggestions {
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 200px;
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            transform: translateX(-33%);
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content" class="container">
+    <div class="container vertical-container">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-12">
+                    <div class="ranking-header">
+                        <span class="ranking-arrow" id="left-arrow">&lt;</span>
+                        <div>
+                            <h4 th:text="${currentMonth}"></h4>
+                            <p>학교 랭킹</p>
+                        </div>
+                        <span class="ranking-arrow" id="right-arrow">&gt;</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 검색창 및 검색 버튼 추가 -->
+            <div class="col-md-12">
+                <div class="search-container">
+                    <input type="text" id="schoolSearchInput" class="form-control" placeholder="학교 검색">
+                    <button type="button" id="schoolSearchButton" class="btn btn-primary">검색</button>
+                    <div id="schoolSearchSuggestions" class="list-group"></div>
+                </div>
+            </div>
+
+            <!-- 카드 리스트 추가 영역 -->
+            <div class="row justify-content-center" id="rankingList">
+                <div class="col-md-12">
+                    <div th:each="entry : ${schoolRankings}" class="ranking-container">
+                        <img th:src="${entry.value.schoolPictureUrl}" alt="School Image" class="school-image"/>
+                        <div class="ranking-content">
+                            <div class="school-info">
+                                <h4 th:text="${entry.value.rank} + '위. ' + ${entry.value.schoolName}"></h4>
+                                <div class="medal-container">
+                                    <span th:if="${entry.value.goldCount > 0}" th:each="i : ${#numbers.sequence(1, entry.value.goldCount)}">
+                                        <img th:src="@{/images/rank_gold.jpg}" alt="Gold Medal"/>
+                                    </span>
+                                    <span th:if="${entry.value.silverCount > 0}" th:each="i : ${#numbers.sequence(1, entry.value.silverCount)}">
+                                        <img th:src="@{/images/rank_silver.jpg}" alt="Silver Medal"/>
+                                    </span>
+                                    <span th:if="${entry.value.bronzeCount > 0}" th:each="i : ${#numbers.sequence(1, entry.value.bronzeCount)}">
+                                        <img th:src="@{/images/rank_bronze.jpg}" alt="Bronze Medal"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="score">
+                                <p th:text="${entry.value.score} + ' 찹쌀'"></p>
+                                <div class="details">
+                                    <p th:text="'업로드한 영상 수: ' + ${entry.value.uploadedVideoCount}"></p>
+                                    <p th:text="'누적 조회 수: ' + ${entry.value.totalViewsFormatted}"></p>
+                                    <p th:text="'누적 좋아요 수: ' + ${entry.value.totalLikes}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 프래그먼트 삽입 -->
+<div th:replace="~{::editProfileModalFragment}"></div>
+<div th:replace="~{::followersModalFragment}"></div>
+<!-- 외부 스크립트 파일 로드 -->
+<script src="/js/openTab.js" defer></script>
+
+</body>
+</html>

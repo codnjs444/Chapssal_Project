@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html layout:decorate="~{message/chatLayout}" xmlns:layout="http://www.w3.org/1999/xhtml" lang="en" xmlns:th="http://www.thymeleaf.org">
+<div layout:fragment="content" class="container-fluid">
+    <!-- 컨텐츠 자리 -->
+    <div class="row" style="height: 100%">
+
+        <!-- list group -->
+        <div class="col-lg-3 col-md-3 col-sm-1 offset-lg-1">
+            <!-- extra space -->
+            <div class="extraspace">
+                <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="52" height="52" class="rounded-circle" style="margin-left: 5%;"/>
+                <div class="user-info">
+                    <div class="user-id" th:text="${currentUserId}">UserId</div>
+                    <div class="user-name" th:text="${currentUserName != null ? currentUserName : '닉네임을 설정해주세요.'}">UserName</div>
+                </div>
+                <a href="#" class="btn-outline-primary ms-auto no-hover" style="margin-left: 45%;" data-bs-toggle="modal" data-bs-target="#chatModal" >
+                    <i class="bi bi-pencil-square" style = "width = 60px; height: 60px;"></i> <!-- Bootstrap Icons의 글쓰기 아이콘 -->
+                </a>
+                <div th:replace="~{message/fragments/createChatModal :: modalfragments}"></div>
+            </div>
+            <div class="list-group list-group-flush border-bottom scrollarea">
+                <a th:each="chatRoom : ${chatRooms}" href="#" class="list-group-item list-group-item-action py-3 lh-sm" th:data-roomnum="${chatRoom.roomNum}">
+                    <div class="d-flex w-100 align-items-center">
+                        <img th:src="${chatRoom.otherParticipants[0].profilePictureUrl != null ? chatRoom.otherParticipants[0].profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
+                        <div class="ms-2 flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold" th:text="${chatRoom.otherParticipants[0].userName != null ? chatRoom.otherParticipants[0].userName : '이름없음'}"></span>
+                                <small class="recent-message-date" th:data-date="${chatRoom.recentMessageDate}"></small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="small text-muted mt-1 text-truncate" th:text="${chatRoom.recentMessage}" style="max-width: 200px;"></div>
+                                <!-- unread count indicator -->
+                                <div class="unread-count badge bg-danger ms-2" style="display: none;"></div>
+                            </div>
+                        </div>
+                                <!-- 삭제 버튼 -->
+                             <button class="btn btn-danger btn-delete" style="display: none;">삭제</button>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 채팅 섹션 -->
+        <div class="col-lg-8 col-md-9 col-sm-9 chat-section">
+            <div class="row chat-page">
+                <div class="col chat-box" id="chat-box-a" style="display: none;">
+                    <h3><span id="participant_a"></span></h3>
+                    <div class="msg_view scrollarea" id="chatMessages"></div>
+                    <div class="msg_input">
+                            <form id="sendMessageForm" enctype="multipart/form-data">
+                                <input type="hidden" id="currentRoomNum">
+                                <input type="hidden" id="sender" th:value="${currentUserNum}"> <!-- Hidden input field for currentUserNum -->
+                                <input type="file" id="fileInput" class="form-control mt-2" style="display: none;">
+                                <i class="bi bi-paperclip mt-2" id="attachIcon" style="cursor: pointer; font-size: 1.5rem;"></i>
+                                <input type="text" id="messageText" class="form-control" placeholder="메시지 보내기...">
+                                <button class="btn btn-primary mt-2" type="submit">보내기</button>
+                            </form>
+                    </div>
+                </div>
+                <!-- 채팅 생성 버튼 -->
+                <div class="chat-create text-center" id="chat-create">
+                    <!-- 로고 추가 -->
+                    <img th:src="@{/images/chapssenger_logo.jpg}" alt="로고" class="img-fluid mb-3">
+                    <p>친구들에게 메시지를 보내보세요.</p>
+                    <button class="btn btn-info rounded-pill" data-bs-toggle="modal" data-bs-target="#chatModal">메시지 보내기</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/assets/js/sidebars.js}"></script>
+</html>
