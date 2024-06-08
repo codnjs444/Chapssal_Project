@@ -3,11 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <title>Search Results</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        h2 {
+            color: #007bff;
+        }
+
+        h3 {
+            color: #343a40;
+            margin-top: 20px;
+        }
+
+        .text-truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .video-item {
+            position: relative;
+            width: 200px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-info {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .view-icon {
+            margin-right: 5px;
+        }
+
+        .list-group-item {
+            border: 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .list-group-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        .rounded-circle {
+            border-radius: 50%;
+        }
+
+        .ms-2 {
+            margin-left: .5rem;
+        }
+
+        .lh-sm {
+            line-height: 1.25;
+        }
+
+        .py-3 {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .popular-searches-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px; /* Width of the popular searches */
+            max-height: 600px; /* Maximum height of the popular searches */
+            overflow-y: auto; /* Scroll if content overflows */
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-<div layout:fragment="content" class="container-fluid" style="max-width: 80%;">
+<div layout:fragment="content" class="container-fluid" style="max-width: 80%; position: relative;">
     <!-- 컨텐츠 자리 -->
     <div class="row" style="height: 100%;">
         <div class="main-content" style="margin-left: 30%; max-width: 70%;">
@@ -15,45 +124,84 @@
             <h2>Search Results</h2>
             <div th:if="${searchType == 'user'}">
                 <h3>Users</h3>
-                <ul>
-                    <li th:each="user : ${results}" th:text="${user.userName}">User Name</li>
-                </ul>
+                <div class="list-group list-group-flush border-bottom scrollarea" style="max-width: 50%;">
+                    <a th:each="result : ${results}" href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+                        <div class="d-flex w-100 align-items-center">
+                            <img th:src="${result.user.profilePictureUrl != null ? result.user.profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
+                            <div class="ms-2 flex-grow-1">
+                                <span class="fw-bold text-truncate" th:text="${result.user.userName}">User Name</span>
+                                <span class="text-muted ms-2 text-truncate" th:text="'@' + ${result.user.userId}">User ID</span>
+                                <span class="text-muted ms-2" th:text="'팔로워 수: ' + ${result.followerCount}">Followers</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
             <div th:if="${searchType == 'hashtag'}">
                 <h3>Videos with Hashtag</h3>
-                <ul>
-                    <li th:each="video : ${results}" th:text="${video.Title}">Video Title</li>
-                </ul>
+                <div class="video-grid">
+                    <div th:each="video : ${results}" class="video-item">
+                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                            <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
+                            <div class="video-info">
+                                <i class="bi bi-play-fill view-icon"></i>
+                                <span class="view-count" th:text="${video.viewCount}">0</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div th:if="${searchType == 'general'}">
                 <h3>Users</h3>
-                <ul>
-                    <li th:each="user : ${userResults}" th:text="${user.userName}">User Name</li>
-                </ul>
+                <div class="list-group list-group-flush border-bottom scrollarea" style="max-width: 50%;">
+                    <a th:each="result : ${userResults}" href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+                        <div class="d-flex w-100 align-items-center">
+                            <img th:src="${result.user.profilePictureUrl != null ? result.user.profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
+                            <div class="ms-2 flex-grow-1">
+                                <span class="fw-bold text-truncate" th:text="${result.user.userName}">User Name</span>
+                                <span class="text-muted ms-2 text-truncate" th:text="'@' + ${result.user.userId}">User ID</span>
+                                <span class="text-muted ms-2" th:text="'팔로워 수: ' + ${result.followerCount}">Followers</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
                 <h3>Videos</h3>
-                <ul>
-                    <li th:each="video : ${videoResults}" th:text="${video.Title}">Video Title</li>
-                </ul>
+                <div class="video-grid">
+                    <div th:each="video : ${videoResults}" class="video-item">
+                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                            <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
+                            <div class="video-info">
+                                <i class="bi bi-play-fill view-icon"></i>
+                                <span class="view-count" th:text="${video.viewCount}">0</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
                 <h3>Videos with Hashtag</h3>
-                <ul>
-                    <li th:each="video : ${hashtagResults}" th:text="${video.Title}">Video Title</li>
-                </ul>
+                <div class="video-grid">
+                    <div th:each="video : ${hashtagResults}" class="video-item">
+                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                            <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
+                            <div class="video-info">
+                                <i class="bi bi-play-fill view-icon"></i>
+                                <span class="view-count" th:text="${video.viewCount}">0</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div id="popular-searches" class="list-group mt-2">
-                <h3>Popular Searches</h3>
-                <!-- Popular searches will be dynamically populated here -->
+            <div class="popular-searches-container">
+                <div id="popular-searches" class="list-group mt-2">
+                    <!-- Popular searches will be dynamically populated here -->
+                </div>
             </div>
 
         </div>
-
     </div>
 </div>
 </body>
 
 <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/assets/js/sidebars.js}"></script>
-
 </html>
-
-

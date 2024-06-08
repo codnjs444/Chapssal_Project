@@ -94,44 +94,46 @@ function connectToSse() {
         });
 
 
-                        $(document).ready(function() {
-                            // Load popular searches on page load
-                            $.ajax({
-                                url: "/message/search/popular",
-                                type: "GET",
-                                success: function(data) {
-                                    $("#popular-searches").empty().append('<h3>Popular Searches</h3>');
-                                    data.forEach(function(search) {
-                                        $("#popular-searches").append('<a href="#" class="list-group-item list-group-item-action">' + search + '</a>');
-                                    });
-                                }
-                            });
+        $(document).ready(function() {
+            // Load popular searches on page load
+            $.ajax({
+                url: "/message/search/popular",
+                type: "GET",
+                success: function(data) {
+                    $("#popular-searches").empty().append('<h2>실시간 인기 검색어</h2>');
+                    data.forEach(function(search, index) {
+                        const truncatedSearch = search.length > 20 ? search.substring(0, 17) + '...' : search;
+                        $("#popular-searches").append('<a href="#" class="list-group-item list-group-item-action">' + (index + 1) + '. ' + truncatedSearch + '</a>');
+                    });
+                }
+            });
 
-                            // Load search suggestions based on input
-                            $("#search-input").on("input", function() {
-                                var query = $(this).val();
-                                if (query.length >= 2) {
-                                    $.ajax({
-                                        url: "/message/search/suggestions",
-                                        type: "GET",
-                                        data: { query: query },
-                                        success: function(data) {
-                                            $("#suggestions").empty();
-                                            data.forEach(function(suggestion) {
-                                                $("#suggestions").append('<a href="#" class="list-group-item list-group-item-action">' + suggestion + '</a>');
-                                            });
-                                        }
-                                    });
-                                } else {
-                                    $("#suggestions").empty();
-                                }
+            // Load search suggestions based on input
+            $("#search-input").on("input", function() {
+                var query = $(this).val();
+                if (query.length >= 2) {
+                    $.ajax({
+                        url: "/message/search/suggestions",
+                        type: "GET",
+                        data: { query: query },
+                        success: function(data) {
+                            $("#suggestions").empty();
+                            data.forEach(function(suggestion) {
+                                const truncatedSuggestion = suggestion.length > 20 ? suggestion.substring(0, 17) + '...' : suggestion;
+                                $("#suggestions").append('<a href="#" class="list-group-item list-group-item-action">' + truncatedSuggestion + '</a>');
                             });
+                        }
+                    });
+                } else {
+                    $("#suggestions").empty();
+                }
+            });
 
-                            // Populate search input on suggestion click
-                            $(document).on("click", ".list-group-item", function() {
-                                $("#search-input").val($(this).text());
-                                $("#suggestions").empty();
-                            });
-                        });
+            // Populate search input on suggestion click
+            $(document).on("click", ".list-group-item", function() {
+                $("#search-input").val($(this).text());
+                $("#suggestions").empty();
+            });
+        });
     </script>
 </div>
