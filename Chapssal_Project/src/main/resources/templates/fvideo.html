@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+	<style>
+		body {
+		    background-color: #000;
+		    color: #fff;
+		    overflow: hidden;
+		}
+		.video-container {
+		    display: flex;
+		    height: 100vh;
+		    position: relative;
+		}
+		.video-section {
+		    flex: 3;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    position: relative;
+		}
+		.video-section video {
+		    max-width: 100%;
+		    max-height: 100%;
+		}
+		.info-section {
+		    flex: 1;
+		    padding: 20px;
+		    overflow-y: auto;
+		    background-color: #fff;
+		    color: #000;
+		    position: relative;
+		}
+		.profile-section, .comments-section {
+		    background-color: #f9f9f9;
+		    padding: 10px;
+		    border-radius: 10px;
+		    margin-bottom: 20px;
+		}
+		.profile-section .follow-btn {
+		    color: #fff;
+		    background-color: #ff0050;
+		    border: none;
+		    padding: 5px 20px; /* 버튼 길이 조정 */
+		    border-radius: 5px;
+		    margin-left: auto;
+		}
+		.comments-section h6 {
+		    margin-bottom: 10px;
+		}
+		.comments-section {
+		    max-height: calc(100vh - 250px); /* 댓글 영역의 최대 높이 설정 */
+		    overflow-y: auto; /* 스크롤 가능하도록 설정 */
+		}
+		.close-btn, .navigation-btns {
+		    position: absolute;
+		    top: 20px;
+		    right: 20px;
+		    z-index: 1000;
+		}
+		.navigation-btns {
+		    top: 50%;
+		    right: 20px;
+		    transform: translateY(-50%);
+		}
+		.navigation-btns button {
+		    background: none;
+		    border: none;
+		    color: white;
+		    font-size: 24px;
+		    display: block;
+		    margin: 10px 0;
+		}
+		.profile-section img {
+		    width: 40px; /* 프로필 사진 크기를 줄입니다 */
+		    height: 40px; /* 프로필 사진 크기를 줄입니다 */
+		}
+		.profile-info-container {
+		    display: flex;
+		    align-items: center;
+		    flex-grow: 1;
+		    margin-left: 10px; /* 이름을 이미지 옆에 가깝게 배치 */
+		}
+		.profile-section h5 {
+		    font-size: 1rem; /* 이름 크기 조절 */
+		    margin-bottom: 0;
+		}
+		.profile-section small {
+		    display: block; /* 학교를 이름 아래에 표시 */
+		    font-size: 0.8rem; /* 학교 이름 크기 조절 */
+		    color: #6c757d; /* 학교 이름 색상 조절 */
+		}
+		.comment-input-container {
+		    display: flex;
+		    align-items: center;
+		    padding: 5px;
+		    background-color: #f9f9f9;
+		    border-radius: 10px;
+		    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+		    position: absolute;
+		    bottom: 10px;
+		    right: 10px;
+		    width: calc(100% - 40px); /* 전체 너비에서 좌우 마진을 고려한 너비 설정 */
+		    z-index: 1000; /* z-index 추가 */
+		}
+
+		.comment-input {
+		    flex-grow: 1;
+		    border: none;
+		    padding: 8px 10px;
+		    border-radius: 10px;
+		    background-color: #e9ecef;
+		    margin-right: 5px;
+		}
+		.comment-input:focus {
+		    outline: none;
+		}
+		.submit-comment-btn {
+		    background-color: transparent;
+		    color: #007bff;
+		    border: none;
+		    cursor: pointer;
+		    padding: 0 10px;
+		}
+		.profile-section .options-btn, .options-dropdown {
+		    position: relative;
+		    display: inline-block;
+		}
+		.options-dropdown {
+		    display: none;
+		    position: absolute;
+		    top: 30px;
+		    right: 0;
+		    background-color: #fff;
+		    color: #000;
+		    border: 1px solid #ccc;
+		    border-radius: 5px;
+		    z-index: 1000;
+		    white-space: nowrap; /* 가로로 배치되도록 설정 */
+		    padding: 5px; /* 드롭다운 메뉴 전체의 여백 추가 */
+		}
+		.options-dropdown button {
+		    display: inline-block; /* 항목을 가로로 배치 */
+		    border: none;
+		    background: none;
+		    padding: 10px; /* 항목의 내부 여백 조정 */
+		    cursor: pointer;
+		    color: #000;
+		    font-size: 16px;
+		    margin: 0 5px; /* 항목 사이 여백 추가 */
+		}
+		.comment-item strong {
+		    font-size: 13px; /* 사용자 이름 폰트 크기 */
+		}
+		.comment-item p {
+		    font-size: 12px; /* 댓글 내용 폰트 크기 */
+		    margin: 0px 0; /* 댓글 내용과 날짜 사이의 간격 줄임 */
+		}
+		.comment-item small {
+		    font-size: 10px; /* 날짜 폰트 크기 */
+		    color: #6c757d; /* 날짜 색상 */
+		    margin-top: 2px; /* 날짜와 텍스트 간의 간격 줄임 */
+		}
+		.icon-section {
+		    position: absolute;
+		    right: 20px;
+		    top: 50%;
+		    transform: translateY(-50%);
+		    text-align: center;
+		    color: white;
+		}
+		.icon-section button {
+		    background: none;
+		    border: none;
+		    color: white;
+		    font-size: 24px;
+		    display: block;
+		    margin: 10px 0;
+		}
+		.icon-section span {
+		    display: block;
+		    font-size: 14px;
+		    margin-top: 5px;
+		}
+		.comment-item {
+		    display: flex;
+		    align-items: flex-start;
+		    margin-bottom: 15px;
+		    position: relative; /* position을 relative로 설정 */
+		}
+
+		.comment-item img {
+		    width: 40px;
+		    height: 40px;
+		    border-radius: 50%;
+		    margin-right: 10px;
+		    cursor: pointer;
+		}
+
+		.comment-body {
+		    flex-grow: 1;
+		    display: flex;
+		    flex-direction: column;
+		}
+
+		.comment-meta {
+		    display: flex;
+		    align-items: center;
+		    margin-top: 5px;
+		}
+
+		.comment-meta .comment-date,
+		.comment-meta .reply-link {
+		    font-size: 10px;
+		    color: #6c757d;
+		}
+
+		.comment-meta .reply-link {
+		    margin-left: 10px;
+		    cursor: pointer;
+		}
+
+		.comment-actions {
+		    display: flex;
+		    align-items: center;
+		    margin-top: 5px;
+		}
+
+		.comment-actions .like-button {
+		    background: none;
+		    border: none;
+		    color: #000;
+		    cursor: pointer;
+		    font-size: 14px;
+		    margin-left: 10px;
+		}
+
+		.comment-actions .like-count {
+		    font-size: 12px;
+		    color: #6c757d;
+		    margin-left: 5px;
+		}
+		.comment-meta .view-replies-link {
+		    font-size: 10px;
+		    color: #000; /* 답글 보기 링크를 검정색으로 설정 */
+		    cursor: pointer;
+		    margin-left: 0; /* 왼쪽 마진을 제거하여 더 왼쪽으로 이동 */
+		    text-decoration: none; /* 밑줄 제거 */
+		}
+
+		.replies-container {
+		    display: none; /* 초기에는 숨김 */
+		    margin-top: 10px; /* 댓글과 답글 사이에 약간의 여백 추가 */
+		    min-height: 50px; /* 최소 높이 설정하여 빈 공간 표시 */
+		}
+
+		.reply-item {
+		    display: flex;
+		    align-items: flex-start;
+		    margin-bottom: 10px;
+		    margin-left: 20px; /* 답글을 약간 들여쓰기 */
+		    position: relative;
+		    flex-direction: row; /* 수정: 답글을 가로로 정렬 */
+		    border-left: none; /* 수정: 답글 들여쓰기 부분의 선 제거 */
+		    padding-left: 0; /* 수정: 답글 텍스트와 선 사이의 여백 제거 */
+		}
+
+		.reply-body {
+		    background-color: #f9f9f9;
+		    padding: 10px;
+		    border-radius: 10px;
+		    display: flex;
+		    flex-direction: column;
+		    justify-content: center;
+		}
+		.reply-item .comment-body {
+		     display: flex;
+		     flex-direction: column;
+		     justify-content: center;
+		     margin-bottom: 0; /* 세로 간격을 줄이기 위해 margin 제거 */
+		 }
+		 .reply-item .comment-body p,
+		 .reply-item .comment-body .comment-meta {
+		     margin-bottom: 1px; /* 세로 간격을 더 줄이기 위해 margin 설정 */
+		     line-height: 1; /* 행 간격을 줄이기 위해 line-height 설정 */
+		 }
+		 .alert {
+		     position: fixed;
+		     top: 20px;
+		     left: 50%;
+		     transform: translateX(-50%);
+		     z-index: 1050;
+		     padding: 10px 20px;
+		     border-radius: 5px;
+		     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		 }
+	   	 </style>
+</head>
+<body>
+    <div class="video-container">
+        <div class="video-section"> 
+            <video controls autoplay>
+                <source th:src="${videoUrl}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+			<button class="close-btn btn btn-outline-light" id="closeButton" onclick="navigateToFollow()">
+			    <i class="bi bi-x"></i>
+			</button>
+			<div class="navigation-btns">
+			    <button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${videoUser.userNum} + ')'" th:disabled="${nextVideoNum} == 0">
+			        <i class="bi bi-chevron-up"></i>
+			    </button>
+			    <button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${videoUser.userNum} + ')'" th:disabled="${prevVideoNum} == 0">
+			        <i class="bi bi-chevron-down"></i>
+			    </button>
+			</div>
+        </div>
+        <div class="info-section">
+            <div class="profile-section">
+				<div class="d-flex align-items-center mb-2">
+				    <img th:src="${profilePictureUrl != null ? profilePictureUrl : '/images/default_profile.png'}" class="rounded-circle" alt="프로필 사진" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
+				    <div class="profile-info-container" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|">
+				        <div>
+				            <h5 th:text="${userName != null ? userName : '사용자'}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></h5>
+				            <small th:text="${schoolName}" th:onclick="|navigateToProfilePage(${userNum}, ${currentUserNum})|"></small>
+				        </div>
+				    </div>
+					<button type="button"
+					        th:if="${currentUserNum} != ${userNum}"
+					        th:classappend="${isFollowing} ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm text-white'"
+					        th:attr="onclick=|followUser('${currentUserNum}', '${userNum}', '${isFollowing}')|">
+					    <i th:classappend="${isFollowing} ? 'bi bi-check2' : ''"></i>
+					    <span th:text="${isFollowing} ? '팔로잉' : '팔로우'"></span>
+					</button>
+					<div th:if="${currentUserNum} == ${userNum}" class="position-relative">
+					    <button class="options-btn btn btn-outline-secondary btn-sm" onclick="toggleOptions()">
+					        <i class="bi bi-three-dots"></i>
+					    </button>
+					    <div class="options-dropdown">
+					        <button onclick="shareVideo()">공유하기</button>
+					        <button onclick="confirmDelete()">삭제하기</button>
+					    </div>
+					</div>
+				</div>
+				<p th:text="${videoTitle}"></p>
+<!--                <a href="#" class="text-muted">자세히</a>-->
+			<div class="d-flex justify-content-around mt-3">
+			    <div class="d-flex align-items-center">
+			        <button type="button" class="btn btn-link" 
+			                th:classappend="${isLiked} ? 'text-danger' : 'text-muted'"
+			                th:attr="onclick=|likeVideo(${videoNum}, ${currentUserNum}, '${isLiked}')|">
+			            <i th:classappend="${isLiked} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+			        </button>
+			        <span class="like-count ms-0" th:text="${likeCount}"></span> <!-- 좋아요 수 표시, 더 가까이 위치 -->
+			    </div>
+				<div class="d-flex align-items-center">
+				    <div><i class="bi bi-chat"></i> <span th:text="${commentCount}"></span></div>
+				</div>
+				<div class="d-flex align-items-center">
+				    <div><i class="bi bi-share"></i> 593</div>
+				</div>
+			</div>
+			
+            </div>
+			
+			<div class="comments-section">
+			    <h6>댓글</h6>
+			    <div th:each="comment : ${comments}" class="comment-item" th:data-comment-num="${comment.commentNum}" th:data-user-num="${comment.user.userNum}">
+			        <img th:src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
+			             alt="사용자 사진" 
+			             th:onclick="|navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})|">
+			        <div class="comment-body">
+			            <strong th:text="${comment.user.userName}">사용자 이름</strong>
+			            <p th:text="${comment.text}">댓글 내용</p>
+			            <div class="comment-meta">
+			                <small class="comment-date" th:text="${#temporals.format(comment.date, 'yyyy-MM-dd HH:mm:ss')}">날짜</small>
+			                <a href="javascript:void(0);" class="reply-link" th:attr="onclick=|toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')|">답글</a>
+			            </div>
+			            <div class="comment-meta">
+			                <!-- 답글 보기 링크 추가 -->
+			                <a href="javascript:void(0);" class="view-replies-link no-underline" th:if="${comment.hasReplies}" th:attr="onclick=|toggleReplies(${comment.commentNum})|">
+			                    답글 보기 (<span th:text="${comment.replies.size()}"></span>)
+			                </a>
+			            </div>
+						<div class="replies-container" id="replies-1"></div> <!-- 빈 공간이 표시될 컨테이너 -->
+			        </div>
+			        <div class="comment-actions">
+			            <button class="like-button" th:attr="onclick=|toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})|">
+			                <i class="bi" th:classappend="${comment.liked} ? 'bi-heart-fill text-danger' : 'bi-heart'"></i>
+			            </button>
+			            <span class="like-count" th:text="${comment.likeCount}">0</span> <!-- 좋아요 수 표시 -->
+			        </div>
+			        <!-- 답글 컨테이너 추가 -->
+			        <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;"></div>
+			    </div>
+			    <p hidden>Video Number: <span id="videoNumDisplay" th:text="${videoNum}"></span></p>
+			</div>
+			<!-- 추가 댓글 아이템 -->
+			<div class="comment-input-container">
+			    <input type="hidden" name="videoNum" id="videoNum" value="${videoNum}">
+			    <input type="hidden" name="currentUserNum" id="currentUserNum" value="${currentUserNum}">
+			    <input type="hidden" name="parentCommentNum" id="parentCommentNum" value="">
+			    <input type="text" class="comment-input" name="commentText" id="commentText" placeholder="따뜻한 말 한마디 해주세요...">
+			    <button type="button" class="submit-comment-btn" onclick="submitComment()">게시</button>
+			</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script th:inline="javascript">
+	    /*<![CDATA[*/
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+			const currentUserNum = '[[${currentUserNum}]]';
+		    console.log('Video Number:', videoNum);
+			console.log('Current User Number:', currentUserNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+			document.getElementById('videoNum').value = videoNum;
+			document.getElementById('currentUserNum').value = currentUserNum;
+		});
+		
+		function followUser(currentUserNum, userNum, isFollowing) {
+				    console.log("followUser 함수 호출됨");
+
+				    let url = isFollowing === 'true' ? '/follow/unfollow' : '/follow';
+				    let method = isFollowing === 'true' ? 'DELETE' : 'POST';
+
+				    fetch(url, {
+				        method: method,
+				        headers: {
+				            'Content-Type': 'application/json'
+				        },
+				        body: JSON.stringify({
+				            follower: currentUserNum,
+				            following: userNum
+				        })
+				    })
+				    .then(response => response.json())
+				    .then(data => {
+				        if (data.success) {
+				            const followButton = document.querySelector('button[onclick^="followUser"]');
+				            if (isFollowing === 'true') {
+				                followButton.classList.remove('btn-outline-secondary');
+				                followButton.classList.add('btn-primary', 'text-white');
+				                followButton.innerHTML = '<span>팔로우</span>';
+				                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'false')`);
+				            } else {
+				                followButton.classList.remove('btn-primary', 'text-white');
+				                followButton.classList.add('btn-outline-secondary');
+				                followButton.innerHTML = '<i class="bi bi-check2"></i> <span>팔로잉</span>';
+				                followButton.setAttribute('onclick', `followUser(${currentUserNum}, ${userNum}, 'true')`);
+				            }
+				            showAlert("알림", isFollowing === 'true' ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+				        } else {
+				            alert('작업 실패: ' + data.message);
+				        }
+				    })
+				    .catch(error => {
+				        console.error('Error:', error);
+				        alert('작업 중 오류가 발생했습니다.');
+				    });
+				}
+
+				document.addEventListener('DOMContentLoaded', function() {
+				    const videoElement = document.querySelector('video');
+				    const videoNum = document.getElementById('videoNum').value;
+
+				    videoElement.addEventListener('timeupdate', function() {
+				        if (videoElement.currentTime > 10) { // 10초 이상 시청 시 조회수 증가
+				            fetch('/video/incrementViewCount', {
+				                method: 'POST',
+				                headers: {
+				                    'Content-Type': 'application/json'
+				                },
+				                body: JSON.stringify({ videoNum: parseInt(videoNum) })
+				            }).then(response => {
+				                if (!response.ok) {
+				                    console.error('Error incrementing view count');
+				                }
+				            }).catch(error => {
+				                console.error('Error:', error);
+				            });
+
+				            // 조회수 증가 요청을 한 번만 보내도록 이벤트 리스너 제거
+				            videoElement.removeEventListener('timeupdate', arguments.callee);
+				        }
+				    });
+				});
+
+				
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+		    console.log('Video Number:', videoNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+
+		    // 댓글 날짜를 오늘 기준으로 몇일 전인지 계산하여 표시
+		    const commentDates = document.querySelectorAll('.comment-date');
+		    const now = new Date();
+
+		    commentDates.forEach(dateElement => {
+		        const commentDate = new Date(dateElement.textContent);
+		        const diffTime = Math.abs(now - commentDate);
+		        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+		        // diffDays를 하루 더하여 날짜를 계산
+		        const adjustedDiffDays = diffDays - 1;
+
+		        if (adjustedDiffDays === 0) {
+		            dateElement.textContent = '오늘';
+		        } else if (adjustedDiffDays === 1) {
+		            dateElement.textContent = '어제';
+		        } else {
+		            dateElement.textContent = `${adjustedDiffDays}일 전`;
+		        }
+		    });
+		});
+
+
+		function likeVideo(videoNum, currentUserNum, isLiked) {
+		    console.log("likeVideo 함수 호출됨");
+
+		    let url = isLiked === 'true' ? '/video/unlike' : '/video/like';
+		    let method = isLiked === 'true' ? 'DELETE' : 'POST';
+
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            video: videoNum,
+		            user: currentUserNum
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            const likeIcon = document.querySelector('.btn-link .bi');
+		            const likeCountSpan = document.querySelector('.like-count');
+
+		            if (isLiked === 'true') {
+		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+		                likeIcon.classList.add('bi-heart');
+		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) - 1; // 좋아요 수 감소
+		                showAlert("알림", "좋아요를 취소하였습니다.");
+		            } else {
+		                likeIcon.classList.remove('bi-heart');
+		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+		                likeCountSpan.textContent = parseInt(likeCountSpan.textContent) + 1; // 좋아요 수 증가
+		                showAlert("알림", "좋아요를 눌렀습니다.");
+		            }
+
+		            // 상태를 토글하여 업데이트
+		            likeIcon.parentElement.setAttribute('onclick', `likeVideo(${videoNum}, ${currentUserNum}, '${isLiked === 'true' ? 'false' : 'true'}')`);
+		        } else {
+		            alert('좋아요 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('좋아요 등록 중 오류가 발생했습니다.');
+		    });
+		}
+
+		function showAlert(title, message) {
+		    // 알림을 표시하는 함수
+		    const alertBox = document.createElement('div');
+		    alertBox.className = 'alert alert-info';
+		    alertBox.innerHTML = `<strong>${title}</strong> ${message}`;
+
+		    document.body.appendChild(alertBox);
+
+		    setTimeout(() => {
+		        alertBox.remove();
+		    }, 3000); // 3초 후에 알람을 자동으로 제거합니다.
+		}
+
+
+
+
+
+	    function navigateVideo(videoNum, userNum) {
+	        // 이 함수는 주어진 비디오 번호와 사용자 번호로 이동합니다.
+	        if (videoNum === 0) {
+	            alert("더 이상의 영상이 없습니다.");
+	        } else {
+	            window.location.href = '/video/' + videoNum + '?userNum=' + userNum;
+	        }
+	    }
+
+		function navigateToFollow() {
+		    window.location.href = 'http://localhost:8080/following';
+		}
+
+		
+		function navigateToProfile(userNum, currentUserNum) {
+			// 사용자의 프로필 페이지로 이동합니다.
+			if (userNum === currentUserNum) {
+			    window.location.href = 'http://localhost:8080/user/profile';
+			} else {
+			    window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+			}
+		}
+
+
+		function navigateToProfilePage(userNum, currentUserNum) {
+		    // 사용자의 프로필 페이지로 이동합니다.
+		    if (userNum === currentUserNum) {
+		        window.location.href = 'http://localhost:8080/user/profile';
+		    } else {
+		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    }
+		}
+
+	    document.addEventListener('keydown', function(event) {
+	        if (event.key === 'ArrowUp') {
+	            // 위 방향키를 누르면 이전 비디오로 이동
+	            navigateVideo(/*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
+	        } else if (event.key === 'ArrowDown') {
+	            // 아래 방향키를 누르면 다음 비디오로 이동
+	            navigateVideo(/*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
+	        } else if (event.key === 'Escape') {
+	            // Esc 키를 누르면 프로필 페이지로 이동
+				navigateToFollow(); // ESC 키를 누르면 팔로잉 페이지로 이동
+	        }
+	    });
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+		    const currentUserNum = /*[[${currentUserNum}]]*/ '[[${currentUserNum}]]';
+		    console.log('Video Number:', videoNum);
+		    console.log('Current User Number:', currentUserNum);
+		    document.getElementById('videoNumDisplay').textContent = videoNum;
+		    document.getElementById('videoNum').value = videoNum;
+		    document.getElementById('currentUserNum').value = currentUserNum;
+		});
+		
+		function submitComment() {
+		    let commentText = document.getElementById('commentText').value;
+		    const videoNum = document.getElementById('videoNum').value;
+		    const currentUserNum = document.getElementById('currentUserNum').value;
+		    const parentCommentNum = document.getElementById('parentCommentNum').value;
+
+		    if (commentText.trim() === "") {
+		        alert("댓글을 입력하세요.");
+		        return;
+		    }
+
+		    // commentText에서 @사용자이름 부분 제거
+		    console.log('Original commentText:', commentText);
+		    if (mentionedUserName && commentText.startsWith(mentionedUserName)) {
+		        commentText = commentText.slice(mentionedUserName.length);
+		    }
+		    console.log('Processed commentText:', commentText);
+
+		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
+		    const comment = {
+		        text: commentText,
+		        video: { videoNum: parseInt(videoNum, 10) },
+		        user: { userNum: parseInt(currentUserNum, 10) }
+		    };
+
+		    if (parentCommentNum) {
+		        comment.comment = { commentNum: parseInt(parentCommentNum, 10) };
+		    }
+
+		    console.log('Sending comment:', comment);
+
+		    fetch(url, {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify(comment)
+		    })
+		    .then(response => response.json()) // 응답을 JSON으로 처리
+		    .then(data => {
+		        console.log('Response data:', data);
+		        if (data.success) {
+		            // 댓글이 성공적으로 추가되면, 화면을 새로고침하지 않고 댓글 목록을 업데이트합니다.
+		            addCommentToDOM(data.comment);
+		            document.getElementById('commentText').value = ''; // 입력란 초기화
+		            document.getElementById('parentCommentNum').value = ''; // 부모 댓글 번호 초기화
+		        } else {
+		            alert('댓글 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('댓글 등록 중 오류가 발생했습니다.');
+		    });
+		}
+
+		function addCommentToDOM(comment) {
+		    const commentsSection = document.querySelector('.comments-section');
+
+		    const commentItem = document.createElement('div');
+		    commentItem.className = 'comment-item';
+		    commentItem.setAttribute('data-comment-num', comment.commentNum);
+		    commentItem.setAttribute('data-user-num', comment.user.userNum);
+
+		    commentItem.innerHTML = `
+		        <img src="${comment.user.profilePictureUrl != null ? comment.user.profilePictureUrl : '/images/default_profile.png'}" 
+		            alt="사용자 사진" 
+		            onclick="navigateToProfilePage(${comment.user.userNum}, ${currentUserNum})">
+		        <div class="comment-body">
+		            <strong>${comment.user.userName}</strong>
+		            <p>${comment.text}</p>
+		            <div class="comment-meta">
+		                <small class="comment-date">${calculateDaysAgo(comment.date)}</small>
+		                <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${comment.commentNum}, '${comment.user.userName}')">답글</a>
+		            </div>
+		            <div class="comment-meta">
+		                <!-- 답글 보기 링크 추가 -->
+		                <a href="javascript:void(0);" class="view-replies-link no-underline" onclick="toggleReplies(${comment.commentNum})">
+		                    답글 보기 (<span>${comment.replies ? comment.replies.size : 0}</span>)
+		                </a>
+		            </div>
+		            <div class="replies-container" id="replies-${comment.commentNum}" style="display: none;"></div>
+		        </div>
+		        <div class="comment-actions">
+		            <button class="like-button" onclick="toggleCommentLike(${comment.commentNum}, ${currentUserNum}, ${comment.liked})">
+		                <i class="bi ${comment.liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i>
+		            </button>
+		            <span class="like-count">${comment.likeCount}</span>
+		        </div>
+		    `;
+
+		    commentsSection.appendChild(commentItem);
+		}
+
+
+
+		function toggleOptions() {
+		    const optionsDropdown = document.querySelector('.options-dropdown');
+		    optionsDropdown.style.display = optionsDropdown.style.display === 'block' ? 'none' : 'block';
+		}
+
+		function confirmDelete() {
+		    if (confirm("정말 삭제하시겠습니까?")) {
+		        deleteVideo();
+		    }
+		}
+
+		function deleteVideo() {
+		    const videoNum = document.getElementById('videoNum').value;
+		    console.log('Deleting video with number:', videoNum); // 디버깅용 로그 추가
+
+		    fetch(`/video/delete/${videoNum}`, {
+		        method: 'DELETE',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        }
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            alert('비디오가 삭제되었습니다.');
+		            window.location.href = '/user/profile'; // 삭제 후 프로필 페이지로 이동
+		        } else {
+		            alert('비디오 삭제 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('비디오 삭제 중 오류가 발생했습니다.');
+		    });
+		}
+		function navigateToProfilePage(userNum, currentUserNum) {
+		    // 사용자의 프로필 페이지로 이동합니다.
+		    if (userNum === currentUserNum) {
+		        window.location.href = 'http://localhost:8080/user/profile';
+		    } else {
+		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		    }
+		}
+		
+
+		function likeComment(commentNum, currentUserNum) {
+		    // 댓글 정보를 가져오기
+		    const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+
+		    // 현재 좋아요 상태 가져오기
+		    const likeIcon = commentElement.querySelector('.bi');
+		    const isLiked = likeIcon.classList.contains('bi-heart-fill');
+		    const likeButton = commentElement.querySelector('.like-button');
+
+		    // 버튼 비활성화
+		    likeButton.disabled = true;
+
+		    // 서버로 데이터 전송
+		    fetch('/comment/like', {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            commentNum: commentNum,
+		            currentUserNum: currentUserNum,
+		            likeDate: new Date().toISOString()
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.success) {
+		            // 좋아요 상태를 변경합니다.
+		            if (isLiked) {
+		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+		                likeIcon.classList.add('bi-heart');
+		                alert('좋아요를 취소하였습니다.');
+		            } else {
+		                likeIcon.classList.remove('bi-heart');
+		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+		                alert('좋아요를 눌렀습니다.');
+		            }
+		        } else {
+		            alert('좋아요 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('좋아요 등록 중 오류가 발생했습니다.');
+		    })
+		    .finally(() => {
+		        // 8초 후 버튼 활성화
+		        setTimeout(() => {
+		            likeButton.disabled = false;
+		        }, 8000);
+		    });
+		}
+
+		function toggleCommentLike(commentNum, currentUserNum, isLiked) {
+		    const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+		    const likeIcon = commentElement.querySelector('.bi');
+		    const likeCountSpan = commentElement.querySelector('.like-count');
+		    const likeButton = commentElement.querySelector('.like-button');
+
+		    const url = isLiked ? '/comment/unlike' : '/comment/like';
+		    const method = isLiked ? 'DELETE' : 'POST';
+
+		    // 버튼 비활성화
+		    likeButton.disabled = true;
+
+		    fetch(url, {
+		        method: method,
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({
+		            commentNum: commentNum,
+		            currentUserNum: currentUserNum,
+		            likeDate: new Date().toISOString()
+		        })
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        if (data.likeCount !== undefined) {
+		            const newLikeCount = data.likeCount;
+		            likeCountSpan.textContent = newLikeCount;
+
+		            if (isLiked) {
+		                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+		                likeIcon.classList.add('bi-heart');
+		                alert('좋아요를 취소하였습니다.');
+		            } else {
+		                likeIcon.classList.remove('bi-heart');
+		                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+		                alert('좋아요를 눌렀습니다.');
+		            }
+
+		            // 상태를 토글하여 업데이트
+		            likeIcon.setAttribute('onclick', `toggleCommentLike(${commentNum}, ${currentUserNum}, ${!isLiked})`);
+		        } else {
+		            alert('좋아요 등록 실패: ' + data.message);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('좋아요 등록 중 오류가 발생했습니다.');
+		    })
+		    .finally(() => {
+		        // 8초 후 버튼 활성화
+		        setTimeout(() => {
+		            likeButton.disabled = false;
+		        }, 8000);
+		    });
+		}
+
+
+
+
+		let mentionedUserName = '';
+
+		function toggleReplyForm(event, commentNum, userName) {
+		    event.stopPropagation(); // 이벤트 전파 중지
+		    const commentText = document.getElementById('commentText');
+		    const parentCommentNum = document.getElementById('parentCommentNum');
+		    
+		    // @사용자이름 부분을 입력란에 표시하고 임시 변수에 저장
+		    mentionedUserName = `@${userName} `;
+		    commentText.value = mentionedUserName; 
+		    parentCommentNum.value = commentNum; 
+		    commentText.focus(); // 입력란에 포커스 맞추기
+		}
+
+		function submitComment() {
+		    let commentText = document.getElementById('commentText').value;
+		    const videoNum = document.getElementById('videoNum').value;
+		    const currentUserNum = document.getElementById('currentUserNum').value;
+		    const parentCommentNum = document.getElementById('parentCommentNum').value;
+
+		    if (commentText.trim() === "") {
+		        alert("댓글을 입력하세요.");
+		        return;
+		    }
+
+		    // commentText에서 @사용자이름 부분 제거
+		    console.log('Original commentText:', commentText);
+		    if (mentionedUserName && commentText.startsWith(mentionedUserName)) {
+		        commentText = commentText.slice(mentionedUserName.length);
+		    }
+		    console.log('Processed commentText:', commentText);
+
+		    const url = parentCommentNum ? '/rcomment/add' : '/comment/add';
+		    const comment = {
+		        text: commentText,
+		        video: { videoNum: parseInt(videoNum, 10) },
+		        user: { userNum: parseInt(currentUserNum, 10) }
+		    };
+
+		    if (parentCommentNum) {
+		        comment.comment = { commentNum: parseInt(parentCommentNum, 10) };
+		    }
+
+		    console.log('Sending comment:', comment);
+
+		    fetch(url, {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify(comment)
+		    })
+		    .then(response => response.text()) // 응답을 텍스트로 처리
+		    .then(text => {
+		        console.log('Response text:', text);
+		        if (text.trim() === 'success') {
+		            location.reload();
+		        } else {
+		            alert('댓글 등록 실패: ' + text);
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('댓글 등록 중 오류가 발생했습니다.');
+		    });
+		}
+
+
+
+		function toggleReplies(commentNum) {
+		          const commentElement = document.querySelector(`.comment-item[data-comment-num="${commentNum}"]`);
+		          let repliesContainer = commentElement.querySelector('.replies-container');
+
+		          if (!repliesContainer) {
+		              repliesContainer = document.createElement('div');
+		              repliesContainer.id = `replies-${commentNum}`;
+		              repliesContainer.className = 'replies-container';
+		              commentElement.appendChild(repliesContainer);
+		          }
+
+		          if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+		              repliesContainer.style.display = 'block';
+		              fetchReplies(commentNum, repliesContainer);
+		          } else {
+		              repliesContainer.style.display = 'none';
+		              repliesContainer.innerHTML = '';
+		          }
+		      }
+
+			  function fetchReplies(commentNum, container) {
+			      fetch(`/rcomment/list?commentNum=${commentNum}`)
+			          .then(response => response.json())
+			          .then(data => {
+			              container.innerHTML = ''; // Clear the container
+			              if (data.length === 0) {
+			                  container.innerHTML = '<p>No replies yet.</p>';
+			                  return;
+			              }
+			              data.forEach(reply => {
+			                  const replyElement = document.createElement('div');
+			                  replyElement.className = 'reply-item';
+			                  replyElement.innerHTML = `
+			                      <div class="d-flex align-items-center mb-2">
+			                          <img src="${reply.profilePictureUrl != null ? reply.profilePictureUrl : '/images/default_profile.png'}" alt="사용자 사진" class="rounded-circle" style="width: 40px; height: 40px; margin-right: 10px;" onclick="navigateToProfilePage(${reply.userNum}, ${currentUserNum})">
+			                          <div class="comment-body">
+			                              <strong>${reply.userName}</strong>
+			                              <p>${reply.text}</p>
+			                              <div class="comment-meta">
+			                                  <small class="comment-date">${calculateDaysAgo(reply.date)}</small>
+			                                  <a href="javascript:void(0);" class="reply-link" onclick="toggleReplyForm(event, ${reply.commentNum}, '${reply.userName}')"></a>
+			                              </div>
+			                          </div>
+			                      </div>
+			                  `;
+			                  container.appendChild(replyElement);
+			              });
+			          })
+			          .catch(error => {
+			              console.error('Error fetching replies:', error);
+			              container.innerHTML = '<p>Error loading replies.</p>';
+			          });
+			  }
+
+			  function calculateDaysAgo(dateString) {
+			      const now = new Date();
+			      const replyDate = new Date(dateString);
+			      const diffTime = Math.abs(now - replyDate);
+			      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			      const adjustedDiffDays = diffDays - 1;
+
+			      if (adjustedDiffDays === 0) {
+			          return '오늘';
+			      } else if (adjustedDiffDays === 1) {
+			          return '어제';
+			      } else {
+			          return `${adjustedDiffDays}일 전`;
+			      }
+			  }
+
+
+	    /*]]>*/
+	</script>
+
+
+	</body>
+	</html>

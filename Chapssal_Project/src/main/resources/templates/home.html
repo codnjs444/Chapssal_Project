@@ -252,45 +252,8 @@
     <!-- 홈 스크립트 -->
     <th:block th:fragment="homeVideoScript">
         <script>
-            function styleSpecialChars(text) {
-                return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
-                           .replace(/@(\S+)/g, '<strong>@$1</strong>');
-            }
-            
-            $(document).ready(function() {
-                // 모든 video.title 요소를 찾아서 스타일 변경
-                $('.video-content p').each(function() {
-                    const originalText = $(this).text();
-                    const styledText = styleSpecialChars(originalText);
-                    $(this).html(styledText);
-                });
 
-                let options = {
-                    root: null,
-                    rootMargin: '0px',
-                    threshold: 0.5
-                };
-
-                let observer = new IntersectionObserver(function(entries, observer) {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            let video = entry.target.querySelector('video');
-                            if (video) {
-                                video.play();
-                            }
-                        } else {
-                            let video = entry.target.querySelector('video');
-                            if (video) {
-                                video.pause();
-                            }
-                        }
-                    });
-                }, options);
-
-                document.querySelectorAll('.video-item').forEach(item => {
-                    observer.observe(item);
-                });
-            });
+			
         </script>
     </th:block>
 </body>
