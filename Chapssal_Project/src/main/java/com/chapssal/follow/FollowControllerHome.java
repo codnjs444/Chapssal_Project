@@ -44,7 +44,7 @@ public class FollowControllerHome {
     }
 
     @DeleteMapping("/unfollow")
-    public ResponseEntity<?> unfollowUser(@RequestParam(name = "follower") Integer follower, @RequestParam(name = "following") Integer following) {
+    public ResponseEntity<?> unfollowUser(@RequestParam("follower") Integer follower, @RequestParam("following") Integer following) {
         Follow follow = followRepository.findFirstByFollowerAndFollowing(follower, following);
         if (follow != null) {
             followRepository.delete(follow);
@@ -53,4 +53,7 @@ public class FollowControllerHome {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"success\": false, \"message\": \"팔로우 관계를 찾을 수 없습니다.\"}");
         }
     }
+
+
+
 }

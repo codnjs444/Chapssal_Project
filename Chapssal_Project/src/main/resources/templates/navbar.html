@@ -303,10 +303,12 @@
 			    section1.style.display = 'none';
 			    section2.style.display = 'block';
 				copyVideoSource(); // 비디오 소스를 복사
+				videoPreview2.currentTime = currentVideoTime; // 저장된 비디오 시간으로 이동
 			});
 
 			// Prev 버튼 클릭 시 섹션2 숨기고 섹션1 표시
 			prevButton2.addEventListener('click', function() {
+				currentVideoTime = videoPreview2.currentTime; // 현재 비디오 시간을 저장
 			    section2.style.display = 'none';
 			    section1.style.display = 'block';
 			});

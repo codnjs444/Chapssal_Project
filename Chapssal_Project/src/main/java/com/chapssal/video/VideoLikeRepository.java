@@ -24,5 +24,8 @@ public interface VideoLikeRepository extends JpaRepository<VideoLike, Integer> {
 	       "WHERE vl.likeDate >= :startDate AND vl.likeDate < :endDate " +
 	       "GROUP BY vl.video ORDER BY likeCount DESC")
 	List<Object[]> findLikeCountForVideosInWeek(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-    
+
+    List<VideoLike> findByVideoAndUserAndLikeDateBetween(Video video, User user, LocalDateTime startDate, LocalDateTime endDate);
+
+    List<VideoLike> findByVideo_User_School_SchoolNameAndLikeDateBetween(String schoolName, LocalDateTime startDate, LocalDateTime endDate);
 }

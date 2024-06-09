@@ -57,5 +57,4 @@ public class VideoLikeController {
         response.put("isLiked", isLiked);
         return ResponseEntity.ok(response);
     }
-
 }

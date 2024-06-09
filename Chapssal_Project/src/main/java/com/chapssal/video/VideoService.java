@@ -152,15 +152,15 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     public List<VideoWithLikesAndComments> getAllVideosOrderedByLikes() {
         return videoRepository.findAllVideosOrderedByLikes().stream()
                 .map(result -> {
-                    int videoNum = (Integer) result[0];
+                    int videoNum = ((Number) result[0]).intValue();
                     String title = (String) result[1];
                     String videoUrl = (String) result[2];
                     String thumbnailUrl = (String) result[3];
-                    int userNum = (Integer) result[4];
+                    int userNum = ((Number) result[4]).intValue();
                     Integer topic = (Integer) result[5];
                     int likeCount = ((Number) result[6]).intValue();
                     int recentLikeCount = ((Number) result[7]).intValue();
@@ -244,37 +244,38 @@ public class VideoService {
         }
         return 0; // 이전 영상이 없을 경우 0 반환
     }
+
+    public List<VideoWithLikesAndComments> getAllVideosOrderedByLikesAndTopic(int topic) {
+        return videoRepository.findAllVideosOrderedByLikesAndTopic(topic).stream()
+            .map(result -> {
+                int videoNum = (Integer) result[0];
+                String title = (String) result[1];
+                String videoUrl = (String) result[2];
+                String thumbnailUrl = (String) result[3];
+                int userNum = (Integer) result[4];
+                Integer videoTopic = (Integer) result[5];
+                int likeCount = ((Number) result[6]).intValue();
+                int recentLikeCount = ((Number) result[7]).intValue();
+                int viewCount = ((Number) result[8]).intValue();
+
+                Video video = new Video();
+                video.setVideoNum(videoNum);
+                video.setTitle(title);
+                video.setVideoUrl(videoUrl);
+                video.setThumbnailUrl(thumbnailUrl);
+                video.setTopic(videoTopic);
+                video.setViewCount(viewCount);
+                User user = userService.findByUserNum(userNum);
+                video.setUser(user);
+
+                int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+                return new VideoWithLikesAndComments(video, likeCount, commentCount);
+            })
+            .collect(Collectors.toList());
+    }
     
 
     public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
         return videoRepository.findTopVideosForWeekAndTopic(startDate, endDate, topic);
     }
-    
-    // 홈 페이지를 위한 이전 비디오 ID 찾기
-    public int getPrevHomeVideoId(int videoNum) {
-        List<Video> videos = videoRepository.findAllVideosOrderByUploadDateDesc();
-        for (int i = 0; i < videos.size(); i++) {
-            if (videos.get(i).getVideoNum() == videoNum && i > 0) {
-                return videos.get(i - 1).getVideoNum();
-            }
-        }
-        return 0; // 이전 비디오가 없을 경우 0 반환
-    }
-
-    // 홈 페이지를 위한 다음 비디오 ID 찾기
-    public int getNextHomeVideoId(int videoNum) {
-        List<Video> videos = videoRepository.findAllVideosOrderByUploadDateDesc();
-        for (int i = 0; i < videos.size(); i++) {
-            if (videos.get(i).getVideoNum() == videoNum && i < videos.size() - 1) {
-                return videos.get(i + 1).getVideoNum();
-            }
-        }
-        return 0; // 다음 비디오가 없을 경우 0 반환
-    }
-    
-    public Integer getUserNumByVideoNum(int videoNum) {
-        return videoRepository.findUserNumByVideoNum(videoNum);
-    }
-    
-    
 }

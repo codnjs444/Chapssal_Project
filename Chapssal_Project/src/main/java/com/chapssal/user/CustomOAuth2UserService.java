@@ -36,12 +36,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         try {
             String providerUserId = attributes.get("id").toString();
-            String username = ((Map<String, Object>) attributes.get("properties")).get("nickname").toString();
+
+            // 타입 안전성을 확보하기 위한 수정
+            String username = null;
+            Object properties = attributes.get("properties");
+            if (properties instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> propertiesMap = (Map<String, Object>) properties;
+                username = propertiesMap.get("nickname").toString();
+            }
+
+            if (username == null) {
+                throw new IllegalArgumentException("Failed to retrieve username from properties");
+            }
+
+            final String finalUsername = username; // effectively final 변수로 선언
 
             User user = userRepository.findByUserId(providerUserId).orElseGet(() -> {
                 User newUser = new User();
                 newUser.setUserId(providerUserId);
-                newUser.setUserName(username);
+                newUser.setUserName(finalUsername);
                 newUser.setCreateDate(LocalDateTime.now());
                 newUser.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
                 newUser.setVote(0);  // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정

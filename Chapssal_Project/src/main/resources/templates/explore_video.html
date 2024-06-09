@@ -293,14 +293,14 @@
             <source th:src="${videoUrl}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
-        <button class="close-btn btn btn-outline-light" id="closeButton" th:onclick="|navigateToBestVideos(${weekOffset})|">
+        <button class="close-btn btn btn-outline-light" id="closeButton" th:onclick="|navigateToExploreVideos(${topicNum})|">
             <i class="bi bi-x"></i>
         </button>
         <div class="navigation-btns">
-			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${prevVideoNum} == 0">
+			<button th:onclick="'navigateVideo(' + ${prevVideoNum} + ', ' + (${topic} != null ? ${topic} : 'null') + ')'" th:disabled="${prevVideoNum} == 0">
 			    <i class="bi bi-chevron-up"></i>
 			</button>
-			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + ${weekOffset} + ', ' + (${topicNum} != null ? ${topicNum} : 'null') + ')'" th:disabled="${nextVideoNum} == 0">
+			<button th:onclick="'navigateVideo(' + ${nextVideoNum} + ', ' + (${topic} != null ? ${topic} : 'null') + ')'" th:disabled="${nextVideoNum} == 0">
 			    <i class="bi bi-chevron-down"></i>
 			</button>
         </div>
@@ -383,34 +383,35 @@
         <script th:inline="javascript">
             /*<![CDATA[*/
 
-            document.addEventListener('DOMContentLoaded', function() {
-                const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
-                const currentUserNum = '[[${currentUserNum}]]';
-				const prevVideoNum = /*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]';
-				const nextVideoNum = /*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]';
-				const weekOffset = /*[[${weekOffset}]]*/ '[[${weekOffset}]]';
-				const topicNum = /*[[${topicNum}]]*/ '[[${topicNum}]]' || null;
-                console.log('Video Number:', videoNum);
-                console.log('Current User Number:', currentUserNum);
-                document.getElementById('videoNumDisplay').textContent = videoNum;
-                document.getElementById('videoNum').value = videoNum;
-                document.getElementById('currentUserNum').value = currentUserNum;
-				
-				// 키보드 이벤트 리스너 추가
-				document.addEventListener('keydown', function(event) {
-				    if (event.key === 'ArrowUp') {
-				        if (prevVideoNum != 0) {
-				            navigateVideo(prevVideoNum, weekOffset, topicNum);
-				        }
-				    } else if (event.key === 'ArrowDown') {
-				        if (nextVideoNum != 0) {
-				            navigateVideo(nextVideoNum, weekOffset, topicNum);
-				        }
-				    } else if (event.key === 'Escape') {
-					    navigateToBestVideos(weekOffset);
-					}
-				});
-            });
+			document.addEventListener('DOMContentLoaded', function() {
+			    const videoNum = /*[[${videoNum}]]*/ '[[${videoNum}]]';
+			    const currentUserNum = '[[${currentUserNum}]]';
+			    const prevVideoNum = /*[[${prevVideoNum}]]*/ '[[${prevVideoNum}]]';
+			    const nextVideoNum = /*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]';
+			    const topic = /*[[${topic != null ? topic : 'null'}]]*/ '[[${topic != null ? topic : "null"}]]';
+			    console.log('Video Number:', videoNum);
+			    console.log('Current User Number:', currentUserNum);
+			    console.log('Topic:', topic);
+			    document.getElementById('videoNumDisplay').textContent = videoNum;
+			    document.getElementById('videoNum').value = videoNum;
+			    document.getElementById('currentUserNum').value = currentUserNum;
+
+			    // 키보드 이벤트 리스너 추가
+			    document.addEventListener('keydown', function(event) {
+			        if (event.key === 'ArrowUp') {
+			            if (prevVideoNum != 0) {
+			                navigateVideo(prevVideoNum, topic);
+			            }
+			        } else if (event.key === 'ArrowDown') {
+			            if (nextVideoNum != 0) {
+			                navigateVideo(nextVideoNum, topic);
+			            }
+			        } else if (event.key === 'Escape') {
+			            navigateToExploreVideos(topic);
+			        }
+			    });
+			});
+
 
             function followUser(currentUserNum, userNum, isFollowing) {
                 console.log("followUser 함수 호출됨");
@@ -537,21 +538,25 @@
                 }, 3000);
             }
 
-			function navigateVideo(videoNum, weekOffset, topicNum) {
-			    if (videoNum === 0) {
-			        alert("더 이상의 영상이 없습니다.");
-			    } else {
-			        let url = `/bestvideos/video/${videoNum}?weekOffset=${weekOffset}`;
-			        if (topicNum !== null) {
-			            url += `&topicNum=${topicNum}`;
-			        }
-			        window.location.href = url;
-			    }
-			}
+			function navigateVideo(videoNum, topic) {
+		        if (videoNum === 0) {
+		            alert("더 이상의 영상이 없습니다.");
+		        } else {
+		            let url = `/explore/video/${videoNum}`;
+		            if (topic !== null && topic !== 'null') {
+		                url += `?topic=${topic}`;
+		            }
+		            window.location.href = url;
+		        }
+		    }
 
-            function navigateToBestVideos(weekOffset) {
-                window.location.href = '/bestvideos?weekOffset=' + weekOffset;
-			}
+		    function navigateToExploreVideos(topicNum) {
+		        let url = '/explore';
+		        if (topicNum !== null && topicNum !== 'null') {
+		            url += `?topic=${topicNum}`;
+		        }
+		        window.location.href = url;
+		    }
 			
 			function navigateToProfilePage(userNum, currentUserNum) {
 			    if (userNum === currentUserNum) {
