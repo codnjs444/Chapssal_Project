@@ -36,7 +36,7 @@
 
         .video-item {
             position: relative;
-            width: 200px;
+            width: 150px;
             height: 150px;
             border-radius: 8px;
             overflow: hidden;
@@ -119,13 +119,13 @@
 <div layout:fragment="content" class="container-fluid" style="max-width: 80%; position: relative;">
     <!-- 컨텐츠 자리 -->
     <div class="row" style="height: 100%;">
-        <div class="main-content" style="margin-left: 30%; max-width: 70%;">
+        <div class="main-content" style="margin-left: 15%; max-width: 60%;">
 
             <h2>Search Results</h2>
             <div th:if="${searchType == 'user'}">
                 <h3>Users</h3>
                 <div class="list-group list-group-flush border-bottom scrollarea" style="max-width: 50%;">
-                    <a th:each="result : ${results}" href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+                    <a th:each="result : ${results}" th:href="@{'/user/profile/' + ${result.user.userNum}}" class="list-group-item list-group-item-action py-3 lh-sm">
                         <div class="d-flex w-100 align-items-center">
                             <img th:src="${result.user.profilePictureUrl != null ? result.user.profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
                             <div class="ms-2 flex-grow-1">
@@ -141,7 +141,7 @@
                 <h3>Videos with Hashtag</h3>
                 <div class="video-grid">
                     <div th:each="video : ${results}" class="video-item">
-                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                        <a th:href="@{'/svideo/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
                             <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
                             <div class="video-info">
                                 <i class="bi bi-play-fill view-icon"></i>
@@ -154,7 +154,7 @@
             <div th:if="${searchType == 'general'}">
                 <h3>Users</h3>
                 <div class="list-group list-group-flush border-bottom scrollarea" style="max-width: 50%;">
-                    <a th:each="result : ${userResults}" href="#" class="list-group-item list-group-item-action py-3 lh-sm">
+                    <a th:each="result : ${userResults}" th:href="@{'/user/profile/' + ${result.user.userNum}}" class="list-group-item list-group-item-action py-3 lh-sm">
                         <div class="d-flex w-100 align-items-center">
                             <img th:src="${result.user.profilePictureUrl != null ? result.user.profilePictureUrl : '/images/default_profile.png'}" src="/images/default_profile.png" alt="프로필 이미지" width="40" height="40" class="rounded-circle"/>
                             <div class="ms-2 flex-grow-1">
@@ -168,7 +168,7 @@
                 <h3>Videos</h3>
                 <div class="video-grid">
                     <div th:each="video : ${videoResults}" class="video-item">
-                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                        <a th:href="@{'/svideo/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
                             <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
                             <div class="video-info">
                                 <i class="bi bi-play-fill view-icon"></i>
@@ -180,7 +180,7 @@
                 <h3>Videos with Hashtag</h3>
                 <div class="video-grid">
                     <div th:each="video : ${hashtagResults}" class="video-item">
-                        <a th:href="@{'/video/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
+                        <a th:href="@{'/svideo/' + ${video.videoNum} + '?userNum=' + ${video.user.userNum}}">
                             <img th:src="${video.thumbnailUrl}" alt="Video Thumbnail">
                             <div class="video-info">
                                 <i class="bi bi-play-fill view-icon"></i>
@@ -191,13 +191,14 @@
                 </div>
             </div>
 
-            <div class="popular-searches-container">
-                <div id="popular-searches" class="list-group mt-2">
-                    <!-- Popular searches will be dynamically populated here -->
-                </div>
-            </div>
-
         </div>
+
+        <div class="popular-searches-container" style = "margin-left: 30%">
+            <div id="popular-searches" class="list-group mt-2">
+                <!-- Popular searches will be dynamically populated here -->
+            </div>
+        </div>
+
     </div>
 </div>
 </body>

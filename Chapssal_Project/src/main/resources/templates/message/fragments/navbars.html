@@ -8,17 +8,17 @@
         cursor: pointer;
     }
 
-    #hashtagSuggestions,
-    #userSuggestions {
-        position: absolute;
-        z-index: 1000;
-        background-color: white;
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
+	#hashtagSuggestions,
+	#userSuggestions {
+	    position: absolute;
+	    z-index: 1000;
+	    background-color: white;
+	    width: 100%;
+	    max-height: 200px;
+	    overflow-y: auto;
+	    border: 1px solid #ccc;
+	    border-radius: 5px;
+	}
   </style>
 </head>
 <div th:fragment="navbarFragment" class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
@@ -37,14 +37,14 @@
         </button>
       </form>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item" sec:authorize="isAuthenticated()">
-          <div class="upload-container" data-bs-toggle="modal" data-bs-target="#uploadModal">
-            <span class="upload-text">업로드</span>
-            <button class="upload-button">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
-        </li>
+<!--        <li class="nav-item" sec:authorize="isAuthenticated()">-->
+<!--          <div class="upload-container" data-bs-toggle="modal" data-bs-target="#uploadModal">-->
+<!--            <span class="upload-text">업로드</span>-->
+<!--            <button class="upload-button">-->
+<!--              <i class="bi bi-plus"></i>-->
+<!--            </button>-->
+<!--          </div>-->
+<!--        </li>-->
         <li class="nav-item" sec:authorize="isAuthenticated()">
           <a class="nav-link center-icon" th:href="@{/message/home}"><i class="bi bi-envelope-open"></i></a>
         </li>
@@ -302,10 +302,12 @@
             section1.style.display = 'none';
             section2.style.display = 'block';
             copyVideoSource(); // 비디오 소스를 복사
+            videoPreview2.currentTime = currentVideoTime; // 저장된 비디오 시간으로 이동
         });
 
         // Prev 버튼 클릭 시 섹션2 숨기고 섹션1 표시
         prevButton2.addEventListener('click', function() {
+            currentVideoTime = videoPreview2.currentTime; // 현재 비디오 시간을 저장
             section2.style.display = 'none';
             section1.style.display = 'block';
         });
