@@ -75,4 +75,10 @@ public class HomeController {
     public String search() {
         return "message/search";
     }
+
+    @GetMapping("/sdasda")
+    public String sda() {
+        return "sda.html";
+    }
+
 }

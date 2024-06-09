@@ -7,6 +7,7 @@ import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import com.chapssal.video.Video;
 import com.chapssal.video.VideoService;
+import com.chapssal.follow.FollowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +43,9 @@ public class SearchController {
     @Autowired
     private SearchQueryRepository searchQueryRepository;
 
+    @Autowired
+    private FollowService followService;
+
     @GetMapping("/search")
     public String search(@RequestParam("query") String query, Model model) {
         // 검색어 저장
@@ -51,7 +57,13 @@ public class SearchController {
         if (query.startsWith("@")) {
             String username = query.substring(1);
             List<User> users = userService.searchByUserName(username);
-            model.addAttribute("results", users);
+            List<Map<String, Object>> usersWithFollowerCounts = users.stream().map(user -> {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("user", user);
+                userMap.put("followerCount", followService.countFollowingByUserNum(user.getUserNum()));
+                return userMap;
+            }).collect(Collectors.toList());
+            model.addAttribute("results", usersWithFollowerCounts);
             model.addAttribute("searchType", "user");
             logger.info("User search results: {}", users);
         } else if (query.startsWith("#")) {
@@ -62,9 +74,15 @@ public class SearchController {
             logger.info("Hashtag search results: {}", videos);
         } else {
             List<User> userResults = userService.searchByUserName(query);
+            List<Map<String, Object>> usersWithFollowerCounts = userResults.stream().map(user -> {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("user", user);
+                userMap.put("followerCount", followService.countFollowingByUserNum(user.getUserNum()));
+                return userMap;
+            }).collect(Collectors.toList());
             List<Video> videoResults = videoService.searchByTitle(query);
             List<Video> hashtagResults = hashtagService.searchVideosByHashtag(query);
-            model.addAttribute("userResults", userResults);
+            model.addAttribute("userResults", usersWithFollowerCounts);
             model.addAttribute("videoResults", videoResults);
             model.addAttribute("hashtagResults", hashtagResults);
             model.addAttribute("searchType", "general");
@@ -103,6 +121,4 @@ public class SearchController {
                 .map(result -> (String) result[0])
                 .collect(Collectors.toList());
     }
-
-
 }
