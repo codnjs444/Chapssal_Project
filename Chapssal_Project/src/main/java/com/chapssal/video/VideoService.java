@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -152,15 +155,15 @@ public class VideoService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     public List<VideoWithLikesAndComments> getAllVideosOrderedByLikes() {
         return videoRepository.findAllVideosOrderedByLikes().stream()
                 .map(result -> {
-                    int videoNum = (Integer) result[0];
+                    int videoNum = ((Number) result[0]).intValue();
                     String title = (String) result[1];
                     String videoUrl = (String) result[2];
                     String thumbnailUrl = (String) result[3];
-                    int userNum = (Integer) result[4];
+                    int userNum = ((Number) result[4]).intValue();
                     Integer topic = (Integer) result[5];
                     int likeCount = ((Number) result[6]).intValue();
                     int recentLikeCount = ((Number) result[7]).intValue();
@@ -273,9 +276,21 @@ public class VideoService {
             })
             .collect(Collectors.toList());
     }
-
+    
 
     public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
         return videoRepository.findTopVideosForWeekAndTopic(startDate, endDate, topic);
     }
+    
+//    public List<VideoWithLikesAndComments> getVideosWithLikeAndCommentCountsPaged(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Video> videoPage = videoRepository.findAll(pageable);
+//        return videoPage.stream()
+//                .map(video -> {
+//                    int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+//                    int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+//                    return new VideoWithLikesAndComments(video, likeCount, commentCount);
+//                })
+//                .collect(Collectors.toList());
+//    }
 }

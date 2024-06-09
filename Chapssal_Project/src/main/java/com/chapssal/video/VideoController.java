@@ -10,8 +10,6 @@ import com.chapssal.hashtag.UsertagService;
 import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
-import com.chapssal.video.VideoService.VideoWithLikesAndComments;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -46,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 public class VideoController {
@@ -56,6 +53,7 @@ public class VideoController {
     private final S3Service s3Service;
     private final UserService userService;
     private final SelectedTopicService selectedTopicService;
+
     private final CommentLikeService commentLikeService;
     
 
@@ -166,6 +164,10 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
         List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
@@ -209,6 +211,10 @@ public class VideoController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/following")
     public String viewFollowPage(Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
         User currentUser = userService.getUser(principal.getName());
         List<User> followingUsers = followService.getFollowingUsers(currentUser.getUserNum());
         List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers);
@@ -218,6 +224,10 @@ public class VideoController {
 
     @GetMapping("/bestvideos")
     public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일
@@ -521,9 +531,6 @@ public class VideoController {
 
         return "explore_video"; // explore_video.html로 이동
     }
-
-
-
     
     @PostMapping("/video/incrementViewCount")
     @ResponseBody

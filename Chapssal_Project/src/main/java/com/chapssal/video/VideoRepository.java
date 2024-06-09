@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,7 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
     List<Video> findByUserInOrderByVideoNumDesc(List<User> users);
     List<Video> findByUser_UserNum(Integer userNum);
     List<Video> findByUser_UserNumOrderByUploadDateDesc(Integer userNum);
+    List<Video> findByUser_School_SchoolNameAndUploadDateBetween(String schoolName, LocalDateTime startDate, LocalDateTime endDate);
 
     Optional<Video> findFirstByUser_UserNumAndVideoNumLessThanOrderByVideoNumDesc(int userNum, int videoNum);
     Optional<Video> findFirstByUser_UserNumAndVideoNumGreaterThanOrderByVideoNumAsc(int userNum, int videoNum);
@@ -79,6 +82,6 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, v.viewCount " +
             "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
     List<Object[]> findAllVideosOrderedByLikesAndTopic(@Param("topic") int topic);
-
-
+    
+//    Page<Video> findAll(Pageable pageable);
 }

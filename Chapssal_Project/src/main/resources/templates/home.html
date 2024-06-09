@@ -236,7 +236,7 @@
                                 </div>
                                 <div class="button-container">
                                     <button class="action-btn"><i class="bi bi-share-fill"></i></button>
-                                    <p class="video-btn-count m-0">228</p>
+                                    <p class="video-btn-count m-0">221</p>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +251,7 @@
 
     <!-- 홈 스크립트 -->
     <th:block th:fragment="homeVideoScript">
-        <script>
+        <script th:inline="javascript">
             function styleSpecialChars(text) {
                 return text.replace(/#(\S+)/g, '<strong>#$1</strong>')
                            .replace(/@(\S+)/g, '<strong>@$1</strong>');
@@ -290,6 +290,42 @@
                 document.querySelectorAll('.video-item').forEach(item => {
                     observer.observe(item);
                 });
+
+				// Infinite scroll 기능 추가
+				//let currentPage = 0;
+				//const size = 3;
+				//const weekOffset = /*[[${weekOffset}]]*/ 0; // Thymeleaf 변수를 JavaScript로 전달
+
+				/*function loadMoreVideos() {
+				    currentPage++;
+				    $.ajax({
+				        url: '/',
+				        method: 'GET',
+				        data: {
+				            weekOffset: weekOffset,
+				            page: currentPage,
+				            size: size
+				        },
+				        success: function(response) {
+				            const newVideos = $(response).find('.video-item');
+				            $('.video-list').append(newVideos);
+
+				            newVideos.each(function() {
+				                observer.observe(this);
+				            });
+				        },
+				        error: function() {
+				            currentPage--; // 실패 시 페이지를 다시 감소
+				        }
+				    });
+				}
+
+				$(window).on('scroll', function() {
+				    if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+				        loadMoreVideos();
+				    }
+				});*/
+				
             });
         </script>
     </th:block>

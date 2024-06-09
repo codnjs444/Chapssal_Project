@@ -381,8 +381,16 @@
                 button.disabled = true;
 
                 location.reload();
-            }).fail(function() {
-                alert("토픽 선택에 실패했습니다.");
+            }).fail(function(xhr) {
+                if (xhr.status === 403) {
+                    alert("이번 주 투표 가능한 횟수 5회를 모두 사용하셨습니다.");
+                } else if (xhr.status === 404) {
+                    alert("사용자를 찾을 수 없습니다.");
+                } else if (xhr.status === 400) {
+                    alert("유효하지 않은 토픽입니다.");
+                } else {
+                    alert("토픽 선택에 실패했습니다.");
+                }
             });
         }
 
@@ -620,7 +628,84 @@
             document.getElementById('profilePic').focus();
         }
     </script>
-	<!--<div th:replace="~{message/fragments/msgAlert :: msgAlert}"></div>-->
+    <!-- 학교 검색 자동완성 스크립트 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 학교 검색 입력창 자동완성 기능 추가
+            $('#schoolSearchInput').on('input focus', function() {
+                let query = $(this).val();
+                $.ajax({
+                    url: '/school/inputsuggestions',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function(data) {
+                        $('#schoolSearchSuggestions').empty();
+                        data.forEach(function(item) {
+                            $('#schoolSearchSuggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.schoolName + '</a>');
+                        });
+                    }
+                });
+            });
+
+            // 자동완성 항목 클릭 시 검색창에 해당 값 설정
+            $('#schoolSearchSuggestions').on('click', 'a', function(e) {
+                e.preventDefault();
+                $('#schoolSearchInput').val($(this).text());
+                $('#schoolSearchSuggestions').empty();
+            });
+
+            // 입력창에서 벗어나면 추천 기능 사라지게 하기
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#schoolSearchInput, #schoolSearchSuggestions').length) {
+                    $('#schoolSearchSuggestions').empty();
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+			const h4Element = document.querySelector('h4');
+	
+			if (h4Element) {
+			    const currentDate = h4Element.textContent.trim();
+			    const today = new Date();
+			    const currentMonth = new Date(currentDate + '-01');
+			}
+
+            // 오른쪽 화살표 비활성화 조건 검사
+            if (currentMonth.getFullYear() === today.getFullYear() && currentMonth.getMonth() === today.getMonth() - 1) {
+                document.getElementById('right-arrow').classList.add('disabled');
+            }
+
+            document.getElementById('left-arrow').addEventListener('click', function() {
+                if (!this.classList.contains('disabled')) {
+                    changeMonth(-1);
+                }
+            });
+            document.getElementById('right-arrow').addEventListener('click', function() {
+                if (!this.classList.contains('disabled')) {
+                    changeMonth(1);
+                }
+            });
+
+            function changeMonth(direction) {
+                let date = new Date(currentDate + '-01');  // 'yyyy-MM' 형식을 'yyyy-MM-01'로 변환하여 날짜 객체 생성
+                date.setMonth(date.getMonth() + direction);
+                const newDateStr = date.toISOString().split('T')[0].slice(0, 7);  // 'yyyy-MM-dd' 형식에서 'yyyy-MM'만 추출
+                const url = `/ranking?date=${newDateStr}`;
+                window.location.href = url;
+            }
+
+            // 학교 검색
+            document.getElementById('schoolSearchButton').addEventListener('click', function() {
+                const searchInput = document.getElementById('schoolSearchInput').value;
+                const url = `/ranking?search=${encodeURIComponent(searchInput)}&date=${currentDate}`;
+                window.location.href = url;
+            });
+        });
+    </script>
+	<div th:replace="~{message/fragments/msgAlert :: msgAlert}"></div>
 </div>
 </body>
 </html>
