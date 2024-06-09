@@ -173,14 +173,18 @@
                                 </video>
                                 <div class="video-details-home">
                                     <div class="video-details-top-home">
-                                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
-                                        <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
-                                        <button class="follow-btn-home"
-											th:if="${currentUserNum != videoData.video.user.userNum}"
-											th:data-videonum="${videoData.video.videoNum}"
-											th:data-usernum="${videoData.video.user.userNum}">
-											팔로우
-										</button>
+										<div class="user-info-home">
+                                        	<img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
+                                       	 <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
+                                        </div>
+										<div class="follow-btn-container-home">
+											 <button class="follow-btn-home"
+												th:if="${currentUserNum != videoData.video.user.userNum}"
+												th:data-videonum="${videoData.video.videoNum}"
+												th:data-usernum="${videoData.video.user.userNum}">
+												팔로우
+											</button>
+										</div>
                                     </div>
                                     <p class="video-title-home" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
                                 </div>
@@ -226,14 +230,18 @@
 						    </video>
 						    <div class="video-details-home">
 						        <div class="video-details-top-home">
-						            <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
-						            <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
-						            <button class="follow-btn-home"
-										th:if="${currentUserNum != videoData.video.user.userNum}"
-										th:data-videonum="${videoData.video.videoNum}"
-										th:data-usernum="${videoData.video.user.userNum}">
-										팔로우
-									</button>
+									<div class="user-info-home">
+										<img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
+									 <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
+									</div>
+									<div class="follow-btn-container-home">
+										 <button class="follow-btn-home"
+											th:if="${currentUserNum != videoData.video.user.userNum}"
+											th:data-videonum="${videoData.video.videoNum}"
+											th:data-usernum="${videoData.video.user.userNum}">
+											팔로우
+										</button>
+									</div>
 						        </div>
 						        <p class="video-title-home" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
 						    </div>
@@ -465,14 +473,18 @@
 				}
 						
 
-                // 프로필 이미지와 이름 클릭 시 특정 URL로 이동
-                $('.user-info-home').on('click', function(event) {
-                    event.stopPropagation(); // 이벤트 전파 중단
-                    const userNum = $(this).closest('.video-container-home').data('usernum');
-                    const profileUrl = userNum === currentUserNum ? '/user/profile' : `/user/profile/${userNum}`;
-                    window.location.href = `http://localhost:8080${profileUrl}`;
-                });
-            });
+				// 프로필 이미지와 이름 클릭 시 특정 URL로 이동
+				$('.user-info-home').on('click', function(event) {
+				    event.stopPropagation(); // 이벤트 전파 중단
+				    const userNum = $(this).closest('.video-container-home').data('usernum');
+
+				    // 프로필 URL 설정
+				    const profileUrl = userNum == currentUserNum ? '/user/profile' : `/user/profile/${userNum}`;
+				    
+				    // URL로 이동
+				    window.location.href = profileUrl;
+				});
+			});
 
             // home.html - 댓글 버튼 클릭 시 특정 URL로 이동
             document.querySelectorAll('.button-container-home .modal-open-home').forEach(function(button) {
@@ -484,7 +496,7 @@
                     const userNum = this.dataset.usernum;
 
                     // URL로 이동
-                    window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
+                    window.location.href = `/hvideo/${videoNum}?userNum=${userNum}`;
                 });
             });
 
@@ -497,7 +509,7 @@
                     const userNum = this.dataset.usernum;
 
                     // URL로 이동
-                    window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
+                    window.location.href = `/hvideo/${videoNum}?userNum=${userNum}`;
                 });
             });
         </script>

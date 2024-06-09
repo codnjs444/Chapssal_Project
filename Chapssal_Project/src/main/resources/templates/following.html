@@ -195,7 +195,7 @@
 			        <div th:if="${videos.isEmpty()}">
 					
 			            <p>팔로우 중인 유저가 없습니다.</p>
-			        </div>
+			        </div> 
 			        <div th:each="videoData : ${videos}" class="video-item-follow">
 						<div class="video-container-follow"  th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}"  th:data-usernum="${videoData.video.user.userNum}">			                
 							<video controls autoplay muted>
@@ -464,7 +464,7 @@
 					    event.stopPropagation(); // 이벤트 전파 중단
 					    const userNum = $(this).closest('.video-container-follow').data('usernum');
 					    const profileUrl = userNum === currentUserNum ? '/user/profile' : `/user/profile/${userNum}`;
-					    window.location.href = `http://localhost:8080${profileUrl}`;
+					    window.location.href = `${profileUrl}`;
 					});
 					// ready
 				});
@@ -480,7 +480,7 @@
 				            const userNum = this.dataset.usernum;
 
 				            // URL로 이동
-				            window.location.href = `http://localhost:8080/fvideo/${videoNum}?userNum=${userNum}`;
+				            window.location.href = `/fvideo/${videoNum}?userNum=${userNum}`;
 				        });
 				    });
 
@@ -493,7 +493,7 @@
 				            const userNum = this.dataset.usernum;
 
 				            // URL로 이동
-				            window.location.href = `http://localhost:8080/fvideo/${videoNum}?userNum=${userNum}`;
+				            window.location.href = `/fvideo/${videoNum}?userNum=${userNum}`;
 				        });
 				    });
 			</script>
