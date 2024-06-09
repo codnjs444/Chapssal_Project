@@ -1,6 +1,8 @@
 package com.chapssal.follow;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,6 +56,14 @@ public class FollowControllerHome {
         }
     }
 
-
-
+    @GetMapping("/isFollowing")
+    public ResponseEntity<Map<String, Object>> isFollowing(
+            @RequestParam("targetUser") Integer targetUser,
+            @RequestParam("currentUser") Integer currentUser) {
+        // 현재 사용자가 targetUser를 팔로우하고 있는지 확인
+        boolean isFollowing = followRepository.existsByFollowerAndFollowing(currentUser, targetUser);
+        Map<String, Object> response = new HashMap<>();
+        response.put("isFollowing", isFollowing);
+        return ResponseEntity.ok(response);
+    }
 }

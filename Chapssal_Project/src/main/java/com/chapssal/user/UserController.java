@@ -396,14 +396,5 @@ public class UserController {
             this.userName = userName;
         }
     }
-    
-    @GetMapping("/isFollowing")
-    public ResponseEntity<Map<String, Object>> isFollowing(
-            @RequestParam("targetUser") Integer targetUser,
-            @RequestParam("currentUser") Integer currentUser) {
-        boolean isFollowing = followService.isFollowing(targetUser, currentUser); // 팔로우 상태 확인 로직
-        Map<String, Object> response = new HashMap<>();
-        response.put("isFollowing", isFollowing);
-        return ResponseEntity.ok(response);
-    }
+
 }

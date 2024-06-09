@@ -353,6 +353,7 @@
 					
 
 					// 팔로우 버튼 상태 초기화
+					// 팔로우 버튼 상태 초기화
 					$('.video-item-follow').each(function() {
 					    const videoItem = $(this);
 					    const userNum = videoItem.find('.follow-btn-follow').data('usernum');
@@ -363,7 +364,6 @@
 					});
 
 					function handleFollowButtonClick(button, userNum) {
-					    // 현재 팔로우 상태 확인
 					    const isFollowing = $(button).text() === '팔로잉';
 					    const url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
 					    const method = isFollowing ? 'DELETE' : 'POST';
@@ -383,12 +383,12 @@
 					        options.body = JSON.stringify(data);
 					    }
 
-						// 팔로우 취소 시 확인 요청
-						if (isFollowing && !confirm('팔로우를 취소하시겠습니까?')) {
-						    // 사용자가 취소를 클릭하면 요청을 보내지 않고 종료
-						    return;
-						}
-						
+					    // 팔로우 취소 시 확인 요청
+					    if (isFollowing && !confirm('팔로우를 취소하시겠습니까?')) {
+					        // 사용자가 취소를 클릭하면 요청을 보내지 않고 종료
+					        return;
+					    }
+
 					    fetch(url, options)
 					    .then(response => {
 					        if (!response.ok) {
@@ -405,48 +405,47 @@
 					                'color': 'white'
 					            });
 
-					            // 팔로우 상태 업데이트
-					            updateFollowButton($(button).closest('.video-item-follow'), userNum);
 					            alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
 					        } else {
+					            alert('작업 실패: ' + data.message);
 					        }
 					    })
 					    .catch(error => {
-
+					        console.error('Error:', error);
+					        alert('작업 중 오류가 발생했습니다.');
 					    });
 					}
+
 
 					function initializeFollowButton(videoItem, userNum) {
 					    const followButton = videoItem.find('.follow-btn-follow');
 					    $.ajax({
-					        url: '/user/isFollowing',
+					        url: '/followHome/isFollowing',  // 올바른 URL로 수정
 					        type: 'GET',
 					        data: {
-					            targetUser: userNum,
-					            currentUser: currentUserNum
+					            targetUser: userNum,   // targetUser로 전달
+					            currentUser: currentUserNum  // currentUser로 전달
 					        },
 					        success: function(response) {
+					            console.log(`API 요청 성공 - targetUser: ${userNum}, response:`, response);
 					            if (response.isFollowing) {
+					                // 팔로우 상태일 경우
 					                followButton.css({
 					                    'background-color': '#ff69b4', // 분홍색
 					                    'color': 'white'
 					                }).text('팔로잉');
-					                // 클릭 시 언팔로우 요청
-					                followButton.off('click').on('click', function(event) {
-					                    event.stopPropagation(); // 이벤트 전파 중단
-					                    handleFollowButtonClick(followButton[0], userNum);
-					                });
 					            } else {
+					                // 팔로우 상태가 아닐 경우
 					                followButton.css({
 					                    'background-color': '#007bff', // 파란색
 					                    'color': 'white'
 					                }).text('팔로우');
-					                // 클릭 시 팔로우 요청
-					                followButton.off('click').on('click', function(event) {
-					                    event.stopPropagation(); // 이벤트 전파 중단
-					                    handleFollowButtonClick(followButton[0], userNum);
-					                });
 					            }
+					            // 클릭 시 알림 출력 및 처리
+					            followButton.off('click').on('click', function(event) {
+					                event.stopPropagation(); // 이벤트 전파 중단
+					                handleFollowButtonClick(followButton[0], userNum);
+					            });
 					        },
 					        error: function(xhr, status, error) {
 					            console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
