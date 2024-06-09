@@ -6,6 +6,7 @@ import com.chapssal.comment.CommentService;
 import com.chapssal.comment.RCommentService;
 import com.chapssal.follow.FollowService;
 import com.chapssal.hashtag.HashtagService;
+import com.chapssal.hashtag.UsertagService;
 import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
@@ -69,6 +70,9 @@ public class VideoController {
     
     @Autowired
     private RCommentService rCommentService;
+    
+    @Autowired
+    private UsertagService usertagService;
     
     public VideoController(VideoService videoService, S3Service s3Service, UserService userService, SelectedTopicService selectedTopicService, HashtagService hashtagService, CommentLikeService commentLikeService) {
         this.videoService = videoService;
@@ -140,6 +144,8 @@ public class VideoController {
 
             // 해시태그 처리
             hashtagService.extractAndSaveHashtags(title, video);
+            // Usertag 처리
+            usertagService.saveUsertag(video, user);
             
             // 임시 파일 삭제
             Files.delete(videoTempFilePath);
@@ -155,24 +161,31 @@ public class VideoController {
 
         return "redirect:/";
     }
-
-    @GetMapping("/explore/{videoNum}")
-    public String viewVideo(@PathVariable("videoNum") int videoNum, Model model) {
-        Video video = videoService.findById(videoNum).orElseThrow(() -> new RuntimeException("Video not found"));
-        User user = video.getUser();
-
-        model.addAttribute("video", video);    
-        model.addAttribute("uploader", user);
-        return "explore"; // 여기서 home.html을 explore.html로 변경했습니다.
-    }
     
     @GetMapping("/explore")
-    public String viewExplorePage(Model model) {
+    public String viewExplorePage(Model model, Principal principal) {
         List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
         List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosOrderedByLikes();
-        model.addAttribute("videos", videosWithLikesAndComments); // 섞인 비디오를 모델에 추가
+        
+        if (principal != null) {
+            User currentUser = userService.getUser(principal.getName());
+            int currentUserNum = currentUser.getUserNum();
+
+            // Add the current user's like status to each video
+            Map<Integer, Boolean> likedVideos = new HashMap<>();
+            for (VideoService.VideoWithLikesAndComments videoWithLikes : videosWithLikesAndComments) {
+                boolean isLiked = videoLikeService.isLikedByUser(videoWithLikes.getVideo().getVideoNum(), currentUserNum);
+                likedVideos.put(videoWithLikes.getVideo().getVideoNum(), isLiked);
+            }
+
+            model.addAttribute("currentUserNum", currentUserNum);
+            model.addAttribute("likedVideos", likedVideos);  // Add likedVideos map to the model
+        }
+        
+        model.addAttribute("videos", videosWithLikesAndComments);
+
         return "explore"; // explore.html 템플릿을 렌더링
     }
     
@@ -202,7 +215,7 @@ public class VideoController {
     }
 
     @GetMapping("/bestvideos")
-    public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model) {
+    public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model, Principal principal) {
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일
@@ -224,6 +237,22 @@ public class VideoController {
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
         model.addAttribute("weekOffset", weekOffset);
         model.addAttribute("currentWeek", currentWeek);
+
+        if (principal != null) {
+            User currentUser = userService.getUser(principal.getName());
+            int currentUserNum = currentUser.getUserNum();
+
+            // Add the current user's like status for the current week to each video
+            Map<Integer, Boolean> likedVideosThisWeek = new HashMap<>();
+            for (Object[] videoLike : topVideos) {
+                Video video = (Video) videoLike[0];
+                boolean isLikedThisWeek = videoLikeService.isLikedByUserWithinDateRange(video.getVideoNum(), currentUserNum, startDateTime, endDateTime);
+                likedVideosThisWeek.put(video.getVideoNum(), isLikedThisWeek);
+            }
+
+            model.addAttribute("currentUserNum", currentUserNum);
+            model.addAttribute("likedVideosThisWeek", likedVideosThisWeek); // Add likedVideosThisWeek map to the model
+        }
 
         return "bestvideos";
     }
@@ -402,6 +431,93 @@ public class VideoController {
         model.addAttribute("topicNum", topicNum); // 추가
 
         return "bestvideos_video"; // bestvideos_video.html로 이동
+    }
+    
+    @GetMapping("/explore/video/{videoNum}")
+    public String getExploreVideoPage(@PathVariable("videoNum") int videoNum,
+                                      @RequestParam(value = "topic", required = false) Integer topic,
+                                      Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        Optional<Video> videoOptional = videoService.findById(videoNum);
+
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        if (!videoOptional.isPresent()) {
+            return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
+        }
+
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum();
+        Video video = videoOptional.get();
+        User user = video.getUser();
+
+        String userName = user.getUserName();
+        String schoolName = user.getSchool().getSchoolName();
+        String profilePictureUrl = user.getProfilePictureUrl();
+
+        model.addAttribute("userName", userName);
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("profilePictureUrl", profilePictureUrl);
+        model.addAttribute("userNum", user.getUserNum());
+        model.addAttribute("videoUrl", video.getVideoUrl());
+        model.addAttribute("videoTitle", video.getTitle());
+        model.addAttribute("videoUser", video.getUser());
+        model.addAttribute("topic", topic);  // 현재 주제를 모델에 추가
+
+        boolean isFollowing = followService.isFollowing(currentUserNum, user.getUserNum());
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("currentUserNum", currentUserNum);
+
+        List<User> followingUsers = followService.getFollowingUsers(user.getUserNum());
+        List<User> followerUsers = followService.getFollowerUsers(user.getUserNum());
+        model.addAttribute("followingUsers", followingUsers);
+        model.addAttribute("followerUsers", followerUsers);
+
+        boolean isLiked = videoLikeService.isLikedByUser(videoNum, currentUserNum);
+        model.addAttribute("isLiked", isLiked);
+        int likeCount = videoLikeService.countLikesByVideoId(videoNum);
+        model.addAttribute("likeCount", likeCount);
+
+        List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
+        }
+        commentService.setLikeCountsForComments(comments);
+        model.addAttribute("comments", comments);
+        int commentCount = commentService.countCommentsByVideoNum(videoNum);
+        model.addAttribute("commentCount", commentCount);
+
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments;
+        if (topic != null) {
+            videosWithLikesAndComments = videoService.getAllVideosOrderedByLikesAndTopic(topic);
+        } else {
+            videosWithLikesAndComments = videoService.getAllVideosOrderedByLikes();
+        }
+
+        int currentIndex = -1;
+        for (int i = 0; i < videosWithLikesAndComments.size(); i++) {
+            if (videosWithLikesAndComments.get(i).getVideo().getVideoNum() == videoNum) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int prevVideoNum = (currentIndex > 0) ? videosWithLikesAndComments.get(currentIndex - 1).getVideo().getVideoNum() : 0;
+        int nextVideoNum = (currentIndex < videosWithLikesAndComments.size() - 1) ? videosWithLikesAndComments.get(currentIndex + 1).getVideo().getVideoNum() : 0;
+
+        model.addAttribute("prevVideoNum", prevVideoNum);
+        model.addAttribute("nextVideoNum", nextVideoNum);
+
+        return "explore_video"; // explore_video.html로 이동
     }
     
     @PostMapping("/video/incrementViewCount")

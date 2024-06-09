@@ -61,4 +61,13 @@ public class VideoLikeService {
         user.setUserNum(userId);
         videoLikeRepository.deleteByVideoAndUser(video, user);
     }
+    
+    public boolean isLikedByUserWithinDateRange(int videoId, int userId, LocalDateTime startDate, LocalDateTime endDate) {
+        Video video = new Video();
+        video.setVideoNum(videoId);
+        User user = new User();
+        user.setUserNum(userId);
+        List<VideoLike> videoLikes = videoLikeRepository.findByVideoAndUserAndLikeDateBetween(video, user, startDate, endDate);
+        return !videoLikes.isEmpty();
+    }
 }
