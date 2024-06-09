@@ -147,360 +147,426 @@
 		    transform: translateY(-100%); /* 마우스가 올라갔을 때 위로 이동 */
 		}
 
+		.pagination {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    margin-top: 20px;
+		}
+
+		.pagination button {
+		    font-size: 14px;
+		    border: none;
+		    border-radius: 5px;
+		    cursor: pointer;
+		    background-color: #007bff;
+		    color: white;
+		}
+
+		.pagination button:disabled,
+		.pagination span.current {
+		    background-color: #cccccc;
+		    cursor: not-allowed;
+		}
+
     </style>
 </head>
 <body>
-    <div layout:fragment="content" class="container">
-        <nav class="container nav-center-home p-0">
-            <div class="nav nav-pills center" id="nav-tab" role="tablist">
-                <button class="nav-link home-nav-link-home active mx-1 py-1" id="nav-all-tab-home" data-bs-toggle="pill" data-bs-target="#nav-all-home" type="button" role="tab" aria-controls="nav-all-home" aria-selected="true">전체</button>
-                <button class="nav-link home-nav-link-home mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab-home'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum} + '-home'" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum} + '-home'" aria-selected="false" th:text="${topic[0].title}"></button>
-            </div>
-        </nav>
-        <br>
-        <br>
-        <div class="tab-content" id="nav-tabContent-home">
-            <!-- 전체 탭에서 비디오를 출력하는 부분 -->
-            <div class="tab-pane fade show active" id="nav-all-home" role="tabpanel" aria-labelledby="nav-all-tab-home" tabindex="0">
-                <div class="video-list-home">
-                    <div th:if="${videos != null}">
-                        <div th:each="videoData : ${videos}" class="video-item-home">
-                            <div class="video-container-home"  th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}"  th:data-usernum="${videoData.video.user.userNum}">
-                                <video controls autoplay muted>
-                                    <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-									<input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
-                                    Your browser does not support the video tag.
-                                </video>
-                                <div class="video-details-home">
-                                    <div class="video-details-top-home">
-                                        <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
-                                        <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
-                                        <button class="follow-btn-home"
-											th:if="${currentUserNum != videoData.video.user.userNum}"
-											th:data-videonum="${videoData.video.videoNum}"
-											th:data-usernum="${videoData.video.user.userNum}">
-											팔로우
-										</button>
-                                    </div>
-                                    <p class="video-title-home" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
-                                </div>
-                            </div>
-                            <div class="video-buttons-home">
-                                <div class="button-container-home">
-                                    <button class="action-btn-home"><i class="bi bi-heart-fill"></i></button>
-                                    <p class="video-btn-count-home m-0" th:text="${videoData.likeCount}"></p>
-                                </div>
-                                <div class="button-container-home">
-									<button class="action-btn-home modal-open-home" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}"><i class="bi bi-chat-dots-fill"></i></button>
-									<p class="video-btn-count-home m-0" th:text="${videoData.commentCount}"></p>
-                                </div>
-                                <div class="button-container-home">
-                                    <button class="action-btn-home"><i class="bi bi-bookmark-fill"></i></button>
-                                    <p class="video-btn-count-home m-0">362</p>
-                                </div>
-                                <div class="button-container-home">
-                                    <button class="action-btn-home"><i class="bi bi-share-fill"></i></button>
-                                    <p class="video-btn-count-home m-0">228</p>
-                                </div>
-                            </div>
-                            <br>
-                            <hr style="width: 700px;">
-                            <br>
-                        </div>
-                    </div>
-                    <div th:if="${videos == null}">
-                        <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
-                    </div>
-                </div>
-            </div>
+	<div layout:fragment="content" class="container">
+	    <nav class="container nav-center-home p-0">
+	        <div class="nav nav-pills center" id="nav-tab" role="tablist">
+	            <button class="nav-link home-nav-link-home active mx-1 py-1" id="nav-all-tab-home" data-bs-toggle="pill" data-bs-target="#nav-all-home" type="button" role="tab" aria-controls="nav-all-home" aria-selected="true">전체</button>
+	            <button class="nav-link home-nav-link-home mx-1 p-0" th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-tab-home'" data-bs-toggle="pill" th:data-bs-target="'#nav-' + ${topic[0].topicNum} + '-home'" type="button" role="tab" th:aria-controls="'nav-' + ${topic[0].topicNum} + '-home'" aria-selected="false" th:text="${topic[0].title}"></button>
+	        </div>
+	    </nav>
+	    <br>
+	    <br>
+	    <div class="tab-content" id="nav-tabContent-home">
+	        <div class="tab-pane fade show active" id="nav-all-home" role="tabpanel" aria-labelledby="nav-all-tab-home" tabindex="0">
+	            <div class="video-list-home">
+	                <div th:if="${videos != null}">
+	                    <div th:each="videoData : ${videos}" class="video-item-home">
+	                        <div class="video-container-home" th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}">
+	                            <video controls autoplay muted>
+	                                <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+	                                <input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
+	                                Your browser does not support the video tag.
+	                            </video>
+	                            <div class="video-details-home">
+	                                <div class="video-details-top-home">
+	                                    <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
+	                                    <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
+	                                    <button class="follow-btn-home"
+	                                            th:if="${currentUserNum != videoData.video.user.userNum}"
+	                                            th:data-videonum="${videoData.video.videoNum}"
+	                                            th:data-usernum="${videoData.video.user.userNum}">
+	                                        팔로우
+	                                    </button>
+	                                </div>
+	                                <p class="video-title-home" th:text="${videoData.video.title}"></p>
+	                            </div>
+	                        </div>
+	                        <div class="video-buttons-home">
+	                            <div class="button-container-home">
+	                                <button class="action-btn-home like-btn"><i class="bi bi-heart-fill"></i></button>
+	                                <p class="video-btn-count-home m-0" th:text="${videoData.likeCount}"></p>
+	                            </div>
+	                            <div class="button-container-home">
+	                                <button class="action-btn-home like-count modal-open-home" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}"><i class="bi bi-chat-dots-fill"></i></button>
+	                                <p class="video-btn-count-home m-0" th:text="${videoData.commentCount}"></p>
+	                            </div>
+	                            <div class="button-container-home">
+	                                <button class="action-btn-home"><i class="bi bi-bookmark-fill"></i></button>
+	                                <p class="video-btn-count-home m-0">362</p>
+	                            </div>
+	                            <div class="button-container-home">
+	                                <button class="action-btn-home"><i class="bi bi-share-fill"></i></button>
+	                                <p class="video-btn-count-home m-0">228</p>
+	                            </div>
+	                        </div>
+	                        <br>
+	                        <hr style="width: 700px;">
+	                        <br>
+	                    </div>
+	                </div>
+	                <div th:if="${videos == null}">
+	                    <p>비디오가 없습니다. 비디오를 업로드해주세요.</p>
+	                </div>
+	            </div>
+				<div class="pagination" id="pagination-all" th:data-total-pages="${totalPages}">
+				    <button class="prevRange" th:disabled="${currentPage < 10}">«</button>
+				    <div class="page-numbers p-0 m-0">
+				        <button th:each="i : ${#numbers.sequence(currentPage - (currentPage % 10), (currentPage - (currentPage % 10)) + 9)}"
+				                th:text="${i + 1}"
+				                th:classappend="${i == currentPage} ? 'current'"
+				                th:data-page="${i}"
+				                th:if="${i < totalPages}"></button>
+				    </div>
+				    <button class="nextRange" th:disabled="${currentPage + 10 >= totalPages}">»</button>
+				</div>
+	        </div>
 
-            <!-- 각 주제별 탭에서 비디오를 출력하는 부분 -->
-            <div th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-home'" class="tab-pane fade" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab-home'" tabindex="0">
-                <div class="video-list-home">
-                    <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item-home">
-						<div class="video-container-home"  th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}"  th:data-usernum="${videoData.video.user.userNum}">
-						    <video controls autoplay muted>
-						        <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
-								<input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
-						        Your browser does not support the video tag.
-						    </video>
-						    <div class="video-details-home">
-						        <div class="video-details-top-home">
-						            <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
-						            <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
-						            <button class="follow-btn-home"
-										th:if="${currentUserNum != videoData.video.user.userNum}"
-										th:data-videonum="${videoData.video.videoNum}"
-										th:data-usernum="${videoData.video.user.userNum}">
-										팔로우
-									</button>
-						        </div>
-						        <p class="video-title-home" th:text="${videoData.video.title}"></p> <!-- 클래스 추가 -->
-						    </div>
-						</div>
-						<div class="video-buttons-home">
-						    <div class="button-container-home">
-						        <button class="action-btn-home"><i class="bi bi-heart-fill"></i></button>
-						        <p class="video-btn-count-home m-0" th:text="${videoData.likeCount}"></p>
-						    </div>
-						    <div class="button-container-home">
-								<button class="action-btn-home modal-open-home" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}"><i class="bi bi-chat-dots-fill"></i></button>
-								<p class="video-btn-count-home m-0" th:text="${videoData.commentCount}"></p>
-						    </div>
-						    <div class="button-container-home">
-						        <button class="action-btn-home"><i class="bi bi-bookmark-fill"></i></button>
-						        <p class="video-btn-count-home m-0">362</p>
-						    </div>
-						    <div class="button-container-home">
-						        <button class="action-btn-home"><i class="bi bi-share-fill"></i></button>
-						        <p class="video-btn-count-home m-0">228</p>
-						    </div>
-						</div>
-                        <br>
-                        <hr style="width: 700px;">
-                        <br>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	        <div th:each="topic : ${topicsByVoteCount}" th:id="'nav-' + ${topic[0].topicNum} + '-home'" class="tab-pane fade" role="tabpanel" th:aria-labelledby="'nav-' + ${topic[0].topicNum} + '-tab-home'" tabindex="0">
+	            <div class="video-list-home">
+	                <div th:each="videoData : ${videos}" th:if="${videoData.video.topic != null and videoData.video.topic == topic[0].topicNum}" class="video-item-home">
+	                    <div class="video-container-home" th:data-video-id="${videoData.video.videoNum}" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}">
+	                        <video controls autoplay muted>
+	                            <source th:src="@{${videoData.video.videoUrl}}" type="video/mp4">
+	                            <input type="hidden" id="currentUserNum" th:value="${currentUserNum}" />
+	                            Your browser does not support the video tag.
+	                        </video>
+	                        <div class="video-details-home">
+	                            <div class="video-details-top-home">
+	                                <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home">
+	                                <p class="video-details-name-home" th:text="${videoData.video.user.userName}"></p>
+	                                <button class="follow-btn-home"
+	                                        th:if="${currentUserNum != videoData.video.user.userNum}"
+	                                        th:data-videonum="${videoData.video.videoNum}"
+	                                        th:data-usernum="${videoData.video.user.userNum}">
+	                                    팔로우
+	                                </button>
+	                            </div>
+	                            <p class="video-title-home" th:text="${videoData.video.title}"></p>
+	                        </div>
+	                    </div>
+	                    <div class="video-buttons-home">
+	                        <div class="button-container-home">
+	                            <button class="action-btn-home like-btn"><i class="bi bi-heart-fill"></i></button>
+	                            <p class="video-btn-count-home like-count m-0" th:text="${videoData.likeCount}"></p>
+	                        </div>
+	                        <div class="button-container-home">
+	                            <button class="action-btn-home modal-open-home" th:data-videonum="${videoData.video.videoNum}" th:data-usernum="${videoData.video.user.userNum}"><i class="bi bi-chat-dots-fill"></i></button>
+	                            <p class="video-btn-count-home m-0" th:text="${videoData.commentCount}"></p>
+	                        </div>
+	                        <div class="button-container-home">
+	                            <button class="action-btn-home"><i class="bi bi-bookmark-fill"></i></button>
+	                            <p class="video-btn-count-home m-0">362</p>
+	                        </div>
+	                        <div class="button-container-home">
+	                            <button class="action-btn-home"><i class="bi bi-share-fill"></i></button>
+	                            <p class="video-btn-count-home m-0">228</p>
+	                        </div>
+	                    </div>
+	                    <br>
+	                    <hr style="width: 700px;">
+	                    <br>
+	                </div>
+	            </div>
+				<div class="pagination" th:id="'pagination-topic-' + ${topic[0].topicNum}" th:data-total-pages="${totalPages}">
+				    <button class="prevRange" th:disabled="${currentPage < 10}">«</button>
+				    <div class="page-numbers">
+				        <button th:each="i : ${#numbers.sequence(currentPage - (currentPage % 10), (currentPage - (currentPage % 10)) + 9)}"
+				                th:text="${i + 1}"
+				                th:classappend="${i == currentPage} ? 'current'"
+				                th:data-page="${i}"
+				                th:if="${i < totalPages}"></button>
+				    </div>
+				    <button class="nextRange" th:disabled="${currentPage + 10 >= totalPages}">»</button>
+				</div>
+	        </div>
+	    </div>
+	</div>
  
     <!-- 홈 스크립트 -->
     <th:block th:fragment="homeVideoScript">
-        <script>
-            $(document).ready(function() {
-                const currentUserNum = $('#currentUserNum').val();
-                console.log("currentUserNum:", currentUserNum); // 디버깅
+		<script>
+			$(document).ready(function() {
+			    const currentUserNum = $('#currentUserNum').val();
+			    console.log("currentUserNum:", currentUserNum);
 
-                // 좋아요 상태를 확인하여 버튼 업데이트
-                $('.video-item-home').each(function() {
-                    const videoItem = $(this);
-                    const videoNum = videoItem.find('.video-container-home').data('video-id');
-                    console.log("Checking videoNum:", videoNum); // 디버깅
+			    function updateLikeButton(videoItem, isLiked, likeCount) {
+			        const likeButton = videoItem.find('.button-container-home .action-btn-home.like-btn i.bi-heart-fill').first();
+			        const likeCountElem = videoItem.find('.button-container-home .video-btn-count-home.like-count').first();
+			        console.log("Updating like button:", videoItem);
 
-                    if (isNaN(videoNum)) {
-                        console.error('videoNum이 숫자가 아닙니다:', videoNum);
-                        return; // 숫자가 아닌 경우 처리를 중단
-                    }
+			        likeButton.css('color', isLiked ? '#ff69b4' : '#ffffff');
+			        likeCountElem.text(likeCount);
+			    }
 
-                    $.ajax({
-                        url: '/video/isLiked',
-                        type: 'GET',
-                        data: {
-                            video: parseInt(videoNum, 10), // 숫자로 변환
-                            user: currentUserNum
-                        },
-                        success: function(response) {
-                            console.log("AJAX response:", response); // 디버깅
-                            updateLikeButton(videoItem, response.isLiked, response.likeCount);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('좋아요 상태 확인 중 오류 발생:', xhr.responseText);
-                        }
-                    });
-                });
+			    function handleLikeButtonClick(button, isLiked, videoNum, likeCountElem) {
+			        const url = isLiked ? '/video/unlike' : '/video/like';
+			        const method = isLiked ? 'DELETE' : 'POST';
+			        const options = {
+			            method: method,
+			            headers: {
+			                'Content-Type': 'application/json'
+			            },
+			            body: JSON.stringify({
+			                video: parseInt(videoNum, 10),
+			                user: currentUserNum
+			            })
+			        };
+			        console.log("Sending request to:", url, "with options:", options);
 
-                function updateLikeButton(videoItem, isLiked, likeCount) {
-                    const likeButton = videoItem.find('.button-container-home .action-btn-home i.bi-heart-fill').first(); // 첫 번째 하트 아이콘만 선택
-                    const likeCountElem = videoItem.find('.button-container-home .video-btn-count-home').first(); // 첫 번째 좋아요 개수 요소 선택
-                    console.log("Updating like button:", videoItem); // 디버깅
+			        fetch(url, options)
+			        .then(response => {
+			            if (!response.ok) {
+			                return response.json().then(errorInfo => Promise.reject(errorInfo));
+			            }
+			            return response.json();
+			        })
+			        .then(data => {
+			            if (data.success) {
+			                const currentLikeCount = parseInt(likeCountElem.text()) || 0;
+			                const newLikeCount = isLiked ? currentLikeCount - 1 : currentLikeCount + 1;
 
-                    // 좋아요 버튼 색상 변경
-                    likeButton.css('color', isLiked ? '#ff69b4' : '#ffffff');
+			                updateLikeButton($(button).closest('.video-item-home'), !isLiked, newLikeCount);
 
-                    // 좋아요 개수 업데이트
-                    likeCountElem.text(likeCount);
+			                $(button).toggleClass('clicked', !isLiked);
 
-                    // 클릭 이벤트 바인딩
-                    videoItem.find('.button-container-home .action-btn-home').first().off('click').on('click', function() {
-                        handleLikeButtonClick(videoItem, isLiked, likeCountElem);
-                    });
-                }
+			                alert(isLiked ? '좋아요를 취소하였습니다.' : '좋아요를 누르셨습니다.');
+			            } else {
+			                alert('작업 실패: ' + data.message);
+			            }
+			        })
+			        .catch(error => {
+			            console.error('Error:', error);
+			            alert('작업 중 오류가 발생했습니다.');
+			        });
+			    }
 
-                function handleLikeButtonClick(videoItem, isLiked, likeCountElem) {
-                    const videoNum = videoItem.find('.video-container-home').data('video-id');
-                    const url = isLiked ? '/video/unlike' : '/video/like';
-                    const method = isLiked ? 'DELETE' : 'POST';
-                    const options = {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            video: parseInt(videoNum, 10), // 숫자로 변환
-                            user: currentUserNum
-                        })
-                    };
-                    console.log("Sending request to:", url, "with options:", options); // 디버깅
+			    function handleFollowButtonClick(button, userNum) {
+			        const isFollowing = $(button).text() === '팔로잉';
+			        const url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
+			        const method = isFollowing ? 'DELETE' : 'POST';
+			        const data = {
+			            follower: currentUserNum,
+			            following: userNum
+			        };
 
-                    fetch(url, options)
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errorInfo => Promise.reject(errorInfo));
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // 현재 좋아요 수 가져오기
-                            const currentLikeCount = parseInt(likeCountElem.text()) || 0;
-                            // 좋아요 수 업데이트
-                            const newLikeCount = isLiked ? currentLikeCount - 1 : currentLikeCount + 1;
+			        const options = {
+			            method: method,
+			            headers: {
+			                'Content-Type': 'application/json'
+			            }
+			        };
 
-                            // 좋아요 상태와 좋아요 개수를 함께 업데이트
-                            updateLikeButton(videoItem, !isLiked, newLikeCount);
+			        if (!isFollowing) {
+			            options.body = JSON.stringify(data);
+			        }
 
-                            // 클릭 효과 추가
-                            videoItem.find('.button-container-home .action-btn-home').first().toggleClass('clicked', !isLiked);
+			        if (isFollowing && !confirm('팔로우를 취소하시겠습니까?')) {
+			            return;
+			        }
 
-                            alert(isLiked ? '좋아요를 취소하였습니다.' : '좋아요를 누르셨습니다.');
-                        } else {
-                            alert('작업 실패: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('작업 중 오류가 발생했습니다.');
-                    });
-                }			
+			        fetch(url, options)
+			        .then(response => {
+			            if (!response.ok) {
+			                return response.json().then(errorInfo => Promise.reject(errorInfo));
+			            }
+			            return response.json();
+			        })
+			        .then(data => {
+			            if (data.success) {
+			                $(button).text(isFollowing ? '팔로우' : '팔로잉');
+			                $(button).css({
+			                    'background-color': isFollowing ? '#007bff' : '#ff69b4',
+			                    'color': 'white'
+			                });
 
-				// 팔로우 버튼 상태 초기화
-				$('.video-item-home').each(function() {
-				    const videoItem = $(this);
-				    const userNum = videoItem.find('.follow-btn-home').data('usernum');
+			                alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
+			            } else {
+			                alert('작업 실패: ' + data.message);
+			            }
+			        })
+			        .catch(error => {
+			            console.error('Error:', error);
+			            alert('작업 중 오류가 발생했습니다.');
+			        });
+			    }
 
-				    if (userNum !== undefined && !isNaN(userNum)) {
-				        initializeFollowButton(videoItem, userNum);
-				    }
-				});
+			    function initializeFollowButton(videoItem, userNum) {
+			        const followButton = videoItem.find('.follow-btn-home');
+			        $.ajax({
+			            url: '/followHome/isFollowing',
+			            type: 'GET',
+			            data: {
+			                targetUser: userNum,
+			                currentUser: currentUserNum
+			            },
+			            success: function(response) {
+			                console.log(`API 요청 성공 - targetUser: ${userNum}, response:`, response);
+			                if (response.isFollowing) {
+			                    followButton.css({
+			                        'background-color': '#ff69b4',
+			                        'color': 'white'
+			                    }).text('팔로잉');
+			                } else {
+			                    followButton.css({
+			                        'background-color': '#007bff',
+			                        'color': 'white'
+			                    }).text('팔로우');
+			                }
+			            },
+			            error: function(xhr, status, error) {
+			                console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
+			            }
+			        });
+			    }
 
-				function handleFollowButtonClick(button, userNum) {
-				    const isFollowing = $(button).text() === '팔로잉';
-				    const url = isFollowing ? `/followHome/unfollow?follower=${currentUserNum}&following=${userNum}` : '/followHome';
-				    const method = isFollowing ? 'DELETE' : 'POST';
-				    const data = {
-				        follower: currentUserNum,
-				        following: userNum
-				    };
+			    $(document).on('click', '.follow-btn-home', function(event) {
+			        event.stopPropagation();
+			        const userNum = $(this).data('usernum');
+			        handleFollowButtonClick(this, userNum);
+			    });
 
-				    const options = {
-				        method: method,
-				        headers: {
-				            'Content-Type': 'application/json'
-				        }
-				    };
+			    $(document).on('click', '.modal-open-home', function(event) {
+			        event.preventDefault();
+			        event.stopPropagation();
 
-				    if (!isFollowing) {
-				        options.body = JSON.stringify(data);
-				    }
+			        const videoNum = this.dataset.videonum;
+			        const userNum = this.dataset.usernum;
 
-				    // 팔로우 취소 시 확인 요청
-				    if (isFollowing && !confirm('팔로우를 취소하시겠습니까?')) {
-				        // 사용자가 취소를 클릭하면 요청을 보내지 않고 종료
-				        return;
-				    }
+			        window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
+			    });
 
-				    fetch(url, options)
-				    .then(response => {
-				        if (!response.ok) {
-				            return response.json().then(errorInfo => Promise.reject(errorInfo));
-				        }
-				        return response.json();
-				    })
-				    .then(data => {
-				        if (data.success) {
-				            // 버튼 상태 업데이트
-				            $(button).text(isFollowing ? '팔로우' : '팔로잉');
-				            $(button).css({
-				                'background-color': isFollowing ? '#007bff' : '#ff69b4', // 파란색 또는 분홍색
-				                'color': 'white'
-				            });
+			    $(document).on('click', '.video-container-home', function(event) {
+			        event.preventDefault();
 
-				            alert(isFollowing ? '팔로우를 취소하였습니다.' : '팔로우하였습니다.');
-				        } else {
-				            alert('작업 실패: ' + data.message);
-				        }
-				    })
-				    .catch(error => {
-				        console.error('Error:', error);
-				        alert('작업 중 오류가 발생했습니다.');
-				    });
-				}
+			        const videoNum = this.dataset.videonum;
+			        const userNum = this.dataset.usernum;
 
+			        window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
+			    });
 
-				function initializeFollowButton(videoItem, userNum) {
-				    const followButton = videoItem.find('.follow-btn-home');
-				    $.ajax({
-				        url: '/followHome/isFollowing',  // 올바른 URL로 수정
-				        type: 'GET',
-				        data: {
-				            targetUser: userNum,   // targetUser로 전달
-				            currentUser: currentUserNum  // currentUser로 전달
-				        },
-				        success: function(response) {
-				            console.log(`API 요청 성공 - targetUser: ${userNum}, response:`, response);
-				            if (response.isFollowing) {
-				                // 팔로우 상태일 경우
-				                followButton.css({
-				                    'background-color': '#ff69b4', // 분홍색
-				                    'color': 'white'
-				                }).text('팔로잉');
-				            } else {
-				                // 팔로우 상태가 아닐 경우
-				                followButton.css({
-				                    'background-color': '#007bff', // 파란색
-				                    'color': 'white'
-				                }).text('팔로우');
-				            }
-				            // 클릭 시 알림 출력 및 처리
-				            followButton.off('click').on('click', function(event) {
-				                event.stopPropagation(); // 이벤트 전파 중단
-				                handleFollowButtonClick(followButton[0], userNum);
-				            });
-				        },
-				        error: function(xhr, status, error) {
-				            console.error('팔로우 상태 확인 중 오류 발생:', xhr.responseText);
-				        }
-				    });
-				}
-						
+			    $(document).on('click', '.button-container-home .action-btn-home.like-btn', function(event) {
+			        event.stopPropagation();
+			        const videoItem = $(this).closest('.video-item-home');
+			        const videoNum = videoItem.find('.video-container-home').data('video-id');
+			        const likeCountElem = $(this).siblings('.video-btn-count-home.like-count');
+			        const isLiked = $(this).find('i.bi-heart-fill').css('color') === 'rgb(255, 105, 180)';
 
-                // 프로필 이미지와 이름 클릭 시 특정 URL로 이동
-                $('.user-info-home').on('click', function(event) {
-                    event.stopPropagation(); // 이벤트 전파 중단
-                    const userNum = $(this).closest('.video-container-home').data('usernum');
-                    const profileUrl = userNum === currentUserNum ? '/user/profile' : `/user/profile/${userNum}`;
-                    window.location.href = `http://localhost:8080${profileUrl}`;
-                });
-            });
+			        handleLikeButtonClick(this, isLiked, videoNum, likeCountElem);
+			    });
 
-            // home.html - 댓글 버튼 클릭 시 특정 URL로 이동
-            document.querySelectorAll('.button-container-home .modal-open-home').forEach(function(button) {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
+			    function updatePaginationControls(totalPages, currentPage, topic) {
+			        const pagination = topic ? $(`#pagination-topic-${topic}`) : $('#pagination-all');
+			        pagination.find('.prevRange').prop('disabled', currentPage < 10);
+			        pagination.find('.nextRange').prop('disabled', currentPage + 10 >= totalPages);
 
-                    const videoNum = this.dataset.videonum;
-                    const userNum = this.dataset.usernum;
+			        let pageButtons = '';
+			        const startPage = Math.floor(currentPage / 10) * 10;
+			        const endPage = Math.min(startPage + 10, totalPages);
 
-                    // URL로 이동
-                    window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
-                });
-            });
+			        for (let i = startPage; i < endPage; i++) {
+			            pageButtons += `<button ${i === currentPage ? 'class="current"' : ''} data-page="${i}">${i + 1}</button>`;
+			        }
 
-            // home.html - 비디오 컨테이너 클릭 시 특정 URL로 이동
-            document.querySelectorAll('.video-container-home').forEach(function(container) {
-                container.addEventListener('click', function(event) {
-                    event.preventDefault();
+			        pagination.find('.page-numbers').html(pageButtons);
+			    }
 
-                    const videoNum = this.dataset.videonum;
-                    const userNum = this.dataset.usernum;
+			    $(document).on('click', '.prevRange', function() {
+			        const pagination = $(this).closest('.pagination');
+			        const currentPage = parseInt(pagination.attr('data-current-page'));
+			        const newPage = Math.max(currentPage - 10, 0);
+			        const topic = pagination.attr('id').split('-').pop();
+			        fetchVideos(newPage, 5, topic !== 'all' ? topic : null);
+			    });
 
-                    // URL로 이동
-                    window.location.href = `http://localhost:8080/hvideo/${videoNum}?userNum=${userNum}`;
-                });
-            });
-        </script>
+			    $(document).on('click', '.nextRange', function() {
+			        const pagination = $(this).closest('.pagination');
+			        const currentPage = parseInt(pagination.attr('data-current-page'));
+			        const totalPages = parseInt(pagination.attr('data-total-pages'));
+			        const newPage = Math.min(currentPage + 10, totalPages - 1);
+			        const topic = pagination.attr('id').split('-').pop();
+			        fetchVideos(newPage, 5, topic !== 'all' ? topic : null);
+			    });
+
+			    function fetchVideos(page, size, topic) {
+			        let url = `/?page=${page}&size=${size}`;
+			        if (topic) {
+			            url = `/?topic=${topic}&page=${page}&size=${size}`;
+			        }
+			        $.get(url, function(data) {
+			            const videoList = topic ? $(`#nav-${topic}-home .video-list-home`) : $('#nav-all-home .video-list-home');
+			            videoList.html($(data).find('.video-list-home').html());
+			            const totalPages = $(data).find('.pagination').data('total-pages');
+			            updatePaginationControls(totalPages, page, topic);
+
+			            // URL 업데이트
+			            if (window.location.pathname === "/") {
+			                const newUrl = topic ? `/?topic=${topic}&page=${page}&size=${size}` : `/?page=${page}&size=${size}`;
+			                window.history.pushState({ path: newUrl }, '', newUrl);
+			            }
+			        });
+			    }
+
+			    function getQueryParam(param) {
+			        const urlParams = new URLSearchParams(window.location.search);
+			        return urlParams.get(param);
+			    }
+
+			    // 초기 페이지 로드 시 현재 페이지와 토픽을 쿼리 파라미터에서 읽어옴
+			    const initialPage = getQueryParam('page') || 0;
+			    const initialTopic = getQueryParam('topic') || null;
+
+			    // 페이지 로드 시 active 클래스 설정
+			    if (initialTopic) {
+			        $(`#nav-${initialTopic}-tab-home`).addClass('active');
+			        $(`#nav-${initialTopic}-home`).addClass('show active');
+			        $('#nav-all-tab-home').removeClass('active');
+			        $('#nav-all-home').removeClass('show active');
+			    } else {
+			        $('#nav-all-tab-home').addClass('active');
+			        $('#nav-all-home').addClass('show active');
+			    }
+
+			    fetchVideos(initialPage, 5, initialTopic);
+
+			    $(document).on('click', '.page-numbers button', function() {
+			        const page = $(this).data('page');
+			        const pagination = $(this).closest('.pagination');
+			        const topic = pagination.attr('id').split('-').pop();
+			        fetchVideos(page, 5, topic !== 'all' ? topic : null);
+			    });
+
+			    $('.nav-link').click(function() {
+			        const topic = $(this).attr('id').split('-')[1];
+			        fetchVideos(0, 5, topic !== 'all' ? topic : null);
+			    });
+			});
+
+		</script>
     </th:block>
 
 </body>

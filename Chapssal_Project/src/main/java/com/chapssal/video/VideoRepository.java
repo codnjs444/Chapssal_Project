@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -80,4 +82,11 @@ public interface VideoRepository extends JpaRepository<Video, Integer> {
             "GROUP BY v.videoNum, v.title, v.videoUrl, v.thumbnailUrl, u.userNum, v.topic, v.viewCount " +
             "ORDER BY recentLikeCount DESC, likeCount DESC", nativeQuery = true)
     List<Object[]> findAllVideosOrderedByLikesAndTopic(@Param("topic") int topic);
+
+    // 새로운 페이지네이션 쿼리 메소드 추가
+    @Query("SELECT v FROM Video v ORDER BY v.uploadDate DESC")
+    Page<Video> findAllVideos(Pageable pageable);
+
+    @Query("SELECT v FROM Video v WHERE v.topic = :topic ORDER BY v.uploadDate DESC")
+    Page<Video> findVideosByTopic(@Param("topic") int topic, Pageable pageable);
 }
