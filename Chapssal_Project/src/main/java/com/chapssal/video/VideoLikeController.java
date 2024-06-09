@@ -1,6 +1,8 @@
 package com.chapssal.video;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,5 +46,15 @@ public class VideoLikeController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"success\": false, \"message\": \"Like relationship not found.\"}");
         }
+    }
+    
+    @GetMapping("/isLiked")
+    public ResponseEntity<Map<String, Boolean>> isLiked(
+            @RequestParam("video") Integer video,
+            @RequestParam("user") Integer user) {
+        boolean isLiked = videoLikeService.isLikedByUser(video, user);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("isLiked", isLiked);
+        return ResponseEntity.ok(response);
     }
 }

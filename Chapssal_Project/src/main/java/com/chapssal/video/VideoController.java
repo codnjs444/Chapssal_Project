@@ -198,15 +198,6 @@ public class VideoController {
         return response;
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/following")
-    public String viewFollowPage(Model model, Principal principal) {
-        User currentUser = userService.getUser(principal.getName());
-        List<User> followingUsers = followService.getFollowingUsers(currentUser.getUserNum());
-        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers);
-        model.addAttribute("videos", videosWithLikesAndComments);
-        return "following"; // following.html 템플릿을 렌더링
-    }
 
     @GetMapping("/bestvideos")
     public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model, Principal principal) {
@@ -605,5 +596,229 @@ public class VideoController {
 
         return "svideo"; // svideo.html로 이동
     }
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/following")
+    public String viewFollowPage(Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
+        
+        List<User> followingUsers = followService.getFollowingUsers(currentUser.getUserNum());
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers);
+        Map<Integer, Boolean> likedVideos = new HashMap<>();
+        for (VideoService.VideoWithLikesAndComments videoWithLikes : videosWithLikesAndComments) {
+            boolean isLiked = videoLikeService.isLikedByUser(videoWithLikes.getVideo().getVideoNum(), currentUserNum);
+            likedVideos.put(videoWithLikes.getVideo().getVideoNum(), isLiked);
+        }
+        model.addAttribute("likedVideos", likedVideos);  // Add likedVideos map to the model
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
+        model.addAttribute("videos", videosWithLikesAndComments);
+        return "following"; // following.html 템플릿을 렌더링
+    }
+    
+    
+    @GetMapping("/fvideo/{videoNum}")
+    public String getfVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        Optional<Video> videoOptional = videoService.findById(videoNum);
+        
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        if (!videoOptional.isPresent()) {
+            return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
+        }
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
+        Video video = videoOptional.get();
 
+        // 프로필 페이지의 사용자 정보를 가져옴
+        User user = userService.findByUserNum(userNum);
+        if (user == null) {
+            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
+        }
+        
+        String userName = user.getUserName();
+        String schoolName = user.getSchool().getSchoolName();
+        String profilePictureUrl = user.getProfilePictureUrl(); // 상대방의 프로필 사진 URL을 가져옴
+        
+        model.addAttribute("userName", userName);
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
+        model.addAttribute("userNum", userNum); // 조회된 사용자의 userNum
+        model.addAttribute("videoUrl", video.getVideoUrl());
+        model.addAttribute("videoTitle", video.getTitle());
+        model.addAttribute("videoUser", video.getUser());
+        
+        // 팔로우 상태 추가
+        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
+
+        List<User> followingUsers = followService.getFollowingUsers(userNum);
+        List<User> followerUsers = followService.getFollowerUsers(userNum);
+
+        model.addAttribute("followingUsers", followingUsers);
+        model.addAttribute("followerUsers", followerUsers);
+
+        // 좋아요 상태 확인
+        boolean isLiked = videoLikeService.isLikedByUser(videoNum, currentUserNum);
+        model.addAttribute("isLiked", isLiked);
+
+        // 좋아요 수 카운트
+        int likeCount = videoLikeService.countLikesByVideoId(videoNum);
+        model.addAttribute("likeCount", likeCount);
+        
+        // 댓글 목록을 모델에 추가
+        List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+
+            // 댓글에 답글이 있는지 확인하여 모델에 추가
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
+        }
+        commentService.setLikeCountsForComments(comments);
+        model.addAttribute("comments", comments);
+        
+        // 댓글 수 추가
+        int commentCount = commentService.countCommentsByVideoNum(videoNum);
+        model.addAttribute("commentCount", commentCount);
+        
+        // 팔로우한 사용자들의 비디오 목록 가져오기
+        List<User> followingUsers2 = followService.getFollowingUsers(currentUserNum);
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers2);
+
+        // 현재 비디오의 인덱스 찾기
+        int currentIndex = -1;
+        for (int i = 0; i < videosWithLikesAndComments.size(); i++) {
+            if (videosWithLikesAndComments.get(i).getVideo().getVideoNum() == videoNum) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // 이전 및 다음 비디오 ID 설정
+        int prevVideoNum = currentIndex > 0 ? videosWithLikesAndComments.get(currentIndex - 1).getVideo().getVideoNum() : -1;
+        int nextVideoNum = currentIndex < videosWithLikesAndComments.size() - 1 ? videosWithLikesAndComments.get(currentIndex + 1).getVideo().getVideoNum() : -1;
+
+        model.addAttribute("prevVideoNum", prevVideoNum);
+        model.addAttribute("nextVideoNum", nextVideoNum);
+
+        return "fvideo"; // video.html로 이동
+    }
+    
+    @GetMapping("/hvideo/{videoNum}")
+    public String gethVideoPage(@PathVariable("videoNum") int videoNum, @RequestParam("userNum") int userNum, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";  // 로그인 페이지로 리다이렉트
+        }
+        String currentUsername = authentication.getName();  // 로그인한 사용자의 이름 가져오기
+        Optional<User> currentUserOptional = userService.findByUserId2(currentUsername);
+        Optional<Video> videoOptional = videoService.findById(videoNum);
+        
+        if (!currentUserOptional.isPresent()) {
+            return "redirect:/"; // 사용자가 없으면 홈으로 리다이렉트
+        }
+        if (!videoOptional.isPresent()) {
+            return "error/404"; // 비디오가 없을 경우 404 페이지로 이동
+        }
+        
+        User currentUser = currentUserOptional.get();
+        Integer currentUserNum = currentUser.getUserNum(); // 현재 로그인한 사용자의 userNum
+        Video video = videoOptional.get();
+
+        // 프로필 페이지의 사용자 정보를 가져옴
+        User user = userService.findByUserNum(userNum);
+        if (user == null) {
+            return "redirect:/"; // 사용자를 찾을 수 없으면 홈으로 리다이렉트
+        }
+        
+        String userName = user.getUserName();
+        String schoolName = user.getSchool().getSchoolName();
+        String profilePictureUrl = user.getProfilePictureUrl(); // 상대방의 프로필 사진 URL을 가져옴
+        
+        model.addAttribute("userName", userName);
+        model.addAttribute("schoolName", schoolName);
+        model.addAttribute("profilePictureUrl", profilePictureUrl); // 프로필 사진 URL 추가
+        model.addAttribute("userNum", userNum); // 조회된 사용자의 userNum
+        model.addAttribute("videoUrl", video.getVideoUrl());
+        model.addAttribute("videoTitle", video.getTitle());
+        model.addAttribute("videoUser", video.getUser());
+        
+        // 팔로우 상태 추가
+        boolean isFollowing = followService.isFollowing(currentUserNum, userNum);
+        model.addAttribute("isFollowing", isFollowing);
+        model.addAttribute("currentUserNum", currentUserNum); // 현재 로그인한 사용자의 userNum 추가
+
+        List<User> followingUsers = followService.getFollowingUsers(userNum);
+        List<User> followerUsers = followService.getFollowerUsers(userNum);
+
+        model.addAttribute("followingUsers", followingUsers);
+        model.addAttribute("followerUsers", followerUsers);
+
+        // 좋아요 상태 확인
+        boolean isLiked = videoLikeService.isLikedByUser(videoNum, currentUserNum);
+        model.addAttribute("isLiked", isLiked);
+
+        // 좋아요 수 카운트
+        int likeCount = videoLikeService.countLikesByVideoId(videoNum);
+        model.addAttribute("likeCount", likeCount);
+        
+        // 댓글 목록을 모델에 추가
+        List<Comment> comments = commentService.findByVideoNum(videoNum);
+        for (Comment comment : comments) {
+            boolean isCommentLiked = commentLikeService.isCommentLikedByUser(comment.getCommentNum(), currentUserNum);
+            comment.setLiked(isCommentLiked);
+
+            // 댓글에 답글이 있는지 확인하여 모델에 추가
+            boolean hasReplies = commentService.hasReplies(comment.getCommentNum());
+            comment.setHasReplies(hasReplies);
+        }
+        commentService.setLikeCountsForComments(comments);
+        model.addAttribute("comments", comments);
+        
+        // 댓글 수 추가
+        int commentCount = commentService.countCommentsByVideoNum(videoNum);
+        model.addAttribute("commentCount", commentCount);
+        
+        // 팔로우한 사용자들의 비디오 목록 가져오기
+        List<User> followingUsers2 = followService.getFollowingUsers(currentUserNum);
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers2);
+
+        // 현재 비디오의 인덱스 찾기
+        int currentIndex = -1;
+        for (int i = 0; i < videosWithLikesAndComments.size(); i++) {
+            if (videosWithLikesAndComments.get(i).getVideo().getVideoNum() == videoNum) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // 이전 및 다음 비디오 ID 설정
+        int prevVideoNum = currentIndex > 0 ? videosWithLikesAndComments.get(currentIndex - 1).getVideo().getVideoNum() : -1;
+        int nextVideoNum = currentIndex < videosWithLikesAndComments.size() - 1 ? videosWithLikesAndComments.get(currentIndex + 1).getVideo().getVideoNum() : -1;
+
+        model.addAttribute("prevVideoNum", prevVideoNum);
+        model.addAttribute("nextVideoNum", nextVideoNum);
+
+        return "hvideo"; // video.html로 이동
+    }
 }
