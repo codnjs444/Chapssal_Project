@@ -3,6 +3,7 @@ package com.chapssal.message.controller;
 import com.chapssal.hashtag.HashtagService;
 import com.chapssal.message.model.SearchQuery;
 import com.chapssal.message.repository.SearchQueryRepository;
+import com.chapssal.topic.SelectedTopicService;
 import com.chapssal.user.User;
 import com.chapssal.user.UserService;
 import com.chapssal.video.Video;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -46,6 +48,14 @@ public class SearchController {
     @Autowired
     private FollowService followService;
 
+    @Autowired
+    private SelectedTopicService selectedTopicService;
+
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+//        return selectedTopicService.findTopicsByVoteCount();
+    	return selectedTopicService.getTopicsByVoteCountForLastWeek();
+    }
     @GetMapping("/search")
     public String search(@RequestParam("query") String query, Model model) {
         // 검색어 저장

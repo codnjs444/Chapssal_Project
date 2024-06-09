@@ -158,6 +158,10 @@ public class VideoController {
     
     @GetMapping("/explore")
     public String viewExplorePage(Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
         List<Object[]> topicsByVoteCount = selectedTopicService.getTopicsByVoteCountForLastWeek();
         model.addAttribute("topicsByVoteCount", topicsByVoteCount);
 
@@ -201,6 +205,10 @@ public class VideoController {
 
     @GetMapping("/bestvideos")
     public String viewBestVideosPage(@RequestParam(value = "weekOffset", defaultValue = "0") int weekOffset, Model model, Principal principal) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "redirect:/user/login";  // 로그인 페이지로 리다이렉트
+        }
         LocalDate today = LocalDate.now();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate startOfWeek = monday.minusWeeks(weekOffset + 1); // 저번 주 월요일

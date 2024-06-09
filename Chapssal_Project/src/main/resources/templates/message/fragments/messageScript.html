@@ -289,7 +289,7 @@ function showMessage(message, prepend = false) {
                         var userName = otherParticipant.userName || '닉네임을 설정하지 않은 유저입니다.';
                         var userId = otherParticipant.userId;
                         var profilePictureUrl = otherParticipant.profilePictureUrl ? otherParticipant.profilePictureUrl : '/images/default_profile.png';
-                        var userProfileUrl = 'http://localhost:8080/user/profile/' + otherParticipant.userNum;
+                        var userProfileUrl = '/user/profile/' + otherParticipant.userNum;
 
                         receiverId = otherParticipant.userNum;
                         $('#participant_a').html(

@@ -25,11 +25,13 @@ public class TopicController {
     private final TopicService topicService;
     private final UserService userService;
     private final SelectedTopicRepository selectedTopicRepository;
+    private final SelectedTopicService selectedTopicService;
 
-    public TopicController(TopicService topicService, UserService userService, SelectedTopicRepository selectedTopicRepository) {
+    public TopicController(TopicService topicService, UserService userService, SelectedTopicRepository selectedTopicRepository, SelectedTopicService selectedTopicService) {
         this.topicService = topicService;
         this.userService = userService;
         this.selectedTopicRepository = selectedTopicRepository;
+        this.selectedTopicService = selectedTopicService;
     }
 
     // 현재 년/월/주차를 계산해서 모델에 추가하는 메서드
@@ -42,6 +44,12 @@ public class TopicController {
         int week = now.get(weekFields.weekOfMonth());
         String formattedDate = year + "년 " + month + "월 " + week + "주차";
         model.addAttribute("currentWeek", formattedDate);
+    }
+
+    @ModelAttribute("topicsByVoteCount")
+    public List<Object[]> topicsByVoteCount() {
+//        return selectedTopicService.findTopicsByVoteCount();
+    	return selectedTopicService.getTopicsByVoteCountForLastWeek();
     }
 
     // 현재 시간에 따라 topic에 접근시 어떤 페이지를 리턴할지 정하는 메서드

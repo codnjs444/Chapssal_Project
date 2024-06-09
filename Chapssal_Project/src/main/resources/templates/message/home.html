@@ -14,7 +14,7 @@
                     <div class="user-name" th:text="${currentUserName != null ? currentUserName : '닉네임을 설정해주세요.'}">UserName</div>
                 </div>
                 <a href="#" class="btn-outline-primary ms-auto no-hover" style="margin-left: 45%;" data-bs-toggle="modal" data-bs-target="#chatModal" >
-                    <i class="bi bi-pencil-square" style = "width = 60px; height: 60px;"></i> <!-- Bootstrap Icons의 글쓰기 아이콘 -->
+                    <i class="bi bi-pencil-square" style = "width: 60px; height: 60px;"></i> <!-- Bootstrap Icons의 글쓰기 아이콘 -->
                 </a>
                 <div th:replace="~{message/fragments/createChatModal :: modalfragments}"></div>
             </div>
