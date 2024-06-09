@@ -305,7 +305,7 @@
                 <source th:src="${videoUrl}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-			<button class="close-btn btn btn-outline-light" id="closeButton" onclick="navigateToFollow()">
+			<button class="close-btn btn btn-outline-light" id="closeButton" onclick="navigateToHome()">
 			    <i class="bi bi-x"></i>
 			</button>
 			<div class="navigation-btns">
@@ -587,12 +587,12 @@
 	        } else if (videoNum === -1) {
 				alert("더 이상의 영상이 없습니다.");
 			} else {
-	            window.location.href = '/fvideo/' + videoNum + '?userNum=' + userNum;
+	            window.location.href = '/hvideo/' + videoNum + '?userNum=' + userNum;
 	        }
 	    }
 
-		function navigateToFollow() {
-		    window.location.href = 'http://localhost:8080/following';
+		function navigateToHome() {
+		    window.location.href = 'http://localhost:8080/';
 		}
 
 		
@@ -624,7 +624,7 @@
 	            navigateVideo(/*[[${nextVideoNum}]]*/ '[[${nextVideoNum}]]', /*[[${videoUser.userNum}]]*/ '[[${videoUser.userNum}]]');
 	        } else if (event.key === 'Escape') {
 	            // Esc 키를 누르면 프로필 페이지로 이동
-				navigateToFollow(); // ESC 키를 누르면 팔로잉 페이지로 이동
+				navigateToHome(); // ESC 키를 누르면 팔로잉 페이지로 이동
 	        }
 	    });
 		
