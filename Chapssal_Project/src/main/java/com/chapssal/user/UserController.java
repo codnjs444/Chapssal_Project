@@ -206,6 +206,9 @@ public class UserController {
         List<Video> userVideos = videoService.getVideosByUserNum(userNum);
         model.addAttribute("userVideos", userVideos);
         
+        List<Video> likedVideos = videoService.getLikedVideosByUser(userNum);
+        model.addAttribute("likedVideos", likedVideos);
+        
         return "profile";
     }
     

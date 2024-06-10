@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -278,4 +281,33 @@ public class VideoService {
     public List<Object[]> findTopVideosForWeekAndTopic(LocalDateTime startDate, LocalDateTime endDate, int topic) {
         return videoRepository.findTopVideosForWeekAndTopic(startDate, endDate, topic);
     }
+
+    // 페이지네이션 메소드 추가
+    public Page<VideoWithLikesAndComments> getAllVideosPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Video> videoPage = videoRepository.findAllVideos(pageable);
+        return videoPage.map(video -> {
+            int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+            int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+            return new VideoWithLikesAndComments(video, likeCount, commentCount);
+        });
+    }
+
+    public Page<VideoWithLikesAndComments> getVideosByTopicPaginated(int topic, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Video> videoPage = videoRepository.findVideosByTopic(topic, pageable);
+        return videoPage.map(video -> {
+            int likeCount = videoLikeService.countLikesByVideoId(video.getVideoNum());
+            int commentCount = commentService.countCommentsByVideoNum(video.getVideoNum());
+            return new VideoWithLikesAndComments(video, likeCount, commentCount);
+        });
+    }
+    
+    public List<Video> getUserVideos(int userNum) {
+        return videoRepository.findByUserUserNum(userNum);
+    }
+    public List<Video> getLikedVideosByUser(int userNum) {
+        return videoLikeRepository.findLikedVideosByUser(userNum);
+    }
 }
+ 
