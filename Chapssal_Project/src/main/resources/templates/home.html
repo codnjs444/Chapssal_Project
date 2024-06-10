@@ -194,7 +194,7 @@
 	                            <div class="video-details-home">
 	                                <div class="video-details-top-home">
 										<div class="user-info-home row">
-		                                    <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home col m-0" style="width: 54px;">
+		                                    <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home col m-0" style="width: 54px; max-width: 54px;">
 		                                    <p class="video-details-name-home col" th:text="${videoData.video.user.userName}"></p>
 										</div>
 	                                    <button class="follow-btn-home"
@@ -259,7 +259,7 @@
 	                        <div class="video-details-home">
 	                            <div class="video-details-top-home">
 									<div class="user-info-home row">
-		                                <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home col m-0" style="width: 54px;">
+		                                <img th:src="${videoData.video.user.profilePictureUrl != null ? videoData.video.user.profilePictureUrl : '/images/default_profile.png'}" alt="프로필 사진" class="rounded-circle profile-pic-home col m-0" style="width: 54px; max-width: 54px;">
 		                                <p class="video-details-name-home col" th:text="${videoData.video.user.userName}"></p>
 									</div>
 	                                <button class="follow-btn-home"

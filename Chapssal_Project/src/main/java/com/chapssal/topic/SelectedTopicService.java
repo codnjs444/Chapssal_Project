@@ -21,6 +21,10 @@ public class SelectedTopicService {
         this.selectedTopicRepository = selectedTopicRepository;
     }
 
+    public void save(SelectedTopic selectedTopic) {
+        selectedTopicRepository.save(selectedTopic);
+    }
+
     public List<SelectedTopic> findByUser(User user) {
         return selectedTopicRepository.findByUser(user);
     }
