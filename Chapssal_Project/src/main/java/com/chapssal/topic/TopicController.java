@@ -1,6 +1,7 @@
 package com.chapssal.topic;
 
 import com.chapssal.user.UserService;
+import com.chapssal.topic.SelectedTopicService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,14 +25,14 @@ import java.util.stream.Collectors;
 public class TopicController {
     private final TopicService topicService;
     private final UserService userService;
-    private final SelectedTopicRepository selectedTopicRepository;
     private final SelectedTopicService selectedTopicService;
+    private final SelectedTopicRepository selectedTopicRepository;
 
-    public TopicController(TopicService topicService, UserService userService, SelectedTopicRepository selectedTopicRepository, SelectedTopicService selectedTopicService) {
+    public TopicController(TopicService topicService, UserService userService, SelectedTopicService selectedTopicService, SelectedTopicRepository selectedTopicRepository) {
         this.topicService = topicService;
         this.userService = userService;
-        this.selectedTopicRepository = selectedTopicRepository;
         this.selectedTopicService = selectedTopicService;
+        this.selectedTopicRepository = selectedTopicRepository;
     }
 
     // 현재 년/월/주차를 계산해서 모델에 추가하는 메서드
@@ -44,12 +45,6 @@ public class TopicController {
         int week = now.get(weekFields.weekOfMonth());
         String formattedDate = year + "년 " + month + "월 " + week + "주차";
         model.addAttribute("currentWeek", formattedDate);
-    }
-
-    @ModelAttribute("topicsByVoteCount")
-    public List<Object[]> topicsByVoteCount() {
-//        return selectedTopicService.findTopicsByVoteCount();
-    	return selectedTopicService.getTopicsByVoteCountForLastWeek();
     }
 
     // 현재 시간에 따라 topic에 접근시 어떤 페이지를 리턴할지 정하는 메서드
@@ -109,16 +104,31 @@ public class TopicController {
                     foundTopic.setCount(foundTopic.getCount() + 1);
                     topicService.save(foundTopic);
                     model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+
+                    // SelectedTopic에 추가
+                    SelectedTopic selectedTopic = new SelectedTopic();
+                    selectedTopic.setTopic(foundTopic);
+                    selectedTopic.setUser(user);
+                    selectedTopic.setCreateDate(LocalDateTime.now());
+                    selectedTopicService.save(selectedTopic);
                 } else {
                     // 존재하지 않으면 새로 등록
                     topic.setCreateDate(LocalDateTime.now());
                     topic.setCount(1); // 처음 등록이므로 count를 1로 설정
                     topicService.save(topic);
                     model.addAttribute("successMessage", "토픽 등록이 완료되었습니다.");
+
+                    // SelectedTopic에 추가
+                    SelectedTopic selectedTopic = new SelectedTopic();
+                    selectedTopic.setTopic(topic);
+                    selectedTopic.setUser(user);
+                    selectedTopic.setCreateDate(LocalDateTime.now());
+                    selectedTopicService.save(selectedTopic);
                 }
 
                 // 유저 테이블의 topic 컬럼 값을 1 증가
                 user.setTopic(user.getTopic() + 1);
+                user.setVote(user.getVote() + 1);
                 userService.save(user);
             }
         }
