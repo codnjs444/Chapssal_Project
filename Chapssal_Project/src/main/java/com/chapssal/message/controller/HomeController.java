@@ -76,9 +76,4 @@ public class HomeController {
         return "message/search";
     }
 
-    @GetMapping("/sdasda")
-    public String sda() {
-        return "sda.html";
-    }
-
 }

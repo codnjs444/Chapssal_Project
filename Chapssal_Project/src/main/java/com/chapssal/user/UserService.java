@@ -31,6 +31,7 @@ public class UserService {
 
         User user = new User();
         user.setUserId(userId);
+        user.setUserName(userId);
         user.setPassword(passwordEncoder.encode(password));
         user.setSchool(school);
         user.setCreateDate(createDate);
