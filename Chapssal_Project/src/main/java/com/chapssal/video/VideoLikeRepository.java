@@ -28,4 +28,8 @@ public interface VideoLikeRepository extends JpaRepository<VideoLike, Integer> {
     List<VideoLike> findByVideoAndUserAndLikeDateBetween(Video video, User user, LocalDateTime startDate, LocalDateTime endDate);
 
     List<VideoLike> findByVideo_User_School_SchoolNameAndLikeDateBetween(String schoolName, LocalDateTime startDate, LocalDateTime endDate);
+
+
+    @Query("SELECT vl.video FROM VideoLike vl WHERE vl.user.userNum = :userNum")
+    List<Video> findLikedVideosByUser(@Param("userNum") int userNum);
 }

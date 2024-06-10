@@ -807,9 +807,7 @@ public class VideoController {
         int commentCount = commentService.countCommentsByVideoNum(videoNum);
         model.addAttribute("commentCount", commentCount);
         
-        // 팔로우한 사용자들의 비디오 목록 가져오기
-        List<User> followingUsers2 = followService.getFollowingUsers(currentUserNum);
-        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getVideosWithLikeAndCommentCounts(followingUsers2);
+        List<VideoService.VideoWithLikesAndComments> videosWithLikesAndComments = videoService.getAllVideosOrderedByUploadDate();
 
         // 현재 비디오의 인덱스 찾기
         int currentIndex = -1;

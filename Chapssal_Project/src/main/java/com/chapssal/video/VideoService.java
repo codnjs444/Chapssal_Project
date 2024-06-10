@@ -302,4 +302,12 @@ public class VideoService {
             return new VideoWithLikesAndComments(video, likeCount, commentCount);
         });
     }
+    
+    public List<Video> getUserVideos(int userNum) {
+        return videoRepository.findByUserUserNum(userNum);
+    }
+    public List<Video> getLikedVideosByUser(int userNum) {
+        return videoLikeRepository.findLikedVideosByUser(userNum);
+    }
 }
+ 

@@ -152,4 +152,4 @@ public class MainController {
 
         return "home"; // home.html로 매핑
     }
-}
+} 

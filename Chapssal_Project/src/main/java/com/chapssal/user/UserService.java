@@ -35,6 +35,7 @@ public class UserService {
         user.setSchool(school);
         user.setCreateDate(createDate);
         user.setLastUpdate(lastUpdate);
+        user.setUserName("user_" + userId);
         user.setLastLogin(lastLogin);
         user.setTopic(0); // 명시적으로 유저 테이블의 topic 컬럼을 0으로 설정
         user.setVote(0); // 명시적으로 유저 테이블의 vote 컬럼을 0으로 설정

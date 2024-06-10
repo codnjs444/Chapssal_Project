@@ -592,16 +592,21 @@
 	    }
 
 		function navigateToHome() {
-		    window.location.href = 'http://localhost:8080/';
+		    const homePageUrl = localStorage.getItem('homePageUrl'); // 저장된 URL 가져오기
+		    if (homePageUrl) {
+		        window.location.href = homePageUrl; // 저장된 URL로 이동
+		    } else {
+		        window.location.href = '/'; // 저장된 URL이 없으면 기본 홈 페이지로 이동
+		    }
 		}
 
 		
 		function navigateToProfile(userNum, currentUserNum) {
 			// 사용자의 프로필 페이지로 이동합니다.
 			if (userNum === currentUserNum) {
-			    window.location.href = 'http://localhost:8080/user/profile';
+			    window.location.href = '/user/profile';
 			} else {
-			    window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+			    window.location.href = '/user/profile/' + userNum;
 			}
 		}
 
@@ -609,9 +614,9 @@
 		function navigateToProfilePage(userNum, currentUserNum) {
 		    // 사용자의 프로필 페이지로 이동합니다.
 		    if (userNum === currentUserNum) {
-		        window.location.href = 'http://localhost:8080/user/profile';
+		        window.location.href = '/user/profile';
 		    } else {
-		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		        window.location.href = '/user/profile/' + userNum;
 		    }
 		}
 
@@ -772,9 +777,9 @@
 		function navigateToProfilePage(userNum, currentUserNum) {
 		    // 사용자의 프로필 페이지로 이동합니다.
 		    if (userNum === currentUserNum) {
-		        window.location.href = 'http://localhost:8080/user/profile';
+		        window.location.href = '/user/profile';
 		    } else {
-		        window.location.href = 'http://localhost:8080/user/profile/' + userNum;
+		        window.location.href = '/user/profile/' + userNum;
 		    }
 		}
 		
