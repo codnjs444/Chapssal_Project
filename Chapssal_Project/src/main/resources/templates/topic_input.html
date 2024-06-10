@@ -2,125 +2,204 @@
 <html layout:decorate="~{layout}">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투표 페이지</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
-        body {
-            font-size: 13px; /* 기본 폰트 크기를 작게 설정 */
+		/* 페이지 전체를 감싸는 컨테이너 */
+		.page-container {
+		    display: flex;
+		    justify-content: flex-start; /* 왼쪽 정렬 */
+		    align-items: flex-start; /* 위쪽 정렬 */
+		    min-height: 100vh; /* 최소 높이를 100vh로 설정하여 화면 전체를 채웁니다 */
+		    background-color: transparent; /* 배경색 제거 */
+		    padding: 20px; /* 페이지 컨테이너 패딩 추가 */
+		    box-sizing: border-box; /* 패딩과 경계 크기를 포함하도록 설정 */
+		}
+
+		/* 투표 폼 컨테이너 */
+		.voting-container {
+		    background-color: #fff;
+		    border-radius: 20px;
+		    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		    padding: 40px; /* 패딩을 증가시켜 내부 여백 확대 */
+		    max-width: 600px; /* 최대 너비 증가 */
+		    width: 180%; /* 너비 증가 */
+		    text-align: center;
+		    position: relative;
+		    margin-top: 150px; /* 상단 여백 조정 */
+		    margin-left: 300px; /* 좌측 여백 조정 */
+		}
+
+
+        /* 헤더 스타일 */
+        .voting-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            background-color: #ffe135;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            position: relative;
         }
 
-        .edit-profile {
-            background-color: #cccccc; /* 회색 배경 */
-            color: #000000; /* 검정 글씨 */
-            padding: 3px 10px; /* 버튼 크기 조정 */
-            border: none; /* 테두리 제거 */
-            font-size: 12px; /* 글자 크기 조정 */
-            border-radius: 5px; /* 약간 둥근 모서리 */
-            font-weight: bold; /* 텍스트 굵게 */
+        .voting-header img {
+            width: 50px;
+            height: 50px;
         }
 
-        .edit-profile:hover {
-            background-color: #aaaaaa; /* 호버 시 더 진한 회색 */
+        .voting-header h4 {
+            margin: 0;
+            font-size: 22px;
+            color: #333;
+            flex: 1;
         }
 
-        .sub-section {
-            margin-bottom: 5px; /* 각 서브 섹션 간의 간격을 줄입니다 */
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
         }
 
-        .sub-section1,
-        .sub-section2,
-        .sub-section3 {
-            padding-left: 10px; /* 텍스트를 우측으로 이동 */
-            cursor: pointer; /* 커서를 포인터로 설정 */
+        /* 폼 본문 스타일 */
+        .voting-body {
+            padding: 20px;
         }
 
-        .suggestion-item {
-            font-size: 16px; /* 추천 항목의 폰트 크기를 약간 크게 설정 */
+        /* 입력 필드 스타일 */
+        .vote_input {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        /* 제출 버튼 스타일 */
+        .btn-submit {
+            background-color: #ffcc00;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            color: #333;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: #ffaa00;
+        }
+
+        /* 자동완성 목록 스타일 */
+        #suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 10px 10px;
+            z-index: 1000;
+        }
+
+        #suggestions a {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        #suggestions a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* 알림 스타일 */
+        .alert {
+            border-radius: 10px;
         }
     </style>
 </head>
 
 <body>
-<div layout:fragment="content" class="container">
-    <div class="container vertical-container">
-        <div class="container mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 th:text="${currentWeek} + ' 영상 토픽 등록'">영상 토픽 등록</h4>
-                        </div>
-                        <div class="card-body">
-                            <!-- 에러 메시지를 표시하는 부분 추가 -->
-                            <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-                                <p th:text="${errorMessage}"></p>
-                            </div>
-                            <!-- 성공 메시지를 표시하는 부분 추가 -->
-                            <div th:if="${successMessage}" class="alert alert-success" role="alert">
-                                <p th:text="${successMessage}"></p>
-                            </div>
-                            <form th:action="@{/topic/register}" th:object="${topic}" method="post">
-                                <div th:replace="~{form_errors :: formErrorsFragment}"></div>
-                                <div class="mb-3">
-                                    <input type="text" th:field="*{title}" id="topicInput" class="form-control" placeholder="토픽을 입력하세요" maxlength="10" required>
-                                    <div id="suggestions" class="list-group"></div>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">등록</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+    <div layout:fragment="content" class="page-container">
+        <div class="voting-container">
+            <div class="voting-header">
+                <img src="https://em-content.zobj.net/thumbs/240/apple/354/smiling-face-with-sunglasses_1f60e.png" alt="Emoji">
+                <h4>영상 토픽 등록</h4>
+                <button class="btn-close" onclick="closeVoting()">×</button>
+            </div>
+            <div class="voting-body">
+                <!-- 에러 메시지를 표시하는 부분 추가 -->
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <p th:text="${errorMessage}"></p>
                 </div>
+                <!-- 성공 메시지를 표시하는 부분 추가 -->
+                <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                    <p th:text="${successMessage}"></p>
+                </div>
+                <form id="topicForm" th:action="@{/topic/register}" th:object="${topic}" method="post">
+                    <div class="position-relative">
+                        <input type="text" th:field="*{title}" id="topicInput" class="form-control vote_input" placeholder="토픽을 입력하세요" maxlength="10" required>
+                        <div id="suggestions" class="list-group"></div>
+                    </div>
+                    <button type="submit" class="btn btn-submit vote_input">등록</button>
+                </form>
             </div>
         </div>
     </div>
-</div>
 
-<!-- 모달 프래그먼트 삽입 -->
-<div th:replace="~{::editProfileModalFragment}"></div>
-<div th:replace="~{::followersModalFragment}"></div>
-<!-- 외부 스크립트 파일 로드 -->
-<script src="/js/openTab.js" defer></script>
+    <!-- 외부 스크립트 파일 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            /* Check if successMessage is present in the DOM */
+            const successMessage = /*[[${successMessage != null}]]*/ false;
+            if (successMessage) {
+                alert("토픽 등록이 완료되었습니다");
+                document.getElementById("topicInput").value = "";
+            }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        /* Check if successMessage is present in the DOM */
-        const successMessage = /*[[${successMessage != null}]]*/ false;
-        if (successMessage) {
-            alert("토픽 등록이 완료되었습니다");
-            document.getElementById("topicInput").value = "";
-        }
+            // 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가
+            $('#topicInput').on('input focus', function () {
+                let query = $(this).val();
+                $.ajax({
+                    url: '/topic/inputsuggestions',
+                    method: 'GET',
+                    data: { query: query },
+                    success: function (data) {
+                        $('#suggestions').empty();
+                        data.forEach(function (item) {
+                            $('#suggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.title + '</a>');
+                        });
+                    }
+                });
+            });
 
-        // 입력창에 타이핑하거나 클릭할 때 자동완성 기능 추가
-        $('#topicInput').on('input focus', function() {
-            let query = $(this).val();
-            $.ajax({
-                url: '/topic/inputsuggestions',
-                method: 'GET',
-                data: { query: query },
-                success: function(data) {
+            // 자동완성 항목 클릭 시 입력창에 해당 값 설정
+            $('#suggestions').on('click', 'a', function (e) {
+                e.preventDefault();
+                $('#topicInput').val($(this).text());
+                $('#suggestions').empty();
+            });
+
+            // 입력창에서 벗어나면 추천 기능 사라지게 하기
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#topicInput, #suggestions').length) {
                     $('#suggestions').empty();
-                    data.forEach(function(item) {
-                        $('#suggestions').append('<a href="#" class="list-group-item list-group-item-action suggestion-item">' + item.title + '</a>');
-                    });
                 }
             });
         });
 
-        // 자동완성 항목 클릭 시 입력창에 해당 값 설정
-        $('#suggestions').on('click', 'a', function(e) {
-            e.preventDefault();
-            $('#topicInput').val($(this).text());
-            $('#suggestions').empty();
-        });
-
-        // 입력창에서 벗어나면 추천 기능 사라지게 하기
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('#topicInput, #suggestions').length) {
-                $('#suggestions').empty();
-            }
-        });
-    });
-</script>
-
+        // 투표창 닫기 기능
+        function closeVoting() {
+            document.querySelector('.voting-container').style.display = 'none';
+        }
+    </script>
 </body>
+
 </html>

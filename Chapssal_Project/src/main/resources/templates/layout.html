@@ -304,7 +304,6 @@
                                                th:href="@{'/user/profile/' + ${follower.userNum}}" th:text="'@' + ${follower.userId}" class="no-link-style">@userId</a>
                                         </div>
                                     </div>
-                                    <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
                         </div>
@@ -326,7 +325,6 @@
                                                th:href="@{'/user/profile/' + ${following.userNum}}" th:text="'@' + ${following.userId}" class="no-link-style">@userId</a>
                                         </div>
                                     </div>
-                                    <button class="btn btn-outline-danger btn-sm">삭제</button>
                                 </div>
                             </div>
                         </div>
@@ -498,7 +496,7 @@
         });
 
         function sendMessage() {
-            alert("버튼이 눌려졌다");
+            window.location.href = '/message/home';
         }
 
         function followUser(currentUserNum, userNum, isFollowing) {
